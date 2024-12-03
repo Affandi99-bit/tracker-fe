@@ -17,7 +17,7 @@ const App = () => {
 
   useEffect(() => {
     fetchProjects();
-    console.log("Made with love by Imamaffandi");
+    // console.log("Made with love by Imamaffandi");
   }, [refresh]);
   useEffect(() => {
     const loginTime = localStorage.getItem("loginTime");
@@ -34,7 +34,7 @@ const App = () => {
   const fetchProjects = async () => {
     try {
       const response = await axios.get(
-        "https://localhost:5001/api/report/getAllProjects"
+        "http://192.168.1.29:5001/api/report/getallprojects"
       );
 
       setTableData(response.data);
@@ -44,7 +44,7 @@ const App = () => {
   };
   const addNewData = async (newData) => {
     try {
-      await axios.post("https://localhost:5001/api/report/create", newData);
+      await axios.post("http://192.168.1.29:5001/api/report/create", newData);
       await fetchProjects();
       setShowCreateModal(false);
     } catch (error) {
@@ -54,7 +54,7 @@ const App = () => {
   const updateData = async (updatedData) => {
     try {
       await axios.put(
-        `https://localhost:5001/api/report/update/${updatedData._id}`,
+        `http://192.168.1.29:5001/api/report/update/${updatedData._id}`,
         updatedData
       );
       await fetchProjects();
@@ -65,7 +65,7 @@ const App = () => {
   };
   const deleteData = async (id) => {
     try {
-      await axios.delete(`https://localhost:5001/api/report/delete/${id}`);
+      await axios.delete(`http://192.168.1.29:5001/api/report/delete/${id}`);
       await fetchProjects();
       setShowCreateModal(false);
     } catch (error) {

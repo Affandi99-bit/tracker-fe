@@ -45,7 +45,7 @@ const CreateModal = ({
   };
   const handleDelete = async (id) => {
     await axios
-      .delete(`https://localhost:5001/api/report/delete/${id}`)
+      .delete(`http://192.168.1.29:5001/api/report/delete/${id}`)
       .then((response) => {
         console.log("Project deleted successfully");
         setShowModal(false);
@@ -57,7 +57,7 @@ const CreateModal = ({
   };
   const updateData = async (updatedData) => {
     await axios.put(
-      `https://localhost:5001/api/report/update/${updatedData._id}`,
+      `http://192.168.1.29:5001/api/report/update/${updatedData._id}`,
       updatedData
     );
   };
@@ -66,10 +66,11 @@ const CreateModal = ({
     if (isEditing) {
       await updateData(formData);
       setShowModal(false);
+      window.location.reload();
     } else {
       await addNewData(formData);
+      window.location.reload();
     }
-    window.location.reload();
   };
 
   return (
