@@ -45,7 +45,7 @@ const CreateModal = ({
   };
   const handleDelete = async (id) => {
     await axios
-      .delete(`https://tracker-be-five.vercel.app/api/report/delete/${id}`)
+      .delete(`https://localhost:5001/api/report/delete/${id}`)
       .then((response) => {
         console.log("Project deleted successfully");
         setShowModal(false);
@@ -57,7 +57,7 @@ const CreateModal = ({
   };
   const updateData = async (updatedData) => {
     await axios.put(
-      `https://tracker-be-five.vercel.app/api/report/update/${updatedData._id}`,
+      `https://localhost:5001/api/report/update/${updatedData._id}`,
       updatedData
     );
   };
