@@ -8,45 +8,86 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
   };
 
   return (
-    <tbody className="text-center">
+    <tbody className="text-center ">
       {tableData.map((row, index) => (
         <tr
           onClick={() => handleRowClick(row)}
-          className="cursor-pointer montserrat text-xs font-medium tracking-wide h-20  transition ease-in-out hover:opacity-75 duration-300"
-          style={{
-            backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#E8E8E8",
-          }}
+          className={`h-20 montserrat text-xs font-medium tracking-wide transition ease-in-out duration-300 ${
+            index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
+          } hover:translate-x-3 duration-200 transition-all`}
           key={row._id}
         >
-          <td className="p-2 font-semibold">{index + 1}</td>
-          <td className="p-2">{row.title}</td>
-          <td className="p-2 ">{row.client}</td>
-          <td className="p-2 ">{row.pic}</td>
-          <td className="p-2">{row.deadline}</td>
-          <td className="p-2 flex-flex-col justify-center items-center w-full">
-            {row.status.map((chip, i) => (
-              <p
-                key={i}
-                style={{
-                  backgroundColor: findTagColor(chip),
-                }}
-                className="rounded-md w-2/3 p-1 m-1"
+          <td className="w-20">
+            <div className="font-semibold px-3 flex items-center justify-center ">
+              {/* <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6 -rotate-90"
               >
-                <span className="text-white text-sm font-extralight">
-                  {chip}
-                </span>
-              </p>
-            ))}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                />
+              </svg> */}
+              {index + 1}
+            </div>
           </td>
-          <td className="p-2 flex flex-col items-center justify-center h-32">
-            {row.crew.map((member, i) => (
-              <p key={i}>{member}</p>
-            ))}
+          <td className="w-48">{row.title}</td>
+          <td className="w-32">{row.client}</td>
+          <td className="w-32">{row.pic}</td>
+          <td className="w-48">{row.deadline}</td>
+          <td className="w-32">
+            <div className="flex flex-wrap gap-1 justify-start items-center">
+              {row.status.map((chip, i) => (
+                <p
+                  key={i}
+                  style={{
+                    backgroundColor: findTagColor(chip),
+                  }}
+                  className="rounded-md w-[4rem] p-[0.15rem] mt-[0.15rem]"
+                >
+                  <span className="text-white text-xs font-extralight">
+                    {chip}
+                  </span>
+                </p>
+              ))}
+            </div>
           </td>
-          <td className="p-2">{row.pm}</td>
-          <td className="p-2 truncate">{row.final_file}</td>
-          <td className="p-2 truncate">{row.final_report_file}</td>
-          <td className="p-2 truncate">{row.note}</td>
+          <td className="w-48">
+            <div className="flex gap-3 my-1 flex-wrap items-center justify-center">
+              {row.crew.map((member, i) => (
+                <p key={i}>{member}</p>
+              ))}
+            </div>
+          </td>
+          <td className="w-32">{row.pm}</td>
+          <td className="w-56">
+            {row.final_file ? (
+              <a
+                target="_blank"
+                className="truncate w-32 text-blue-500 hover:underline"
+                href={`${row.final_file}`}
+              >
+                Go to File
+              </a>
+            ) : null}
+          </td>
+          <td className="w-56">
+            {row.final_report_file ? (
+              <a
+                target="_blank"
+                className="truncate w-32 text-blue-500 hover:underline"
+                href={`${row.final_report_file}`}
+              >
+                Go to Report File
+              </a>
+            ) : null}
+          </td>
+          <td className="truncate overflow-hidden w-56">{row.note}</td>
         </tr>
       ))}
     </tbody>
@@ -96,41 +137,81 @@ const MainTable = ({
   });
 
   return (
-    <>
-      <table className="table-fixed select-none w-full mt-[3rem] ">
-        <thead className="sticky overflow-x-scroll top-[3.5rem] bg-dark text-light text-md z-10 h-10 montserrat">
-          <tr>
-            <th>ID</th>
-            <th>TITLE</th>
-            <th>CLIENT</th>
-            <th>PIC</th>
-            <th>EVENT DATE</th>
-            <th>TAGS</th>
-            <th>CREW</th>
-            <th>PM</th>
-            <th>FINAL FILE</th>
-            <th>DOCUMENTS</th>
-            <th>NOTE</th>
-          </tr>
-        </thead>
-        <Suspense fallback={<Loader />}>
-          <DataTable
-            tableData={filteredData}
-            setSelectedRowData={setSelectedRowData}
+    <main className="flex flex-col h-screen">
+      <section className="flex-grow overflow-x-hidden">
+        <table className="table-auto border-collapse select-none relative w-full">
+          <thead className="montserrat">
+            <tr>
+              <th className="w-10 sticky top-[2.8rem] border-none bg-dark text-light text-md z-10 h-10">
+                ID
+              </th>
+              <th className="w-48 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                TITLE
+              </th>
+              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                CLIENT
+              </th>
+              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                PIC
+              </th>
+              <th className="w-48 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                <div className="flex items-center justify-center cursor-pointer">
+                  DUE DATE
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                    />
+                  </svg>
+                </div>
+              </th>
+              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                TAGS
+              </th>
+              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                CREW
+              </th>
+              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                PM
+              </th>
+              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                FINAL FILE
+              </th>
+              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                DOCUMENTS
+              </th>
+              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                NOTE
+              </th>
+            </tr>
+          </thead>
+          <Suspense fallback={<Loader />}>
+            <DataTable
+              tableData={filteredData}
+              setSelectedRowData={setSelectedRowData}
+              setShowModal={setShowModal}
+            />
+          </Suspense>
+        </table>
+        {showModal && (
+          <TableModal
+            pro={selectedRowData}
+            showModal={showModal}
             setShowModal={setShowModal}
+            updateData={updateData}
+            deleteData={deleteData}
           />
-        </Suspense>
-      </table>
-      {showModal && (
-        <TableModal
-          pro={selectedRowData}
-          showModal={showModal}
-          setShowModal={setShowModal}
-          updateData={updateData}
-          deleteData={deleteData}
-        />
-      )}
-    </>
+        )}
+      </section>
+    </main>
   );
 };
 

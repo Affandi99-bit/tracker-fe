@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { tags } from "../constant/constant";
-const Dropdown = ({ selectedTags, setSelectedTags }) => {
+import AudioPlayer from "./AudioPlayer";
+const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
+  const [selectedDropdownValue, setSelectedDropdownValue] = useState("client"); // New state for dropdown value
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
       prevTags.includes(tag)
@@ -9,10 +11,17 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
     );
   };
 
+  const handleDropdownChange = (e) => {
+    setSelectedDropdownValue(e.target.value); // Update the selected dropdown value
+  };
+
+  const handleInput = (e) => {
+    onSearch(e.target.value, selectedDropdownValue); // Pass the selected dropdown value to the search function
+  };
   return (
     <>
-      <section className="w-72 bg-dark shadow-md rounded-md fixed top-[3.6rem] right-5 z-50">
-        <h1 className="text-2xl text-light montserrat font-bold p-2">
+      <section className="w-[25rem] bg-dark shadow-md rounded-md fixed top-[3.6rem] right-5 z-50">
+        <h1 className="text-2xl text-center tracking-wide text-light montserrat font-bold p-2">
           Filters
         </h1>
         <div className="w-full p-2 flex justify-start items-center flex-wrap">
@@ -20,7 +29,7 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
             <label
               htmlFor={`hr-${option.value}`}
               key={option.value}
-              className={`flex flex-row w-1/2 items-center gap-2 montserrat cursor-pointer text-light p-2`}
+              className={`flex flex-row w-32 items-center gap-2 montserrat cursor-pointer text-light p-2`}
             >
               <input
                 id={`hr-${option.value}`}
@@ -56,7 +65,7 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
             <label
               htmlFor={`hr-${option.value}`}
               key={option.value}
-              className={`flex flex-row w-1/2 items-center gap-2 montserrat cursor-pointer text-light p-2`}
+              className={`flex flex-row w-32 items-center gap-2 montserrat cursor-pointer text-light p-2`}
             >
               <input
                 id={`hr-${option.value}`}
@@ -92,7 +101,7 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
             <label
               htmlFor={`hr-${option.value}`}
               key={option.value}
-              className={`flex flex-row w-1/2 items-center gap-2 montserrat cursor-pointer text-light p-2`}
+              className={`flex flex-row w-32 items-center gap-2 montserrat cursor-pointer text-light p-2`}
             >
               <input
                 id={`hr-${option.value}`}
@@ -128,7 +137,7 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
             <label
               htmlFor={`hr-${option.value}`}
               key={option.value}
-              className={`flex flex-row w-1/2 items-center gap-2 montserrat cursor-pointer text-light p-2`}
+              className={`flex flex-row w-32 items-center gap-2 montserrat cursor-pointer text-light p-2`}
             >
               <input
                 id={`hr-${option.value}`}
@@ -161,6 +170,31 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
             </label>
           ))}
         </div>
+        <section className="flex items-center">
+          <div className="input-container montserrat select-none">
+            <input
+              placeholder="Search by"
+              className="input-field"
+              type="text"
+              onChange={handleInput} // Call handleInput on change
+            />
+          </div>
+          <select
+            className="border p-2 montserrat rounded outline-none bg-transparent border-none text-light"
+            value={selectedDropdownValue} // Set the value of the select to the state
+            onChange={handleDropdownChange} // Call handleDropdownChange on change
+          >
+            <option className="bg-dark rounded-t" value="client">
+              Client
+            </option>
+            <option className="bg-dark" value="pm">
+              PM
+            </option>
+            <option className="bg-dark" value="pic">
+              PIC
+            </option>
+          </select>
+        </section>
       </section>
     </>
   );
@@ -201,20 +235,26 @@ const Navbar = ({
         <Dropdown
           selectedTags={selectedTags}
           setSelectedTags={setSelectedTags}
+          onSearch={onSearch}
         />
       ) : null}
-      <nav className="fixed select-none z-50 top-0 flex justify-between items-center bg-dark py-2 px-5 w-full overflow-hidden border-b border-light">
+      <nav className="fixed select-none z-40 top-0 flex justify-between items-center bg-dark py-2 px-5 w-full overflow-hidden">
         <div
           onClick={() => {
             window.location.reload();
           }}
           className="flex items-center cursor-pointer"
         >
-          <img src="/logo.png" alt="logo" className="size-10" />
-          <p className="hidden md:block text-light pl-6 text-4xl font-extrabold montserrat">
-            TASK MANAGER
-          </p>
+          <img src="/black.png" alt="logo" className="w-64" />
         </div>
+        <p
+          onClick={() => {
+            window.location.reload();
+          }}
+          className="hidden md:block cursor-pointer text-light pl-6 text-4xl tracking-wider font-extrabold montserrat"
+        >
+          TASK MANAGER
+        </p>
         <div className="flex items-center gap-5 ">
           {/* Search Input */}
           <div className="relative flex gap-3 items-center">
@@ -222,7 +262,7 @@ const Navbar = ({
               <input
                 type="text"
                 onChange={handleInput}
-                className="bg-light text-dark rounded-md px-2 py-1 w-40 outline-none scale-95 animate-slide-in duration-500 ease-in-out"
+                className="absolute -left-40 bg-light text-dark rounded-md px-2 py-1 w-40 outline-none scale-95 animate-slide-in duration-500 ease-in-out"
                 placeholder="Search by Title..."
               />
             ) : null}
@@ -242,7 +282,8 @@ const Navbar = ({
               />
             </svg>
           </div>
-
+          {/* Audio */}
+          <AudioPlayer />
           {/* Filter Button */}
           <button
             onClick={() => {
@@ -347,32 +388,6 @@ const Navbar = ({
           </button>
           {/* Create Button */}
           <button
-            onClick={() => setShowCreateModal(!showCreateModal)}
-            className="flex items-center bg-light px-4 py-2 rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"
-              />
-            </svg>
-
-            <p className="text-dark montserrat">Create</p>
-          </button>
-          <button
             onClick={handleLogout}
             className="transition ease-in-out hover:scale-105 duration-300 active:scale-95"
           >
@@ -393,6 +408,27 @@ const Navbar = ({
           </button>
         </div>
       </nav>
+      <button
+        onClick={() => setShowCreateModal(!showCreateModal)}
+        className="fixed z-30 hover:rotate-90 bottom-3 right-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="white"
+          className={`size-8 transition-all duration-300 ${
+            showCreateModal ? "rotate-45" : "rotate-180"
+          }`}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 4.5v15m7.5-7.5h-15"
+          />
+        </svg>
+      </button>
     </>
   );
 };

@@ -15,20 +15,20 @@ const TableModal = ({ pro, showModal, setShowModal, updateData }) => {
     showModal && (
       <main
         onClick={handleBackdropClick}
-        className="backdrop z-10 h-screen w-full fixed top-0 backdrop-blur-[2px]"
+        className="backdrop z-30 h-screen w-full fixed top-0 backdrop-blur-[2px]"
       >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <section className="relative rounded-lg  bg-dark shadow-lg w-[92rem] h-[35rem]">
+        <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <section className="relative rounded-lg  bg-dark shadow-lg w-[80rem] h-[30rem]">
             <button
               onClick={() => setShowModal(false)}
-              className="z-20 absolute right-2 top-2 bg-red-500 text-white montserrat rounded-md py-2 px-3 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+              className="z-20 absolute right-5 top-5 bg-red-500 text-white montserrat rounded-md py-2 px-3 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
             >
               Close
             </button>
 
             <button
               onClick={() => setShowEditModal(true)}
-              className="z-10 absolute right-2 bottom-2 bg-green-500 text-white montserrat rounded-md py-2 px-3 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+              className="z-10 absolute right-5 bottom-5 bg-green-500 text-white montserrat rounded-md py-2 px-3 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
             >
               Edit
             </button>
@@ -55,7 +55,7 @@ const TableModal = ({ pro, showModal, setShowModal, updateData }) => {
                   {pro.client} - {pro.pic}
                 </h3>
                 <p className="montserrat">
-                  <span className="font-bold">Project Manager :</span> {pro.pm}{" "}
+                  <span className="font-bold">Project Manager :</span> {pro.pm}
                 </p>
                 <p className="montserrat font-bold">Note :</p>
                 <p className="montserrat pl-5 text-sm overflow-y-scroll">
@@ -85,11 +85,7 @@ const TableModal = ({ pro, showModal, setShowModal, updateData }) => {
                     >
                       Final File
                     </a>
-                  ) : (
-                    <p className="w-56 h-20 select-none flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg">
-                      N/A
-                    </p>
-                  )}
+                  ) : null}
                   {pro.final_report_file ? (
                     <a
                       href={pro.final_report_file}
@@ -100,13 +96,10 @@ const TableModal = ({ pro, showModal, setShowModal, updateData }) => {
                     </a>
                   ) : (
                     <>
-                      <p className="w-56 h-20 select-none flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg">
-                        N/A
-                      </p>
                       <button
                         onClick={() => {
                           // setShowReportGenerator(true);
-                          alert("under dev");
+                          alert("BA Generator Under Development");
                         }}
                         className="size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
                       >
@@ -128,7 +121,7 @@ const TableModal = ({ pro, showModal, setShowModal, updateData }) => {
                     </>
                   )}
                 </div>
-                <p className="absolute opacity-65 montserrat tracking-wide bottom-5 left-5">
+                <p className="absolute opacity-65 montserrat tracking-wide bottom-2 left-2">
                   Created at{" "}
                   {new Date(pro.createdAt).toLocaleDateString("en-GB")}
                 </p>

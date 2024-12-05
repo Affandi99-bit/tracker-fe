@@ -20,7 +20,6 @@ const CreateModal = ({
     final_report_file: "",
     note: "",
   };
-
   const [formData, setFormData] = useState(isEditing ? initialData : fromDatas);
 
   const handleBackdropClick = (e) => {
@@ -48,17 +47,22 @@ const CreateModal = ({
       .delete(`http://192.168.1.29:5001/api/report/delete/${id}`)
       .then((response) => {
         console.log("Project deleted successfully");
+        setFormData((prevData) => prevData.filter((item) => item._id !== id));
         setShowModal(false);
       })
       .catch((error) => {
         console.log("error", error);
       });
-    window.location.reload();
   };
   const updateData = async (updatedData) => {
     await axios.put(
       `http://192.168.1.29:5001/api/report/update/${updatedData._id}`,
       updatedData
+    );
+    setFormData((prevData) =>
+      prevData.map((item) =>
+        item._id === updatedData._id ? { ...item, ...updatedData } : item
+      )
     );
   };
   const handleSubmit = async (e) => {
@@ -66,10 +70,8 @@ const CreateModal = ({
     if (isEditing) {
       await updateData(formData);
       setShowModal(false);
-      window.location.reload();
     } else {
       await addNewData(formData);
-      window.location.reload();
     }
   };
 
@@ -80,7 +82,7 @@ const CreateModal = ({
           className="backdrop fixed z-20 top-0 w-full h-screen backdrop-blur-[2px]"
           onClick={handleBackdropClick}
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2">
             <section className="relative rounded-lg bg-dark shadow-lg h-full">
               <div className="flex justify-between items-center p-2">
                 <p className="montserrat font-bold text-2xl text-white">

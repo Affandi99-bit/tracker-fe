@@ -17,7 +17,6 @@ const App = () => {
 
   useEffect(() => {
     fetchProjects();
-    // console.log("Made with love by Imamaffandi");
   }, [refresh]);
   useEffect(() => {
     const loginTime = localStorage.getItem("loginTime");
@@ -46,6 +45,7 @@ const App = () => {
     try {
       await axios.post("http://192.168.1.29:5001/api/report/create", newData);
       await fetchProjects();
+
       setShowCreateModal(false);
     } catch (error) {
       console.error("Error adding new project:", error);
