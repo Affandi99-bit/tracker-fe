@@ -3,6 +3,7 @@ import { tags } from "../constant/constant";
 import AudioPlayer from "./AudioPlayer";
 const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
   const [selectedDropdownValue, setSelectedDropdownValue] = useState("client"); // New state for dropdown value
+  const [searchInput, setSearchInput] = useState("");
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
       prevTags.includes(tag)
@@ -16,6 +17,7 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
   };
 
   const handleInput = (e) => {
+    setSearchInput(e.target.value); // Capture user input
     onSearch(e.target.value, selectedDropdownValue); // Pass the selected dropdown value to the search function
   };
   return (
@@ -176,13 +178,13 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
               placeholder="Search by"
               className="input-field"
               type="text"
-              onChange={handleInput} // Call handleInput on change
+              onChange={handleInput}
             />
           </div>
           <select
             className="border p-2 montserrat rounded outline-none bg-transparent border-none text-light"
-            value={selectedDropdownValue} // Set the value of the select to the state
-            onChange={handleDropdownChange} // Call handleDropdownChange on change
+            value={selectedDropdownValue}
+            onChange={handleDropdownChange}
           >
             <option className="bg-dark rounded-t" value="client">
               Client
@@ -200,8 +202,6 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
   );
 };
 const Navbar = ({
-  setShowCreateModal,
-  showCreateModal,
   onSearch,
   onSort,
   onArchive,
@@ -283,7 +283,7 @@ const Navbar = ({
             </svg>
           </div>
           {/* Audio */}
-          <AudioPlayer />
+          {/* <AudioPlayer /> */}
           {/* Filter Button */}
           <button
             onClick={() => {
@@ -408,27 +408,6 @@ const Navbar = ({
           </button>
         </div>
       </nav>
-      <button
-        onClick={() => setShowCreateModal(!showCreateModal)}
-        className="fixed z-30 hover:rotate-90 bottom-3 right-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="white"
-          className={`size-8 transition-all duration-300 ${
-            showCreateModal ? "rotate-45" : "rotate-180"
-          }`}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 4.5v15m7.5-7.5h-15"
-          />
-        </svg>
-      </button>
     </>
   );
 };

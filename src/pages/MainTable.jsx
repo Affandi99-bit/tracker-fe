@@ -12,12 +12,12 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
       {tableData.map((row, index) => (
         <tr
           onClick={() => handleRowClick(row)}
-          className={`h-20 montserrat text-xs font-medium tracking-wide transition ease-in-out duration-300 ${
+          className={`h-20 w-screen montserrat text-xs font-medium tracking-wide transition ease-in-out duration-300 ${
             index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
           } hover:translate-x-3 duration-200 transition-all`}
           key={row._id}
         >
-          <td className="w-20">
+          <td className="w-10">
             <div className="font-semibold px-3 flex items-center justify-center ">
               {/* <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -36,11 +36,11 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
               {index + 1}
             </div>
           </td>
-          <td className="w-48">{row.title}</td>
-          <td className="w-32">{row.client}</td>
-          <td className="w-32">{row.pic}</td>
-          <td className="w-48">{row.deadline}</td>
-          <td className="w-32">
+          <td className="w-20">{row.title}</td>
+          <td className="w-20">{row.client}</td>
+          <td className="w-20">{row.pic}</td>
+          <td className="w-32">{row.deadline}</td>
+          <td className="w-48">
             <div className="flex flex-wrap gap-1 justify-start items-center">
               {row.status.map((chip, i) => (
                 <p
@@ -65,7 +65,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
             </div>
           </td>
           <td className="w-32">{row.pm}</td>
-          <td className="w-56">
+          <td className="w-32">
             {row.final_file ? (
               <a
                 target="_blank"
@@ -76,7 +76,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
               </a>
             ) : null}
           </td>
-          <td className="w-56">
+          <td className="w-32">
             {row.final_report_file ? (
               <a
                 target="_blank"
@@ -87,7 +87,9 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
               </a>
             ) : null}
           </td>
-          <td className="truncate overflow-hidden w-56">{row.note}</td>
+          <td className=" w-48 overflow-hidden whitespace-nowrap text-ellipsis">
+            {row.note}
+          </td>
         </tr>
       ))}
     </tbody>
@@ -139,22 +141,22 @@ const MainTable = ({
   return (
     <main className="flex flex-col h-screen">
       <section className="flex-grow overflow-x-hidden">
-        <table className="table-auto border-collapse select-none relative w-full">
+        <table className=" border-collapse mt-10 select-none relative w-full table-fixed">
           <thead className="montserrat">
             <tr>
               <th className="w-10 sticky top-[2.8rem] border-none bg-dark text-light text-md z-10 h-10">
                 ID
               </th>
-              <th className="w-48 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 TITLE
               </th>
-              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 CLIENT
               </th>
-              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 PIC
               </th>
-              <th className="w-48 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 <div className="flex items-center justify-center cursor-pointer">
                   DUE DATE
                   <svg
@@ -173,22 +175,22 @@ const MainTable = ({
                   </svg>
                 </div>
               </th>
-              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-48 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 TAGS
               </th>
-              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-48 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 CREW
               </th>
-              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 PM
               </th>
-              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 FINAL FILE
               </th>
-              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 DOCUMENTS
               </th>
-              <th className="w-56 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 NOTE
               </th>
             </tr>

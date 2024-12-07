@@ -1,12 +1,14 @@
 import { useState } from "react";
-import axios from "axios";
 import { tags } from "../constant/constant";
 const CreateModal = ({
   showModal,
   setShowModal,
   addNewData,
+  updateData,
+  deleteData,
   isEditing,
   initialData,
+  setTableModal,
 }) => {
   const fromDatas = {
     title: "",
@@ -42,36 +44,23 @@ const CreateModal = ({
       setFormData({ ...formData, [name]: value });
     }
   };
-  const handleDelete = async (id) => {
-    await axios
-      .delete(`http://192.168.1.29:5001/api/report/delete/${id}`)
-      .then((response) => {
-        console.log("Project deleted successfully");
-        setFormData((prevData) => prevData.filter((item) => item._id !== id));
-        setShowModal(false);
-      })
-      .catch((error) => {
-        console.log("error", error);
-      });
-  };
-  const updateData = async (updatedData) => {
-    await axios.put(
-      `http://192.168.1.29:5001/api/report/update/${updatedData._id}`,
-      updatedData
-    );
-    setFormData((prevData) =>
-      prevData.map((item) =>
-        item._id === updatedData._id ? { ...item, ...updatedData } : item
-      )
-    );
-  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isEditing) {
       await updateData(formData);
-      setShowModal(false);
+      setTableModal(false);
     } else {
       await addNewData(formData);
+    }
+    setShowModal(false);
+  };
+
+  const handleDelete = async () => {
+    if (isEditing && formData._id) {
+      await deleteData(formData._id);
+      setShowModal(false);
+      setTableModal(false);
     }
   };
 
@@ -80,7 +69,9 @@ const CreateModal = ({
       <div>
         <main
           className="backdrop fixed z-20 top-0 w-full h-screen backdrop-blur-[2px]"
-          onClick={handleBackdropClick}
+          onClick={() => {
+            handleBackdropClick;
+          }}
         >
           <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2">
             <section className="relative rounded-lg bg-dark shadow-lg h-full">
@@ -183,6 +174,7 @@ const CreateModal = ({
                       className="rounded-md p-2 h-full montserrat outline-none"
                     />
                   </div>
+                  {/* TAGS */}
                   <section className="flex gap-1">
                     {/* Progress */}
                     <div className="rounded-md bg-white p-2 w-full">
@@ -417,6 +409,7 @@ const CreateModal = ({
                     </section>
                   </section>
                 </div>
+                {/* Notes */}
                 <div className="flex justify-between">
                   <textarea
                     placeholder="Notes"
@@ -426,23 +419,22 @@ const CreateModal = ({
                     className="rounded-md p-2 w-full h-32 montserrat outline-none"
                   />
                 </div>
+                {/* Buttons */}
                 <div className="flex gap-1">
-                  {isEditing ? (
+                  {isEditing && (
                     <button
                       type="button"
-                      onClick={() => {
-                        handleDelete(formData._id);
-                      }}
+                      onClick={handleDelete}
                       className="bg-red-500 text-white montserrat rounded-md py-2 w-full font-semibold tracking-wide"
                     >
                       Delete
                     </button>
-                  ) : null}
+                  )}
                   <button
                     type="submit"
                     className="bg-green-500 text-white montserrat rounded-md py-2 w-full font-semibold tracking-wide"
                   >
-                    Submit
+                    {isEditing ? "Update" : "Add"}
                   </button>
                 </div>
               </form>

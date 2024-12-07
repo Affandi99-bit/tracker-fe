@@ -2,7 +2,13 @@ import { useState } from "react";
 import CreateModal from "./CreateModal";
 import { findTagColor } from "../utils/utils";
 import { Report } from "../pages";
-const TableModal = ({ pro, showModal, setShowModal, updateData }) => {
+const TableModal = ({
+  pro,
+  showModal,
+  setShowModal,
+  updateData,
+  deleteData,
+}) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReportGenerator, setShowReportGenerator] = useState(false);
   const handleBackdropClick = (e) => {
@@ -58,9 +64,7 @@ const TableModal = ({ pro, showModal, setShowModal, updateData }) => {
                   <span className="font-bold">Project Manager :</span> {pro.pm}
                 </p>
                 <p className="montserrat font-bold">Note :</p>
-                <p className="montserrat pl-5 text-sm overflow-y-scroll">
-                  {pro.note}
-                </p>
+                <p className=" montserrat pl-5 text-sm">{pro.note}</p>
               </section>
               <section className="z-10 text-light p-5 h-full w-1/2 flex flex-col items-start">
                 <div>
@@ -142,6 +146,8 @@ const TableModal = ({ pro, showModal, setShowModal, updateData }) => {
             initialData={pro}
             updateData={updateData}
             isEditing={true}
+            deleteData={deleteData}
+            setTableModal={setShowModal}
           />
         )}
 
