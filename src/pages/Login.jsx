@@ -40,7 +40,7 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <main className="flex w-full h-screen justify-center items-center p-3">
+    <main className="flex w-full h-screen justify-center items-center p-3 select-none">
       <section className="w-96 rounded-2xl bg-dark">
         <div className="flex flex-col p-8">
           <header className="flex items-center gap-3 mb-4">
@@ -70,21 +70,19 @@ const Login = ({ onLoginSuccess }) => {
             >
               Log In
             </button>
-
             <label
               htmlFor="hr"
-              className="flex flex-row items-center montserrat gap-2.5 dark:text-white light:text-black"
+              className="flex flex-row items-center gap-2.5 dark:text-white light:text-black montserrat"
             >
               <input
                 id="hr"
                 type="checkbox"
                 className="peer hidden"
-                checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
               <div
                 htmlFor="hr"
-                className="h-5 w-5 flex rounded-md border border-[#a2a1a833] light:bg-[#e8e8e8] dark:bg-[#212121] peer-checked:bg-light transition"
+                className="h-5 w-5 flex rounded-md border border-[#a2a1a833] light:bg-[#e8e8e8] dark:bg-[#212121] peer-checked:bg-[#8e8e8e] transition"
               >
                 <svg
                   fill="none"

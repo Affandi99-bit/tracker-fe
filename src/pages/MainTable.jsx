@@ -13,7 +13,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
         <tr
           onClick={() => handleRowClick(row)}
           className={`h-20 w-screen montserrat text-xs font-medium tracking-wide transition ease-in-out duration-300 ${
-            index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
+            index % 2 === 0 ? "bg-gray-200" : "bg-gray-300"
           } hover:translate-x-3 duration-200 transition-all`}
           key={row._id}
         >
@@ -48,7 +48,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
                   style={{
                     backgroundColor: findTagColor(chip),
                   }}
-                  className="rounded-md w-[4rem] p-[0.15rem] mt-[0.15rem]"
+                  className="rounded-md w-[3.6rem] py-[0.15rem]"
                 >
                   <span className="text-white text-xs font-extralight">
                     {chip}
@@ -108,6 +108,8 @@ const MainTable = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [sortedData, setSortedDataLocal] = useState([]);
+  const [isSorted, setIsSorted] = useState(false);
 
   useEffect(() => {
     const sorted = tableData.sort((a, b) => {
@@ -137,27 +139,46 @@ const MainTable = ({
 
     return matchesSearch && matchesTags && (showHidden || isOngoing);
   });
+  const handleDate = () => {
+    if (isSorted) {
+      // Toggle back to the default (unsorted) state
+      setSortedDataLocal([]);
+      setIsSorted(false);
+    } else {
+      // Sort by deadline
+      const sortedData = [...filteredData].sort((a, b) => {
+        const dateA = new Date(a.deadline);
+        const dateB = new Date(b.deadline);
+        return dateB - dateA;
+      });
+      setSortedDataLocal(sortedData);
+      setIsSorted(true);
+    }
+  };
 
   return (
     <main className="flex flex-col h-screen">
-      <section className="flex-grow overflow-x-hidden">
+      <section className="flex-grow overflow-x-scroll lg:overflow-x-hidden">
         <table className=" border-collapse mt-10 select-none relative w-full table-fixed">
           <thead className="montserrat">
             <tr>
-              <th className="w-10 sticky top-[2.8rem] border-none bg-dark text-light text-md z-10 h-10">
+              <th className="w-10 sticky top-[2.5rem] md:top-[2.8rem] border-none bg-dark text-light text-md z-10 h-10">
                 ID
               </th>
-              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 TITLE
               </th>
-              <th className="w-20 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 CLIENT
               </th>
-              <th className="w-20 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 PIC
               </th>
-              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
-                <div className="flex items-center justify-center cursor-pointer">
+              <th
+                onClick={handleDate}
+                className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10"
+              >
+                <div className=" flex items-center justify-center cursor-pointer">
                   DUE DATE
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -165,39 +186,39 @@ const MainTable = ({
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="size-6"
+                    className="size-6 "
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                      d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
                     />
                   </svg>
                 </div>
               </th>
-              <th className="w-48 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-48 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 TAGS
               </th>
-              <th className="w-48 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-48 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 CREW
               </th>
-              <th className="w-20 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 PM
               </th>
-              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 FINAL FILE
               </th>
-              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 DOCUMENTS
               </th>
-              <th className="w-32 sticky top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 NOTE
               </th>
             </tr>
           </thead>
           <Suspense fallback={<Loader />}>
             <DataTable
-              tableData={filteredData}
+              tableData={sortedData.length ? sortedData : filteredData}
               setSelectedRowData={setSelectedRowData}
               setShowModal={setShowModal}
             />

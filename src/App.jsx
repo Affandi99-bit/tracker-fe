@@ -5,7 +5,7 @@ import axios from "axios";
 import Login from "./pages/Login";
 import { io } from "socket.io-client";
 
-const socket = io("http://192.168.1.29:5001");
+const socket = io("https://tracker-be-omega.vercel.app");
 
 const App = () => {
   const [tableData, setTableData] = useState([]);
@@ -17,20 +17,11 @@ const App = () => {
   const [editingData, setEditingData] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const fetchProjects = async () => {
-    try {
-      const response = await axios.get(
-        `http://192.168.1.29:5001/api/report/getallprojects`
-      );
-      setTableData(response.data);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      alert("Failed to fetch projects.");
-    }
-  };
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     fetchProjects();
+    fetchType({ field: "", value: "" });
 
     socket.on("dataCreated", (newData) => {
       setTableData((prev) => [...prev, newData]);
@@ -55,10 +46,47 @@ const App = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const loginTime = localStorage.getItem("loginTime");
+    if (loginTime) {
+      const currentTime = Date.now();
+      const twoHours = 2 * 60 * 60 * 1000;
+      if (currentTime - loginTime < twoHours) {
+        setIsLoggedIn(true);
+      } else {
+        localStorage.removeItem("loginTime");
+      }
+    }
+  }, []);
+
+  const fetchType = async (searchCriteria) => {
+    const { field, value } = searchCriteria;
+    if (field && value) {
+      const query = new URLSearchParams({ [field]: value }).toString();
+      const response = await fetch(
+        `https://tracker-be-omega.vercel.app/api/report/search?${query}`
+      );
+      const data = await response.json();
+      setProjects(data);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get(
+        `https://tracker-be-omega.vercel.app/api/report/getallprojects`
+      );
+      setTableData(response.data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      alert("Failed to fetch projects.");
+    }
+  };
+
   const addNewData = async (newData) => {
     try {
       const response = await axios.post(
-        "http://192.168.1.29:5001/api/report/create",
+        "https://tracker-be-omega.vercel.app/api/report/create",
         newData
       );
       console.log("New project added:", response.data);
@@ -72,7 +100,7 @@ const App = () => {
   const updateData = async (updatedData) => {
     try {
       await axios.put(
-        `http://192.168.1.29:5001/api/report/update/${updatedData._id}`,
+        `https://tracker-be-omega.vercel.app/api/report/update/${updatedData._id}`,
         updatedData
       );
       setTableData((prev) =>
@@ -87,7 +115,9 @@ const App = () => {
 
   const deleteData = async (id) => {
     try {
-      await axios.delete(`http://192.168.1.29:5001/api/report/delete/${id}`);
+      await axios.delete(
+        `https://tracker-be-omega.vercel.app/api/report/delete/${id}`
+      );
       setTableData((prev) => prev.filter((item) => item._id !== id));
     } catch (error) {
       console.error("Error deleting project:", error);
@@ -113,19 +143,6 @@ const App = () => {
     localStorage.removeItem("username");
     localStorage.removeItem("password");
   };
-
-  useEffect(() => {
-    const loginTime = localStorage.getItem("loginTime");
-    if (loginTime) {
-      const currentTime = Date.now();
-      const twoHours = 2 * 60 * 60 * 1000;
-      if (currentTime - loginTime < twoHours) {
-        setIsLoggedIn(true);
-      } else {
-        localStorage.removeItem("loginTime");
-      }
-    }
-  }, []);
 
   return (
     <Suspense fallback={<Loader />}>

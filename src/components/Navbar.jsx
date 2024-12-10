@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { tags } from "../constant/constant";
 import AudioPlayer from "./AudioPlayer";
+
 const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
-  const [selectedDropdownValue, setSelectedDropdownValue] = useState("client"); // New state for dropdown value
-  const [searchInput, setSearchInput] = useState("");
+  const [searchFields, setSearchFields] = useState({ field: "", value: "" });
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
       prevTags.includes(tag)
@@ -12,14 +12,17 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
     );
   };
 
-  const handleDropdownChange = (e) => {
-    setSelectedDropdownValue(e.target.value); // Update the selected dropdown value
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSearchFields((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleInput = (e) => {
-    setSearchInput(e.target.value); // Capture user input
-    onSearch(e.target.value, selectedDropdownValue); // Pass the selected dropdown value to the search function
+  const handleSearch = () => {
+    if (searchFields.field && searchFields.value) {
+      onSearch(searchFields); // Trigger parent function to fetch filtered data
+    }
   };
+
   return (
     <>
       <section className="w-[25rem] bg-dark shadow-md rounded-md fixed top-[3.6rem] right-5 z-50">
@@ -175,16 +178,18 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
         <section className="flex items-center">
           <div className="input-container montserrat select-none">
             <input
+              value={searchFields.value}
+              onChange={handleChange}
               placeholder="Search by"
               className="input-field"
               type="text"
-              onChange={handleInput}
             />
           </div>
           <select
+            name="field"
+            onChange={handleChange}
+            value={searchFields.field}
             className="border p-2 montserrat rounded outline-none bg-transparent border-none text-light"
-            value={selectedDropdownValue}
-            onChange={handleDropdownChange}
           >
             <option className="bg-dark rounded-t" value="client">
               Client
@@ -196,6 +201,7 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
               PIC
             </option>
           </select>
+          <button onClick={handleSearch}>search</button>
         </section>
       </section>
     </>
@@ -229,6 +235,7 @@ const Navbar = ({
     localStorage.removeItem("password");
     onLogout();
   };
+
   return (
     <>
       {showFilter ? (
@@ -251,7 +258,7 @@ const Navbar = ({
           onClick={() => {
             window.location.reload();
           }}
-          className="hidden md:block cursor-pointer text-light pl-6 text-4xl tracking-wider font-extrabold montserrat"
+          className="hidden md:block cursor-pointer text-light pl-6 md:text-4xl tracking-wider font-extrabold montserrat"
         >
           TASK MANAGER
         </p>
