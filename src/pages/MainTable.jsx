@@ -108,58 +108,68 @@ const MainTable = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
-  const [sortedData, setSortedDataLocal] = useState([]);
+  const [sortedData, setSortedDataLocal] = useState(tableData);
   const [isSorted, setIsSorted] = useState(false);
 
   useEffect(() => {
-    const sorted = tableData.sort((a, b) => {
+    if (!tableData) return;
+
+    const filteredTableData = tableData.filter((item) => {
+      const Month = new Date();
+      Month.setMonth(Month.getMonth() - 1);
+
+      const matchesSearch = item.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+      const isWithinMonth =
+        new Date(item.createdAt) >= Month &&
+        new Date(item.createdAt) <= new Date();
+
+      const isDone = item.status.includes("done");
+
+      const isOngoing =
+        isWithinMonth ||
+        item.status.includes("ongoing") ||
+        (!isDone && !isWithinMonth);
+
+      const matchesTags =
+        selectedTags.length === 0 ||
+        selectedTags.every((tag) => item.status.includes(tag));
+
+      return matchesSearch && matchesTags && (showHidden || isOngoing);
+    });
+
+    const sorted = [...filteredTableData].sort((a, b) => {
       return isSortedDesc
         ? new Date(b.createdAt) - new Date(a.createdAt)
         : new Date(a.createdAt) - new Date(b.createdAt);
     });
+
     setSortedData(sorted);
-  }, [tableData, isSortedDesc]);
+    setSortedDataLocal(sorted);
+  }, [tableData, isSortedDesc, searchQuery, selectedTags, showHidden]);
 
-  const filteredData = tableData.filter((item) => {
-    const Month = new Date();
-    Month.setMonth(Month.getMonth() - 1);
-
-    const matchesSearch = item.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-
-    const isOngoing =
-      (new Date(item.createdAt) >= Month &&
-        new Date(item.createdAt) <= new Date()) ||
-      item.status == "ongoing";
-
-    const matchesTags =
-      selectedTags.length === 0 ||
-      selectedTags.every((tag) => item.status.includes(tag));
-
-    return matchesSearch && matchesTags && (showHidden || isOngoing);
-  });
   const handleDate = () => {
-    if (isSorted) {
-      // Toggle back to the default (unsorted) state
-      setSortedDataLocal([]);
-      setIsSorted(false);
-    } else {
-      // Sort by deadline
-      const sortedData = [...filteredData].sort((a, b) => {
-        const dateA = new Date(a.deadline);
-        const dateB = new Date(b.deadline);
-        return dateB - dateA;
-      });
-      setSortedDataLocal(sortedData);
-      setIsSorted(true);
-    }
+    setIsSorted((prev) => !prev);
+
+    const sortedByDeadline = [...sortedData].sort((a, b) => {
+      const dateA = new Date(a.deadline);
+      const dateB = new Date(b.deadline);
+      return isSorted ? dateA - dateB : dateB - dateA;
+    });
+
+    setSortedDataLocal(sortedByDeadline);
   };
+
+  if (!tableData || !sortedData) {
+    return <Loader />;
+  }
 
   return (
     <main className="flex flex-col h-screen">
       <section className="flex-grow overflow-x-scroll lg:overflow-x-hidden">
-        <table className=" border-collapse mt-10 select-none relative w-full table-fixed">
+        <table className="border-collapse mt-10 select-none relative w-full table-fixed">
           <thead className="montserrat">
             <tr>
               <th className="w-10 sticky top-[2.5rem] md:top-[2.8rem] border-none bg-dark text-light text-md z-10 h-10">
@@ -218,7 +228,7 @@ const MainTable = ({
           </thead>
           <Suspense fallback={<Loader />}>
             <DataTable
-              tableData={sortedData.length ? sortedData : filteredData}
+              tableData={isSorted ? sortedData : sortedData}
               setSelectedRowData={setSelectedRowData}
               setShowModal={setShowModal}
             />

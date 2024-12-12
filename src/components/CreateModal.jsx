@@ -69,14 +69,12 @@ const CreateModal = ({
       <div>
         <main
           className="backdrop fixed z-20 top-0 w-full h-screen backdrop-blur-[2px]"
-          onClick={() => {
-            handleBackdropClick;
-          }}
+          onClick={handleBackdropClick}
         >
           <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <section className="relative rounded-lg bg-dark shadow-lg h-full">
+            <section className="relative overflow-y-scroll lg:overflow-y-hidden rounded-lg bg-dark shadow-lg lg:w-max lg:h-full w-screen h-full">
               <div className="flex justify-between items-center p-2">
-                <p className="montserrat font-bold text-2xl text-white">
+                <p className="hidden lg:block montserrat font-bold text-2xl text-white">
                   {isEditing ? "EDIT TASK" : "CREATE NEW TASK"}
                 </p>
                 <button
@@ -88,10 +86,10 @@ const CreateModal = ({
               </div>
               <form
                 onSubmit={handleSubmit}
-                className="w-full h-full flex flex-col gap-1 p-2 "
+                className="w-full h-full lg:flex flex-col gap-1 p-2 "
               >
-                <div className="w-full flex gap-1 flex-col">
-                  <div className="flex gap-1">
+                <div className="w-full lg:flex gap-1 flex-col">
+                  <div className="flex flex-col lg:flex-row gap-1">
                     <input
                       required
                       placeholder="Title"
@@ -108,6 +106,7 @@ const CreateModal = ({
                       <p className="text-gray-400">Event Date:</p>
                       <input
                         required
+                        className="bg-white"
                         type="date"
                         name="deadline"
                         value={formData.deadline}
@@ -115,7 +114,7 @@ const CreateModal = ({
                       />
                     </label>
                   </div>
-                  <section className="flex gap-1">
+                  <section className="flex flex-col lg:flex-row gap-1">
                     <input
                       required
                       placeholder="Client"
@@ -146,8 +145,8 @@ const CreateModal = ({
                     className="rounded-md p-2 w-full montserrat outline-none"
                   />
                 </div>
-                <div className="flex flex-col gap-1 w-full">
-                  <div className="flex gap-1">
+                <div className="lg:flex flex-col gap-1 w-full">
+                  <div className="lg:flex gap-1">
                     <input
                       required
                       type="text"
@@ -155,7 +154,7 @@ const CreateModal = ({
                       name="crew"
                       value={formData.crew.join(", ")}
                       onChange={inputHandle}
-                      className="rounded-md p-2 h-full montserrat outline-none"
+                      className="rounded-md p-2 h-full w-full montserrat outline-none"
                     />
                     <input
                       placeholder="Document Links"
@@ -163,7 +162,7 @@ const CreateModal = ({
                       name="final_report_file"
                       value={formData.final_report_file}
                       onChange={inputHandle}
-                      className="rounded-md p-2 h-full montserrat outline-none"
+                      className="rounded-md p-2 h-full w-full montserrat outline-none"
                     />
                     <input
                       placeholder="Final File Link"
@@ -171,11 +170,11 @@ const CreateModal = ({
                       name="final_file"
                       value={formData.final_file}
                       onChange={inputHandle}
-                      className="rounded-md p-2 h-full montserrat outline-none"
+                      className="rounded-md p-2 h-full w-full montserrat outline-none"
                     />
                   </div>
                   {/* TAGS */}
-                  <section className="flex gap-1">
+                  <section className="lg:flex gap-1">
                     {/* Progress */}
                     <div className="rounded-md bg-white p-2 w-full">
                       <p className="montserrat text-gray-400 font-medium">

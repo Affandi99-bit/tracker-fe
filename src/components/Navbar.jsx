@@ -175,16 +175,7 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
             </label>
           ))}
         </div>
-        <section className="flex items-center">
-          <div className="input-container montserrat select-none">
-            <input
-              value={searchFields.value}
-              onChange={handleChange}
-              placeholder="Search by"
-              className="input-field"
-              type="text"
-            />
-          </div>
+        <section className="flex items-center justify-center">
           <select
             name="field"
             onChange={handleChange}
@@ -201,7 +192,33 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
               PIC
             </option>
           </select>
-          <button onClick={handleSearch}>search</button>
+          <div className="input-container montserrat select-none">
+            <input
+              value={searchFields.value}
+              onChange={handleChange}
+              placeholder={`Search by ${searchFields.field}`}
+              className="input-field"
+              type="text"
+            />
+          </div>
+
+          <button onClick={handleSearch}>
+            {" "}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="#E8E8E8"
+              className="size-6 cursor-pointer  transition ease-in-out hover:scale-110  duration-300 active:scale-90 "
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+              />
+            </svg>
+          </button>
         </section>
       </section>
     </>
@@ -252,13 +269,22 @@ const Navbar = ({
           }}
           className="flex items-center cursor-pointer"
         >
-          <img src="/black.png" alt="logo" className="w-64" />
+          <img
+            src="/black.png"
+            alt="logo"
+            className="hidden md:block w-64" // Hidden on small screens, visible on medium and larger
+          />
+          <img
+            src="/logo.png"
+            alt="logo"
+            className="block md:hidden w-10" // Visible on small screens, hidden on medium and larger
+          />
         </div>
         <p
           onClick={() => {
             window.location.reload();
           }}
-          className="hidden md:block cursor-pointer text-light pl-6 md:text-4xl tracking-wider font-extrabold montserrat"
+          className="hidden lg:block cursor-pointer text-light pl-6 md:text-4xl tracking-wider font-extrabold montserrat"
         >
           TASK MANAGER
         </p>
@@ -393,7 +419,7 @@ const Navbar = ({
               </svg>
             )}
           </button>
-          {/* Create Button */}
+          {/* Logout Button */}
           <button
             onClick={handleLogout}
             className="transition ease-in-out hover:scale-105 duration-300 active:scale-95"

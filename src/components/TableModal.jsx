@@ -24,23 +24,23 @@ const TableModal = ({
         className="backdrop z-30 h-screen w-full fixed top-0 backdrop-blur-[2px]"
       >
         <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <section className="relative rounded-lg  bg-dark shadow-lg w-[80rem] h-[30rem]">
+          <section className="relative rounded-lg  bg-dark shadow-lg w-screen h-screen lg:w-[80rem] lg:h-[30rem]">
             <button
               onClick={() => setShowModal(false)}
-              className="z-20 absolute right-5 top-5 bg-red-500 text-white montserrat rounded-md py-2 px-3 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+              className="z-20 absolute right-5 top-10 lg:top-5 bg-red-500 text-white montserrat rounded-md py-2 px-3 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
             >
               Close
             </button>
 
             <button
               onClick={() => setShowEditModal(true)}
-              className="z-10 absolute right-5 bottom-5 bg-green-500 text-white montserrat rounded-md py-2 px-3 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+              className="z-10 absolute right-5 bottom-16 lg:bottom-5 bg-green-500 text-white montserrat rounded-md py-2 px-3 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
             >
               Edit
             </button>
 
-            <main className="flex flex-row w-full justify-start items-start">
-              <section className="text-light p-5 h-full w-1/2">
+            <main className="flex flex-col-reverse lg:flex-row w-full justify-start lg:items-start">
+              <section className="text-light p-5 h-full w-full lg:w-1/2">
                 <h1 className="montserrat font-bold text-2xl">{pro.title}</h1>
                 <div className="flex flex-wrap">
                   {pro.status.map((chip, i) => (
@@ -80,12 +80,12 @@ const TableModal = ({
                     ))}
                   </div>
                 </div>
-                <div className="absolute bottom-20 flex gap-3 items-center montserrat font-bold tracking-wider">
+                <div className="absolute bottom-32 lg:bottom-20 flex gap-3 items-center montserrat font-bold tracking-wider">
                   {pro.final_file ? (
                     <a
                       href={pro.final_file}
                       target="_blank"
-                      className="w-56 h-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
+                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
                     >
                       Final File
                     </a>
@@ -94,7 +94,7 @@ const TableModal = ({
                     <a
                       href={pro.final_report_file}
                       target="_blank"
-                      className="w-56 h-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
+                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
                     >
                       Event Report
                     </a>
@@ -125,7 +125,7 @@ const TableModal = ({
                     </>
                   )}
                 </div>
-                <p className="absolute opacity-65 montserrat tracking-wide bottom-2 left-2">
+                <p className="absolute opacity-65 montserrat tracking-wide bottom-16 lg:bottom-2 left-2">
                   Created at{" "}
                   {new Date(pro.createdAt).toLocaleDateString("en-GB")}
                 </p>
