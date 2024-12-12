@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import { io } from "socket.io-client";
 
 const socket = io("https://tracker-be-omega.vercel.app", {
+  transports: ["websocket", "polling"], // Enable fallback
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
@@ -28,9 +29,7 @@ const App = () => {
     socket.on("connect", () => {
       console.log("Connected to socket server:", socket.id);
     });
-    // socket.emit("createData", { test: "data" });
-    // socket.on("dataCreated", (newData) => {
-    socket.on("createData", (newData) => {
+    socket.on("dataCreated", (newData) => {
       console.log("Socket: dataCreated event received", newData);
       setTableData((prev) => [...prev, newData]);
     });
@@ -75,17 +74,17 @@ const App = () => {
     }
   }, []);
 
-  const fetchType = async (searchCriteria) => {
-    const { field, value } = searchCriteria;
-    if (field && value) {
-      const query = new URLSearchParams({ [field]: value }).toString();
-      const response = await fetch(
-        `https://tracker-be-omega.vercel.app/api/report/search?${query}`
-      );
-      const data = await response.json();
-      setProjects(data);
-    }
-  };
+  // const fetchType = async (searchCriteria) => {
+  //   const { field, value } = searchCriteria;
+  //   if (field && value) {
+  //     const query = new URLSearchParams({ [field]: value }).toString();
+  //     const response = await fetch(
+  //       `https://tracker-be-omega.vercel.app/api/report/search?${query}`
+  //     );
+  //     const data = await response.json();
+  //     setProjects(data);
+  //   }
+  // };
 
   const fetchProjects = async () => {
     try {
@@ -105,7 +104,7 @@ const App = () => {
         "https://tracker-be-omega.vercel.app/api/report/create",
         newData
       );
-      console.log("New project added:", response.data);
+
       setTableData((prev) => [...prev, response.data]);
     } catch (error) {
       console.error("Error adding new project:", error);
