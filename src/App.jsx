@@ -3,14 +3,14 @@ import { Loader, Navbar, CreateModal } from "./components";
 import { MainTable } from "./pages";
 import axios from "axios";
 import Login from "./pages/Login";
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 
-const socket = io("https://tracker-be-omega.vercel.app", {
-  transports: ["polling"], // Enable fallback
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
-});
+// const socket = io("https://tracker-be-omega.vercel.app", {
+//   transports: ["polling"], // Enable fallback
+//   reconnection: true,
+//   reconnectionAttempts: 5,
+//   reconnectionDelay: 1000,
+// });
 
 const App = () => {
   const [tableData, setTableData] = useState([]);
@@ -26,39 +26,39 @@ const App = () => {
 
   useEffect(() => {
     // fetchType({ field: "", value: "" });
-    socket.on("connect", () => {
-      console.log("Connected to socket server:", socket.id);
-    });
-    socket.on("dataCreated", (newData) => {
-      console.log("Socket: dataCreated event received", newData);
-      setTableData((prev) => [...prev, newData]);
-    });
+    // socket.on("connect", () => {
+    //   console.log("Connected to socket server:", socket.id);
+    // });
+    // socket.on("dataCreated", (newData) => {
+    //   console.log("Socket: dataCreated event received", newData);
+    //   setTableData((prev) => [...prev, newData]);
+    // });
 
-    socket.on("dataUpdated", (updatedData) => {
-      console.log("Socket: dataUpdated event received", updatedData);
-      setTableData((prev) =>
-        prev.map((item) =>
-          item._id === updatedData._id ? { ...item, ...updatedData } : item
-        )
-      );
-    });
+    // socket.on("dataUpdated", (updatedData) => {
+    //   console.log("Socket: dataUpdated event received", updatedData);
+    //   setTableData((prev) =>
+    //     prev.map((item) =>
+    //       item._id === updatedData._id ? { ...item, ...updatedData } : item
+    //     )
+    //   );
+    // });
 
-    socket.on("dataDeleted", (deletedId) => {
-      console.log("Socket: dataDeleted event received", deletedId);
-      setTableData((prev) => prev.filter((item) => item._id !== deletedId));
-    });
+    // socket.on("dataDeleted", (deletedId) => {
+    //   console.log("Socket: dataDeleted event received", deletedId);
+    //   setTableData((prev) => prev.filter((item) => item._id !== deletedId));
+    // });
 
-    socket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-    });
+    // socket.on("connect_error", (error) => {
+    //   console.error("Socket connection error:", error);
+    // });
 
-    return () => {
-      socket.off("dataCreated");
-      socket.off("dataUpdated");
-      socket.off("dataDeleted");
-      socket.off("connect_error");
-      fetchProjects();
-    };
+    // return () => {
+    //   socket.off("dataCreated");
+    //   socket.off("dataUpdated");
+    //   socket.off("dataDeleted");
+    //   socket.off("connect_error");
+    fetchProjects();
+    // };
   }, []);
 
   useEffect(() => {
