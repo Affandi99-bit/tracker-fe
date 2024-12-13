@@ -286,7 +286,7 @@ const Navbar = ({
           }}
           className="hidden lg:block cursor-pointer text-light pl-6 md:text-4xl tracking-wider font-extrabold montserrat"
         >
-          TASK MANAGER
+          PROJECT MANAGER
         </p>
         <div className="flex items-center gap-5 ">
           {/* Search Input */}

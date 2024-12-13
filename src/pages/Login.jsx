@@ -45,8 +45,8 @@ const Login = ({ onLoginSuccess }) => {
         <div className="flex flex-col p-8">
           <header className="flex items-center gap-3 mb-4">
             <img src="/logo.png" className="size-9" alt="Logo" />
-            <p className="text-4xl text-gray-300 helvetica font-black">
-              Task Manager
+            <p className="text-2xl text-gray-300 montserrat tracking-wide font-black">
+              Project Manager
             </p>
           </header>
           <form className="flex flex-col gap-2" onSubmit={handleLogin}>

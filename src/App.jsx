@@ -160,11 +160,11 @@ const App = () => {
   };
 
   return (
-    <Suspense fallback={<Loader />}>
+    <>
       {!isLoggedIn ? (
         <Login onLoginSuccess={handleLoginSuccess} />
       ) : (
-        <>
+        <Suspense fallback={<Loader />}>
           <button
             onClick={() => setShowCreateModal(!showCreateModal)}
             className="fixed z-30 hover:rotate-90 bottom-3 right-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
@@ -218,9 +218,9 @@ const App = () => {
             showHidden={showHidden}
             onSubmit={handleFormSubmit}
           />
-        </>
+        </Suspense>
       )}
-    </Suspense>
+    </>
   );
 };
 
