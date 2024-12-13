@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { Loader, Navbar, CreateModal } from "./components";
 import { MainTable } from "./pages";
 import axios from "axios";
@@ -14,7 +14,8 @@ const App = () => {
   const [editingData, setEditingData] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  // const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     fetchProjects();
@@ -33,26 +34,17 @@ const App = () => {
     }
   }, []);
 
-  // const fetchType = async (searchCriteria) => {
-  //   const { field, value } = searchCriteria;
-  //   if (field && value) {
-  //     const query = new URLSearchParams({ [field]: value }).toString();
-  //     const response = await fetch(
-  //       `https://tracker-be-omega.vercel.app/api/report/search?${query}`
-  //     );
-  //     const data = await response.json();
-  //     setProjects(data);
-  //   }
-  // };
-
   const fetchProjects = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get(
         `https://tracker-be-omega.vercel.app/api/report/getallprojects`
       );
       setTableData(response.data);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching projects:", error);
+      setIsLoading(false);
       alert("Failed to fetch projects.");
     }
   };
@@ -64,7 +56,9 @@ const App = () => {
         newData
       );
 
+      setIsLoading(true);
       setTableData((prev) => [...prev, response.data]);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error adding new project:", error);
       alert("Failed to add project.");
@@ -77,11 +71,13 @@ const App = () => {
         `https://tracker-be-omega.vercel.app/api/report/update/${updatedData._id}`,
         updatedData
       );
+      setIsLoading(true);
       setTableData((prev) =>
         prev.map((item) =>
           item._id === updatedData._id ? { ...item, ...updatedData } : item
         )
       );
+      setIsLoading(false);
     } catch (error) {
       console.error("Error updating project:", error);
     }
@@ -92,7 +88,9 @@ const App = () => {
       await axios.delete(
         `https://tracker-be-omega.vercel.app/api/report/delete/${id}`
       );
+      setIsLoading(true);
       setTableData((prev) => prev.filter((item) => item._id !== id));
+      setIsLoading(false);
     } catch (error) {
       console.error("Error deleting project:", error);
     }
@@ -123,61 +121,67 @@ const App = () => {
       {!isLoggedIn ? (
         <Login onLoginSuccess={handleLoginSuccess} />
       ) : (
-        <Suspense fallback={<Loader />}>
-          <button
-            onClick={() => setShowCreateModal(!showCreateModal)}
-            className="fixed z-30 hover:rotate-90 bottom-3 right-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="white"
-              className={`size-8 transition-all duration-300 ${
-                showCreateModal ? "rotate-45" : "rotate-180"
-              }`}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
+        <>
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <>
+              <button
+                onClick={() => setShowCreateModal(!showCreateModal)}
+                className="fixed z-30 hover:rotate-90 bottom-3 right-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="white"
+                  className={`size-8 transition-all duration-300 ${
+                    showCreateModal ? "rotate-45" : "rotate-180"
+                  }`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                  />
+                </svg>
+              </button>
+              <Navbar
+                onSearch={(query) => {
+                  setSearchQuery(query);
+                }}
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
+                onSort={handleSortToggle}
+                onArchive={handleArchiveToggle}
+                showHidden={showHidden}
+                onLogout={handleLogout}
               />
-            </svg>
-          </button>
-          <Navbar
-            onSearch={(query) => {
-              setSearchQuery(query);
-            }}
-            selectedTags={selectedTags}
-            setSelectedTags={setSelectedTags}
-            onSort={handleSortToggle}
-            onArchive={handleArchiveToggle}
-            showHidden={showHidden}
-            onLogout={handleLogout}
-          />
-          <MainTable
-            tableData={tableData}
-            searchQuery={searchQuery}
-            selectedTags={selectedTags}
-            isSortedDesc={isSortedDesc}
-            setSortedData={setSortedData}
-            showHidden={showHidden}
-            updateData={updateData}
-            deleteData={deleteData}
-          />
-          <CreateModal
-            showModal={showCreateModal}
-            setShowModal={setShowCreateModal}
-            isEditing={!!editingData}
-            initialData={editingData}
-            addNewData={addNewData}
-            updateData={updateData}
-            deleteData={deleteData}
-            showHidden={showHidden}
-            onSubmit={handleFormSubmit}
-          />
-        </Suspense>
+              <MainTable
+                tableData={tableData}
+                searchQuery={searchQuery}
+                selectedTags={selectedTags}
+                isSortedDesc={isSortedDesc}
+                setSortedData={setSortedData}
+                showHidden={showHidden}
+                updateData={updateData}
+                deleteData={deleteData}
+              />
+              <CreateModal
+                showModal={showCreateModal}
+                setShowModal={setShowCreateModal}
+                isEditing={!!editingData}
+                initialData={editingData}
+                addNewData={addNewData}
+                updateData={updateData}
+                deleteData={deleteData}
+                showHidden={showHidden}
+                onSubmit={handleFormSubmit}
+              />
+            </>
+          )}
+        </>
       )}
     </>
   );
