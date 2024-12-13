@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { tags } from "../constant/constant";
-import AudioPlayer from "./AudioPlayer";
 
 const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
   const [searchFields, setSearchFields] = useState({ field: "", value: "" });
@@ -19,7 +18,7 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
 
   const handleSearch = () => {
     if (searchFields.field && searchFields.value) {
-      onSearch(searchFields); // Trigger parent function to fetch filtered data
+      onSearch(searchFields);
     }
   };
 
@@ -269,16 +268,8 @@ const Navbar = ({
           }}
           className="flex items-center cursor-pointer"
         >
-          <img
-            src="/black.png"
-            alt="logo"
-            className="hidden md:block w-64" // Hidden on small screens, visible on medium and larger
-          />
-          <img
-            src="/logo.png"
-            alt="logo"
-            className="block md:hidden w-10" // Visible on small screens, hidden on medium and larger
-          />
+          <img src="/black.png" alt="logo" className="hidden md:block w-64" />
+          <img src="/logo.png" alt="logo" className="block md:hidden w-10" />
         </div>
         <p
           onClick={() => {
@@ -315,8 +306,7 @@ const Navbar = ({
               />
             </svg>
           </div>
-          {/* Audio */}
-          {/* <AudioPlayer /> */}
+
           {/* Filter Button */}
           <button
             onClick={() => {
