@@ -1,6 +1,6 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { TableModal, Loader } from "../components";
-import { findTagColor } from "../utils/utils";
+import { findTagColor, findPaymentColor } from "../utils/utils";
 const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
   const handleRowClick = (rowData) => {
     setSelectedRowData(rowData);
@@ -26,8 +26,8 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
           <td className="w-20">{row.client}</td>
           <td className="w-20">{row.pic}</td>
           <td className="w-32">{row.deadline}</td>
-          <td className="w-48">
-            <div className="flex flex-wrap gap-1 justify-start items-center">
+          <td className="w-32">
+            <div className="flex flex-wrap gap-1 justify-center items-center">
               {row.status.map((chip, i) => (
                 <p
                   key={i}
@@ -43,7 +43,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
               ))}
             </div>
           </td>
-          <td className="w-48">
+          <td className="w-32">
             <div className="flex gap-3 my-1 flex-wrap items-center justify-center">
               {row.crew.map((member, i) => (
                 <p key={i}>{member}</p>
@@ -76,6 +76,23 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
           <td className=" w-48 overflow-hidden whitespace-nowrap text-ellipsis">
             {row.note}
           </td>
+          <td className=" w-48 overflow-hidden whitespace-nowrap text-ellipsis">
+            <div className="flex flex-wrap gap-1 justify-center items-center">
+              {row.payment.map((chip, i) => (
+                <p
+                  key={i}
+                  style={{
+                    backgroundColor: findPaymentColor(chip),
+                  }}
+                  className="rounded-md w-[3.6rem] py-[0.15rem]"
+                >
+                  <span className="text-white text-xs font-extralight">
+                    {chip}
+                  </span>
+                </p>
+              ))}
+            </div>
+          </td>
         </tr>
       ))}
     </tbody>
@@ -104,9 +121,11 @@ const MainTable = ({
       const Month = new Date();
       Month.setMonth(Month.getMonth() - 1);
 
-      const matchesSearch = item.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.pic.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.pm.toLowerCase().includes(searchQuery.toLowerCase());
 
       const isWithinMonth =
         new Date(item.createdAt) >= Month &&
@@ -192,10 +211,10 @@ const MainTable = ({
                   </svg>
                 </div>
               </th>
-              <th className="w-48 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 TAGS
               </th>
-              <th className="w-48 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 CREW
               </th>
               <th className="w-20 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
@@ -209,6 +228,9 @@ const MainTable = ({
               </th>
               <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
                 NOTE
+              </th>
+              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+                PAYMENT
               </th>
             </tr>
           </thead>

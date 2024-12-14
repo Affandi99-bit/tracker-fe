@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { tags } from "../constant/constant";
+import { payment } from "../constant/constant";
 const CreateModal = ({
   showModal,
   setShowModal,
@@ -21,6 +22,7 @@ const CreateModal = ({
     final_file: "",
     final_report_file: "",
     note: "",
+    payment: "",
   };
   const [formData, setFormData] = useState(isEditing ? initialData : fromDatas);
 
@@ -47,6 +49,7 @@ const CreateModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Form Data Submitted:", formData);
     if (isEditing) {
       await updateData(formData);
       setTableModal(false);
@@ -408,7 +411,7 @@ const CreateModal = ({
                   </section>
                 </div>
                 {/* Notes */}
-                <div className="flex justify-between my-1 lg:my-0">
+                <div className="flex items-center justify-end gap-1 my-1 lg:my-0">
                   <textarea
                     placeholder="Notes"
                     name="note"
@@ -416,6 +419,62 @@ const CreateModal = ({
                     onChange={inputHandle}
                     className="rounded-md p-2 w-full h-32 montserrat outline-none"
                   />
+                  <div className="rounded-md bg-white h-32 p-2 w-1/3 ">
+                    <p className="montserrat text-gray-400 font-medium">
+                      Payment
+                    </p>
+                    {payment.map((option) => (
+                      <label
+                        htmlFor={`hr-${option.value}`}
+                        key={option.value}
+                        className={`flex flex-row items-center gap-2 montserrat cursor-pointer text-gray-400`}
+                      >
+                        <input
+                          id={`hr-${option.value}`}
+                          type="checkbox"
+                          name="payment"
+                          value={option.value}
+                          checked={formData.payment.includes(option.value)}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            const { value } = e.target;
+                            let updatedPayment = [...formData.payment];
+                            if (isChecked) {
+                              updatedPayment = [...formData.payment, value];
+                            } else {
+                              updatedPayment = formData.payment.filter(
+                                (payment) => payment !== value
+                              );
+                            }
+                            setFormData((prevState) => ({
+                              ...prevState,
+                              payment: updatedPayment,
+                            }));
+                          }}
+                          className="peer hidden"
+                        />
+                        <div
+                          htmlFor={`hr-${option.value}`}
+                          className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
+                        >
+                          <svg
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            className="size-5 stroke-dark"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M4 12.6111L8.92308 17.5L20 6.5"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            ></path>
+                          </svg>
+                        </div>
+                        {option.title}
+                      </label>
+                    ))}
+                  </div>
                 </div>
                 {/* Buttons */}
                 <div className="flex gap-1">

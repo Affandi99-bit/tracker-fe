@@ -94,6 +94,23 @@ export const tags = {
     },
   ],
 };
+export const payment = [
+  {
+    title: "Lunas",
+    value: "lunas",
+    color: "#007bff",
+  },
+  {
+    title: "Nganu",
+    value: "nganu",
+    color: "#007bff",
+  },
+  {
+    title: "Anu",
+    value: "Anu",
+    color: "#007bff",
+  },
+];
 export const user = [
   {
     user: "blackfamz",

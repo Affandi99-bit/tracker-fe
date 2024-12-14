@@ -2,7 +2,6 @@ import { useState } from "react";
 import { tags } from "../constant/constant";
 
 const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
-  const [searchFields, setSearchFields] = useState({ field: "", value: "" });
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
       prevTags.includes(tag)
@@ -10,18 +9,6 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
         : [...prevTags, tag]
     );
   };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setSearchFields((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSearch = () => {
-    if (searchFields.field && searchFields.value) {
-      onSearch(searchFields);
-    }
-  };
-
   return (
     <>
       <section className="w-[25rem] bg-dark shadow-md rounded-md fixed top-[3.6rem] right-5 z-50">
@@ -174,51 +161,6 @@ const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
             </label>
           ))}
         </div>
-        <section className="flex items-center justify-center">
-          <select
-            name="field"
-            onChange={handleChange}
-            value={searchFields.field}
-            className="border p-2 montserrat rounded outline-none bg-transparent border-none text-light"
-          >
-            <option className="bg-dark rounded-t" value="client">
-              Client
-            </option>
-            <option className="bg-dark" value="pm">
-              PM
-            </option>
-            <option className="bg-dark" value="pic">
-              PIC
-            </option>
-          </select>
-          <div className="input-container montserrat select-none">
-            <input
-              value={searchFields.value}
-              onChange={handleChange}
-              placeholder={`Search by ${searchFields.field}`}
-              className="input-field"
-              type="text"
-            />
-          </div>
-
-          <button onClick={handleSearch}>
-            {" "}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="#E8E8E8"
-              className="size-6 cursor-pointer  transition ease-in-out hover:scale-110  duration-300 active:scale-90 "
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-              />
-            </svg>
-          </button>
-        </section>
       </section>
     </>
   );
@@ -287,7 +229,7 @@ const Navbar = ({
                 type="text"
                 onChange={handleInput}
                 className="absolute -left-40 bg-light text-dark rounded-md px-2 py-1 w-40 outline-none scale-95 animate-slide-in duration-500 ease-in-out"
-                placeholder="Search by Title..."
+                placeholder="Search..."
               />
             ) : null}
             <svg
