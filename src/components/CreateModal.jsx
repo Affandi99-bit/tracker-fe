@@ -70,11 +70,60 @@ const CreateModal = ({
   return (
     showModal && (
       <div>
+        {isEditing ? (
+          <div className="fixed z-30 right-40 top-20">
+            <section className="w-96 relative rounded-lg border-light bg-dark">
+              <p className="montserrat p-1 font-bold tracking-wide text-light">
+                Edit Bonuses (Masih Maintenance)
+              </p>
+              <form className="w-full h-full lg:flex flex-col gap-1 p-2 ">
+                <div className="w-full lg:flex gap-1 flex-col">
+                  <div className="flex flex-col gap-1">
+                    {formData.crew.map((item) => {
+                      return (
+                        <div key={Math.random()} className="flex gap-1">
+                          <input
+                            placeholder="Name"
+                            readOnly
+                            type="text"
+                            value={item}
+                            className="rounded-md p-2 w-full montserrat outline-none"
+                          />
+                          <select
+                            placeholder="Bonus"
+                            className="rounded-md p-2 w-full montserrat outline-none"
+                          >
+                            <option value="">Select Bonus</option>
+                            {payment.map((tag) => (
+                              <option key={tag} value={tag.value}>
+                                {tag.title}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="bg-green-500 text-white montserrat rounded-md py-2 w-full font-semibold tracking-wide"
+                >
+                  Save
+                </button>
+              </form>
+            </section>
+          </div>
+        ) : null}
         <main
           className="backdrop fixed overflow-y-scroll z-20 top-0 w-full h-screen backdrop-blur-[2px]"
           onClick={handleBackdropClick}
         >
-          <div className="absolute top-[80%] sm:top-[40%] lg:top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div
+            className={`absolute top-[80%] sm:top-[40%] lg:top-[55%] ${
+              isEditing ? "left-1/3" : "left-1/2"
+            } -translate-x-1/2 -translate-y-1/2`}
+          >
             <section className="relative rounded-lg bg-dark shadow-lg lg:w-max lg:h-full w-screen h-full">
               <div className="flex justify-between items-center p-2">
                 <p className="hidden lg:block montserrat font-bold text-2xl text-white">
@@ -421,7 +470,7 @@ const CreateModal = ({
                   />
                   <div className="rounded-md bg-white h-32 p-2 w-1/3 ">
                     <p className="montserrat text-gray-400 font-medium">
-                      Payment
+                      Payment Client
                     </p>
                     {payment.map((option) => (
                       <label

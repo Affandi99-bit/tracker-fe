@@ -18,14 +18,9 @@ export const tags = {
   ],
   projectType: [
     {
-      title: "Event",
-      value: "event",
-      color: "#124549",
-    },
-    {
-      title: "Produksi",
-      value: "produksi",
-      color: "#16324f",
+      title: "Paid",
+      value: "paid",
+      color: "#114a4a",
     },
     {
       title: "Karya",
@@ -61,7 +56,16 @@ export const tags = {
       value: "internal",
       color: "#18435a",
     },
-
+    {
+      title: "Event",
+      value: "event",
+      color: "#124549",
+    },
+    {
+      title: "Produksi",
+      value: "produksi",
+      color: "#16324f",
+    },
     {
       title: "Sem Pro",
       value: "sem pro",
@@ -101,13 +105,8 @@ export const payment = [
     color: "#007bff",
   },
   {
-    title: "Nganu",
-    value: "nganu",
-    color: "#007bff",
-  },
-  {
-    title: "Anu",
-    value: "Anu",
+    title: "Pending",
+    value: "pending",
     color: "#007bff",
   },
 ];

@@ -73,11 +73,11 @@ const TableModal = ({
                   </h1>
                   <p className="montserrat font-bold">Crew :</p>
                   <div className="flex flex-col flex-wrap h-40">
-                    {pro.crew.map((member, i) => (
-                      <p key={i} className="pl-10">
-                        {member}
-                      </p>
-                    ))}
+                    {pro.crew ? (
+                      pro.crew.map((member, i) => <p key={i}>{member.name}</p>)
+                    ) : (
+                      <p>No crew assigned</p>
+                    )}
                   </div>
                 </div>
                 <div className="absolute bottom-32 lg:bottom-20 flex gap-3 items-center montserrat font-bold tracking-wider">

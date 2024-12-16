@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { tags } from "../constant/constant";
+import { tags, payment } from "../constant/constant";
 
-const Dropdown = ({ selectedTags, setSelectedTags, onSearch }) => {
+const Dropdown = ({ selectedTags, setSelectedTags }) => {
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
       prevTags.includes(tag)
