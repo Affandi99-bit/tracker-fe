@@ -34,7 +34,9 @@ const CreateModal = ({
   const inputHandle = (e) => {
     const { name, value, checked } = e.target;
     if (name === "crew") {
-      const crewArray = value.split(",").map((member) => member.trim());
+      const crewArray = value
+        .split(",")
+        .map((member) => ({ name: member.trim() }));
       setFormData({ ...formData, [name]: crewArray });
     } else if (name === "status") {
       if (checked) {
@@ -79,7 +81,7 @@ const CreateModal = ({
               <form className="w-full h-full lg:flex flex-col gap-1 p-2 ">
                 <div className="w-full lg:flex gap-1 flex-col">
                   <div className="flex flex-col gap-1">
-                    {formData.crew.map((item) => {
+                    {formData.crew.map((item, index) => {
                       return (
                         <div key={Math.random()} className="flex gap-1">
                           <input
@@ -91,11 +93,17 @@ const CreateModal = ({
                           />
                           <select
                             placeholder="Bonus"
+                            value={item.payment}
+                            onChange={(e) => {
+                              const updatedCrew = [...formData.crew];
+                              updatedCrew[index].payment = e.target.value;
+                              setFormData({ ...formData, crew: updatedCrew });
+                            }}
                             className="rounded-md p-2 w-full montserrat outline-none"
                           >
                             <option value="">Select Bonus</option>
                             {payment.map((tag) => (
-                              <option key={tag} value={tag.value}>
+                              <option key={tag.value} value={tag.value}>
                                 {tag.title}
                               </option>
                             ))}
@@ -105,12 +113,12 @@ const CreateModal = ({
                     })}
                   </div>
                 </div>
-                <button
+                {/* <button
                   type="submit"
                   className="bg-green-500 text-white montserrat rounded-md py-2 w-full font-semibold tracking-wide"
                 >
                   Save
-                </button>
+                </button> */}
               </form>
             </section>
           </div>
@@ -204,7 +212,9 @@ const CreateModal = ({
                       type="text"
                       placeholder="Crew(comma-separated)"
                       name="crew"
-                      value={formData.crew.join(", ")}
+                      value={formData.crew
+                        .map((member) => member.name)
+                        .join(",")}
                       onChange={inputHandle}
                       className="rounded-md p-2 h-full w-full montserrat outline-none mb-1 lg:mb-0"
                     />
