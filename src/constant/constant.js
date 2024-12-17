@@ -18,7 +18,7 @@ export const tags = {
   ],
   projectType: [
     {
-      title: "Paid",
+      title: "Paid Pro.",
       value: "paid",
       color: "#114a4a",
     },
@@ -102,12 +102,12 @@ export const payment = [
   {
     title: "Lunas",
     value: "lunas",
-    color: "#007bff",
+    color: "#355F2E",
   },
   {
     title: "Pending",
     value: "pending",
-    color: "#007bff",
+    color: "#8D0B41",
   },
 ];
 export const user = [

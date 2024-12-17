@@ -16,7 +16,7 @@ const CreateModal = ({
     pm: "",
     deadline: "",
     status: [],
-    crew: [],
+    crew: [{ name: "", payment: "" }],
     client: "",
     pic: "",
     final_file: "",
@@ -86,7 +86,7 @@ const CreateModal = ({
                             placeholder="Name"
                             readOnly
                             type="text"
-                            value={item}
+                            value={item.name}
                             className="rounded-md p-2 w-full montserrat outline-none"
                           />
                           <select

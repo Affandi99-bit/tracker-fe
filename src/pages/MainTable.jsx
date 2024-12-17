@@ -46,7 +46,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
           <td className="w-32">
             <div className="flex gap-3 my-1 flex-wrap items-center justify-center">
               {row.crew.map((member, i) => (
-                <p key={i}>{member}</p>
+                <p key={i}>{member.name}</p>
               ))}
             </div>
           </td>
