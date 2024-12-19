@@ -26,6 +26,7 @@ const CreateModal = ({
     payment: "",
   };
   const [formData, setFormData] = useState(isEditing ? initialData : fromDatas);
+  const [newCrewMember, setNewCrewMember] = useState("");
 
   const handleBackdropClick = (e) => {
     if (e.target.classList.contains("backdrop")) {
@@ -46,6 +47,17 @@ const CreateModal = ({
       setFormData({ ...formData, status: updatedStatus });
     } else {
       setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleNewCrewChange = (e) => {
+    setNewCrewMember(e.target.value);
+  };
+  const addNewCrewMember = () => {
+    if (newCrewMember.trim()) {
+      const updatedCrew = [...formData.crew, { name: newCrewMember.trim() }];
+      setFormData({ ...formData, crew: updatedCrew });
+      setNewCrewMember("");
     }
   };
 
@@ -337,9 +349,27 @@ const CreateModal = ({
                         ))}
                         <input
                           type="text"
+                          value={newCrewMember}
+                          onChange={handleNewCrewChange}
                           placeholder="Other.."
                           className="bg-white border-b border-gray-400 sf outline-none"
                         />
+                        <button onClick={addNewCrewMember}>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="#9CA3AF"
+                            className="size-8"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 4.5v15m7.5-7.5h-15"
+                            />
+                          </svg>
+                        </button>
                       </div>
                     </div>
 
