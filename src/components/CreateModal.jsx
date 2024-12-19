@@ -130,7 +130,7 @@ const CreateModal = ({
           <div
             className={`absolute bottom-0 left-1/2 transform -translate-x-1/2`}
           >
-            <section className="relative rounded-lg bg-dark shadow-lg w-full lg:h-full h-full">
+            <section className="relative rounded-lg bg-dark shadow-lg w-screen md:w-full h-full">
               <div className="flex justify-between items-center p-2">
                 <p className="hidden lg:block sf tracking-widest font-bold text-2xl text-white">
                   {isEditing ? "EDIT TASK" : "CREATE NEW TASK"}
@@ -217,7 +217,7 @@ const CreateModal = ({
                       </select>
                       {/* Type */}
                       <div className="rounded-md bg-white p-2 flex gap-1 w-1/2">
-                        <p className="sf tracking-widest text-gray-400 font-medium">
+                        <p className="sf hidden md:block tracking-widest text-gray-400 font-medium">
                           Type :
                         </p>
                         {tags.projectType.map((option) => (
@@ -302,9 +302,9 @@ const CreateModal = ({
                         Crew
                       </p>
                       <div className="flex flex-wrap">
-                        {crew.map((option) => (
+                        {crew.map((option, index) => (
                           <label
-                            key={option.value}
+                            key={index}
                             className={`flex flex-row items-center w-1/2 gap-2 sf tracking-widest cursor-pointer text-gray-400`}
                           >
                             <input
@@ -343,7 +343,7 @@ const CreateModal = ({
                       </div>
                     </div>
 
-                    <main className="flex flex-col gap-1">
+                    <main className="flex flex-row lg:flex-col gap-1 w-full">
                       {/* Progress */}
                       <div className="rounded-md bg-white p-2 w-full ">
                         <p className="sf tracking-widest text-gray-400 font-medium">
@@ -402,7 +402,7 @@ const CreateModal = ({
                         ))}
                       </div>
                       {/* Add-ons */}
-                      <div className="rounded-md bg-white p-2 ">
+                      <div className="rounded-md bg-white p-2 w-full">
                         <p className="sf tracking-widest text-gray-400 font-medium">
                           Add-on
                         </p>
@@ -460,7 +460,7 @@ const CreateModal = ({
                       </div>
                     </main>
                     {/* Categories */}
-                    <div className="rounded-md bg-white p-2">
+                    <div className="rounded-md bg-white p-2 w-full">
                       <p className="sf tracking-widest text-gray-400 font-medium">
                         Project Categories
                       </p>
@@ -593,14 +593,14 @@ const CreateModal = ({
                     <button
                       type="button"
                       onClick={handleDelete}
-                      className="bg-red-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold tracking-wide"
+                      className="bg-red-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold"
                     >
                       Delete
                     </button>
                   )}
                   <button
                     type="submit"
-                    className="bg-green-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold tracking-wide"
+                    className="bg-green-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold"
                   >
                     {isEditing ? "Update" : "Add"}
                   </button>

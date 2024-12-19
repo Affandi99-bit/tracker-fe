@@ -128,7 +128,7 @@ const App = () => {
             <div className="bg-dark">
               <button
                 onClick={() => setShowCreateModal(!showCreateModal)}
-                className="fixed z-30 hover:rotate-90 bottom-3 right-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
+                className="fixed z-30 hover:rotate-90 bottom-0 md:bottom-3 left-3 md:right-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

@@ -69,7 +69,7 @@ export const tags = {
 
   projectType: [
     {
-      title: "Paid Project",
+      title: "Paid",
       value: "paid",
       color: "#114a4a",
     },

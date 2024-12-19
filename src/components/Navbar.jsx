@@ -11,7 +11,7 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
   };
   return (
     <>
-      <section className="w-[25rem] bg-dark rounded-md fixed bottom-12 left-1/2 transform -translate-x-1/2 z-20">
+      <section className="w-[25rem] bg-dark rounded-md fixed bottom-14 left-1/2 transform -translate-x-1/2 z-20">
         <h1 className="text-2xl text-center text-light sf tracking-widest font-bold p-2">
           Filters
         </h1>
@@ -204,27 +204,19 @@ const Navbar = ({
         />
       ) : null}
       <section className="fixed select-none top-0 flex justify-center items-center bg-dark py-2 px-5 w-full overflow-hidden">
-        <div
-          onClick={() => {
-            window.location.reload();
-          }}
-          className="flex items-center cursor-pointer"
-        >
-          <img src="/logo.png" alt="logo" className="block md:hidden w-6 " />
-        </div>
         <div className="flex flex-col items-center justify-center">
-          <img src="/black.png" alt="logo" className="hidden md:block w-40" />
+          <img src="/black.png" alt="logo" className=" w-40" />
           <img
             src="/PM.png"
             alt="PM"
             onClick={() => {
               window.location.reload();
             }}
-            className="hidden w-56 mt-3 object-contain lg:block cursor-pointer"
+            className=" w-56 mt-3 object-contain cursor-pointer"
           />
         </div>
       </section>
-      <nav className="fixed z-20 px-5 rounded-t-xl bg-dark bottom-0 left-1/2 transform -translate-x-1/2 flex items-center gap-5 h-10">
+      <nav className="fixed z-20 px-5 rounded-t-xl bg-dark bottom-0 left-1/2 transform -translate-x-1/2 flex items-center gap-7 h-12">
         {/* Filter Button */}
         <button
           onClick={() => {
@@ -290,7 +282,7 @@ const Navbar = ({
             <input
               type="text"
               onChange={handleInput}
-              className="absolute border border-dark left-1/2 transform -translate-x-1/2 -top-10 bg-light text-dark rounded-t-md px-2 py-1 w-40 outline-none scale-95"
+              className="absolute border border-dark left-1/2 transform -translate-x-1/2 -top-12 bg-light text-dark rounded px-2 py-1 w-40 outline-none scale-95"
               placeholder="Search..."
             />
           ) : null}
