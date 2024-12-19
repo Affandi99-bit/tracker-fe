@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { tags } from "../constant/constant";
 import { payment } from "../constant/constant";
+import { crew } from "../constant/constant";
 const CreateModal = ({
   showModal,
   setShowModal,
@@ -16,7 +17,7 @@ const CreateModal = ({
     pm: "",
     deadline: "",
     status: [],
-    crew: [{ name: "", payment: "" }],
+    crew: [],
     client: "",
     pic: "",
     final_file: "",
@@ -32,18 +33,17 @@ const CreateModal = ({
     }
   };
   const inputHandle = (e) => {
-    const { name, value, checked } = e.target;
-    if (name === "crew") {
-      const crewArray = value
-        .split(",")
-        .map((member) => ({ name: member.trim() }));
-      setFormData({ ...formData, [name]: crewArray });
-    } else if (name === "status") {
-      if (checked) {
-        setFormData({ ...formData, [name]: value });
-      } else {
-        setFormData({ ...formData, [name]: value });
-      }
+    const { name, value, checked, type } = e.target;
+    if (name === "crew" && type === "checkbox") {
+      const updatedCrew = checked
+        ? [...formData.crew, { name: value }]
+        : formData.crew.filter((member) => member.name !== value);
+      setFormData({ ...formData, crew: updatedCrew });
+    } else if (name === "status" && type === "checkbox") {
+      const updatedStatus = checked
+        ? [...formData.status, value]
+        : formData.status.filter((status) => status !== value);
+      setFormData({ ...formData, status: updatedStatus });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -72,11 +72,11 @@ const CreateModal = ({
   return (
     showModal && (
       <div>
-        {isEditing ? (
+        {/* {isEditing ? (
           <div className="fixed z-30 right-40 top-20">
             <section className="w-96 relative rounded-lg border-light bg-dark">
-              <p className="montserrat p-1 font-bold tracking-wide text-light">
-                Edit Bonuses (Masih Maintenance)
+              <p className="sf tracking-widest p-1 font-bold text-light">
+                Edit Bonuses
               </p>
               <form className="w-full h-full lg:flex flex-col gap-1 p-2 ">
                 <div className="w-full lg:flex gap-1 flex-col">
@@ -89,7 +89,7 @@ const CreateModal = ({
                             readOnly
                             type="text"
                             value={item.name}
-                            className="rounded-md p-2 w-full montserrat outline-none"
+                            className="rounded-md p-2 w-full sf tracking-widest outline-none"
                           />
                           <select
                             placeholder="Bonus"
@@ -99,7 +99,7 @@ const CreateModal = ({
                               updatedCrew[index].payment = e.target.value;
                               setFormData({ ...formData, crew: updatedCrew });
                             }}
-                            className="rounded-md p-2 w-full montserrat outline-none"
+                            className="rounded-md p-2 w-full sf tracking-widest outline-none"
                           >
                             <option value="">Select Bonus</option>
                             {payment.map((tag) => (
@@ -115,31 +115,29 @@ const CreateModal = ({
                 </div>
                 {/* <button
                   type="submit"
-                  className="bg-green-500 text-white montserrat rounded-md py-2 w-full font-semibold tracking-wide"
+                  className="bg-green-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold tracking-wide"
                 >
                   Save
-                </button> */}
-              </form>
+                </button> 
+              {/* </form>
             </section>
           </div>
-        ) : null}
+        ) : null} */}
         <main
           className="backdrop fixed overflow-y-scroll z-20 top-0 w-full h-screen backdrop-blur-[2px]"
           onClick={handleBackdropClick}
         >
           <div
-            className={`absolute top-[80%] sm:top-[40%] lg:top-[55%] ${
-              isEditing ? "left-1/3" : "left-1/2"
-            } -translate-x-1/2 -translate-y-1/2`}
+            className={`absolute bottom-0 left-1/2 transform -translate-x-1/2`}
           >
-            <section className="relative rounded-lg bg-dark shadow-lg lg:w-max lg:h-full w-screen h-full">
+            <section className="relative rounded-lg bg-dark shadow-lg w-full lg:h-full h-full">
               <div className="flex justify-between items-center p-2">
-                <p className="hidden lg:block montserrat font-bold text-2xl text-white">
+                <p className="hidden lg:block sf tracking-widest font-bold text-2xl text-white">
                   {isEditing ? "EDIT TASK" : "CREATE NEW TASK"}
                 </p>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="z-10 bg-red-500 text-white montserrat rounded-md p-2 w-20 font-semibold tracking-wide transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+                  className="z-10 bg-red-500 text-white sf tracking-widest rounded-md p-2 w-20 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
                 >
                   Close
                 </button>
@@ -148,269 +146,322 @@ const CreateModal = ({
                 onSubmit={handleSubmit}
                 className="w-full h-full lg:flex flex-col gap-1 p-2 "
               >
-                <div className="w-full lg:flex gap-1 flex-col">
-                  <div className="flex flex-col lg:flex-row gap-1 mb-1 lg:mb-0">
-                    <input
-                      required
-                      placeholder="Title"
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={inputHandle}
-                      className="rounded-md p-2 w-full montserrat outline-none"
-                    />
-                    <label
-                      htmlFor="deadline"
-                      className="rounded-md p-2 w-full bg-white montserrat outline-none flex justify-between items-center"
-                    >
-                      <p className="text-gray-400">Event Date:</p>
+                <section className="flex gap-1  ">
+                  <div className="w-full lg:flex gap-1 flex-col">
+                    <div className="flex flex-col lg:flex-row gap-1 mb-1 lg:mb-0">
                       <input
                         required
-                        className="bg-white"
-                        type="date"
-                        name="deadline"
-                        value={formData.deadline}
+                        placeholder="Title"
+                        type="text"
+                        name="title"
+                        value={formData.title}
                         onChange={inputHandle}
+                        className="rounded-md p-2 w-full sf tracking-widest outline-none"
                       />
-                    </label>
-                  </div>
-                  <section className="flex flex-row gap-1">
-                    <input
-                      required
-                      placeholder="Client"
-                      type="text"
-                      name="client"
-                      value={formData.client}
-                      onChange={inputHandle}
-                      className="rounded-md p-2 w-full montserrat outline-none mb-1 lg:mb-0"
-                    />
+                      <label
+                        htmlFor="deadline"
+                        className="rounded-md p-2 w-full bg-white sf tracking-widest outline-none flex justify-between items-center"
+                      >
+                        <p className="text-gray-400">Event Date:</p>
+                        <input
+                          required
+                          className="bg-white"
+                          type="date"
+                          name="deadline"
+                          value={formData.deadline}
+                          onChange={inputHandle}
+                        />
+                      </label>
+                    </div>
+                    <section className="flex flex-row gap-1">
+                      <input
+                        required
+                        placeholder="Client"
+                        type="text"
+                        name="client"
+                        value={formData.client}
+                        onChange={inputHandle}
+                        className="rounded-md p-2 w-full sf tracking-widest outline-none mb-1 lg:mb-0"
+                      />
 
-                    <input
-                      required
-                      placeholder="Client PIC"
-                      type="string"
-                      name="pic"
-                      value={formData.pic}
-                      onChange={inputHandle}
-                      className="rounded-md p-2 w-full montserrat outline-none mb-1 lg:mb-0"
-                    />
-                  </section>
-                  <input
-                    required
-                    placeholder="Project Manager"
-                    type="text"
-                    name="pm"
-                    value={formData.pm}
-                    onChange={inputHandle}
-                    className="rounded-md p-2 w-full montserrat outline-none mb-1 lg:mb-0"
-                  />
-                </div>
-                <div className="lg:flex flex-col gap-1 w-full">
-                  <div className="flex gap-1">
-                    <input
-                      required
-                      type="text"
-                      placeholder="Crew(comma-separated)"
-                      name="crew"
-                      value={formData.crew
-                        .map((member) => member.name)
-                        .join(",")}
-                      onChange={inputHandle}
-                      className="rounded-md p-2 h-full w-full montserrat outline-none mb-1 lg:mb-0"
-                    />
-                    <input
-                      placeholder="Document Links"
-                      type="text"
-                      name="final_report_file"
-                      value={formData.final_report_file}
-                      onChange={inputHandle}
-                      className="rounded-md p-2 h-full w-full montserrat outline-none mb-1 lg:mb-0"
-                    />
-                    <input
-                      placeholder="Final File Link"
-                      type="text"
-                      name="final_file"
-                      value={formData.final_file}
-                      onChange={inputHandle}
-                      className="rounded-md p-2 h-full w-full montserrat outline-none mb-1 lg:mb-0"
-                    />
+                      <input
+                        required
+                        placeholder="Client PIC"
+                        type="string"
+                        name="pic"
+                        value={formData.pic}
+                        onChange={inputHandle}
+                        className="rounded-md p-2 w-full sf tracking-widest outline-none mb-1 lg:mb-0"
+                      />
+                    </section>
+                    <div className="flex gap-1">
+                      <select
+                        required
+                        name="pm"
+                        value={formData.pm}
+                        onChange={inputHandle}
+                        className="rounded-md p-2 w-1/2 sf tracking-widest outline-none mb-1 lg:mb-0 "
+                      >
+                        <option className="" value="">
+                          Select Project Manager
+                        </option>
+                        {crew.map((option) => (
+                          <option
+                            className="bg-dark text-gray-400"
+                            key={option.index}
+                            value={option.value}
+                          >
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                      {/* Type */}
+                      <div className="rounded-md bg-white p-2 flex gap-1 w-1/2">
+                        <p className="sf tracking-widest text-gray-400 font-medium">
+                          Type :
+                        </p>
+                        {tags.projectType.map((option) => (
+                          <label
+                            htmlFor={`hr-${option.value}`}
+                            key={option.value}
+                            className={`flex flex-row w-32 items-center gap-2 sf tracking-widest cursor-pointer text-gray-400`}
+                          >
+                            <input
+                              id={`hr-${option.value}`}
+                              type="checkbox"
+                              name="type"
+                              value={option.value}
+                              checked={formData.status.includes(option.value)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                const { value } = e.target;
+                                let updatedStatus = [...formData.status];
+                                if (isChecked) {
+                                  updatedStatus = [...formData.status, value];
+                                } else {
+                                  updatedStatus = formData.status.filter(
+                                    (status) => status !== value
+                                  );
+                                }
+                                setFormData((prevState) => ({
+                                  ...prevState,
+                                  status: updatedStatus,
+                                }));
+                              }}
+                              className="peer hidden"
+                            />
+                            <div
+                              htmlFor={`hr-${option.value}`}
+                              className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
+                            >
+                              <svg
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                className="size-5 stroke-dark"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M4 12.6111L8.92308 17.5L20 6.5"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                ></path>
+                              </svg>
+                            </div>
+                            {option.title}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-1">
+                      <input
+                        placeholder="Document Links"
+                        type="text"
+                        name="final_report_file"
+                        value={formData.final_report_file}
+                        onChange={inputHandle}
+                        className="rounded-md p-2 h-full w-full sf tracking-widest outline-none mb-1 lg:mb-0"
+                      />
+                      <input
+                        placeholder="Final File Link"
+                        type="text"
+                        name="final_file"
+                        value={formData.final_file}
+                        onChange={inputHandle}
+                        className="rounded-md p-2 h-full w-full sf tracking-widest outline-none mb-1 lg:mb-0"
+                      />
+                    </div>
                   </div>
-                  {/* TAGS */}
+                </section>
+                <div className="lg:flex flex-col gap-1 w-full">
                   <section className="flex-wrap lg:flex-nowrap flex gap-1">
-                    {/* Progress */}
-                    <div className="rounded-md bg-white p-2 w-1/3 lg:w-full ">
-                      <p className="montserrat text-gray-400 font-medium">
-                        Progress
+                    {/* Crew */}
+                    <div className="rounded-md bg-white p-2 ">
+                      <p className="sf tracking-widest text-gray-400 font-medium">
+                        Crew
                       </p>
-                      {tags.progress.map((option) => (
-                        <label
-                          htmlFor={`hr-${option.value}`}
-                          key={option.value}
-                          className={`flex flex-row items-center gap-2 montserrat cursor-pointer text-gray-400 `}
-                        >
-                          <input
-                            id={`hr-${option.value}`}
-                            type="checkbox"
-                            name="progress"
-                            value={option.value}
-                            checked={formData.status.includes(option.value)}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              const { value } = e.target;
-                              let updatedStatus = [...formData.status];
-                              if (isChecked) {
-                                updatedStatus = [...formData.status, value];
-                              } else {
-                                updatedStatus = formData.status.filter(
-                                  (status) => status !== value
-                                );
-                              }
-                              setFormData((prevState) => ({
-                                ...prevState,
-                                status: updatedStatus,
-                              }));
-                            }}
-                            className="peer hidden"
-                          />
-                          <div
-                            htmlFor={`hr-${option.value}`}
-                            className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
+                      <div className="flex flex-wrap">
+                        {crew.map((option) => (
+                          <label
+                            key={option.value}
+                            className={`flex flex-row items-center w-1/2 gap-2 sf tracking-widest cursor-pointer text-gray-400`}
                           >
-                            <svg
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              className="size-5 stroke-dark"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M4 12.6111L8.92308 17.5L20 6.5"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              ></path>
-                            </svg>
-                          </div>
-                          {option.title}
-                        </label>
-                      ))}
+                            <input
+                              type="checkbox"
+                              name="crew"
+                              value={option.name}
+                              checked={formData.crew.some(
+                                (member) => member.name === option.name
+                              )}
+                              onChange={inputHandle}
+                              className="peer hidden"
+                            />
+                            <div className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition">
+                              <svg
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                className="size-5 stroke-dark"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M4 12.6111L8.92308 17.5L20 6.5"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                ></path>
+                              </svg>
+                            </div>
+                            {option.name}
+                          </label>
+                        ))}
+                        <input
+                          type="text"
+                          placeholder="Other.."
+                          className="bg-white border-b border-gray-400 sf outline-none"
+                        />
+                      </div>
                     </div>
-                    {/* Type */}
-                    <div className="rounded-md bg-white p-2 w-1/3 lg:w-full ">
-                      <p className="montserrat text-gray-400 font-medium">
-                        Project Type
-                      </p>
-                      {tags.projectType.map((option) => (
-                        <label
-                          htmlFor={`hr-${option.value}`}
-                          key={option.value}
-                          className={`flex flex-row items-center gap-2 montserrat cursor-pointer text-gray-400`}
-                        >
-                          <input
-                            id={`hr-${option.value}`}
-                            type="checkbox"
-                            name="type"
-                            value={option.value}
-                            checked={formData.status.includes(option.value)}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              const { value } = e.target;
-                              let updatedStatus = [...formData.status];
-                              if (isChecked) {
-                                updatedStatus = [...formData.status, value];
-                              } else {
-                                updatedStatus = formData.status.filter(
-                                  (status) => status !== value
-                                );
-                              }
-                              setFormData((prevState) => ({
-                                ...prevState,
-                                status: updatedStatus,
-                              }));
-                            }}
-                            className="peer hidden"
-                          />
-                          <div
+
+                    <main className="flex flex-col gap-1">
+                      {/* Progress */}
+                      <div className="rounded-md bg-white p-2 w-full ">
+                        <p className="sf tracking-widest text-gray-400 font-medium">
+                          Progress
+                        </p>
+                        {tags.progress.map((option) => (
+                          <label
                             htmlFor={`hr-${option.value}`}
-                            className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
+                            key={option.value}
+                            className={`flex flex-row items-center gap-2 sf tracking-widest cursor-pointer text-gray-400 `}
                           >
-                            <svg
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              className="size-5 stroke-dark"
-                              xmlns="http://www.w3.org/2000/svg"
+                            <input
+                              id={`hr-${option.value}`}
+                              type="checkbox"
+                              name="progress"
+                              value={option.value}
+                              checked={formData.status.includes(option.value)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                const { value } = e.target;
+                                let updatedStatus = [...formData.status];
+                                if (isChecked) {
+                                  updatedStatus = [...formData.status, value];
+                                } else {
+                                  updatedStatus = formData.status.filter(
+                                    (status) => status !== value
+                                  );
+                                }
+                                setFormData((prevState) => ({
+                                  ...prevState,
+                                  status: updatedStatus,
+                                }));
+                              }}
+                              className="peer hidden"
+                            />
+                            <div
+                              htmlFor={`hr-${option.value}`}
+                              className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
                             >
-                              <path
-                                d="M4 12.6111L8.92308 17.5L20 6.5"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              ></path>
-                            </svg>
-                          </div>
-                          {option.title}
-                        </label>
-                      ))}
-                    </div>
-                    {/* Add-ons */}
-                    <div className="rounded-md bg-white p-2 w-[31%] lg:w-full ">
-                      <p className="montserrat text-gray-400 font-medium">
-                        Add-on
-                      </p>
-                      {tags.addons.map((option) => (
-                        <label
-                          htmlFor={`hr-${option.value}`}
-                          key={option.value}
-                          className={`flex flex-row items-center gap-2 montserrat cursor-pointer text-gray-400`}
-                        >
-                          <input
-                            id={`hr-${option.value}`}
-                            type="checkbox"
-                            name="status"
-                            value={option.value}
-                            checked={formData.status.includes(option.value)}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              const { value } = e.target;
-                              let updatedStatus = [...formData.status];
-                              if (isChecked) {
-                                updatedStatus = [...formData.status, value];
-                              } else {
-                                updatedStatus = formData.status.filter(
-                                  (status) => status !== value
-                                );
-                              }
-                              setFormData((prevState) => ({
-                                ...prevState,
-                                status: updatedStatus,
-                              }));
-                            }}
-                            className="peer hidden"
-                          />
-                          <div
+                              <svg
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                className="size-5 stroke-dark"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M4 12.6111L8.92308 17.5L20 6.5"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                ></path>
+                              </svg>
+                            </div>
+                            {option.title}
+                          </label>
+                        ))}
+                      </div>
+                      {/* Add-ons */}
+                      <div className="rounded-md bg-white p-2 ">
+                        <p className="sf tracking-widest text-gray-400 font-medium">
+                          Add-on
+                        </p>
+                        {tags.addons.map((option) => (
+                          <label
                             htmlFor={`hr-${option.value}`}
-                            className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
+                            key={option.value}
+                            className={`flex flex-row items-center gap-2 sf tracking-widest cursor-pointer text-gray-400`}
                           >
-                            <svg
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              className="size-5 stroke-dark"
-                              xmlns="http://www.w3.org/2000/svg"
+                            <input
+                              id={`hr-${option.value}`}
+                              type="checkbox"
+                              name="status"
+                              value={option.value}
+                              checked={formData.status.includes(option.value)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                const { value } = e.target;
+                                let updatedStatus = [...formData.status];
+                                if (isChecked) {
+                                  updatedStatus = [...formData.status, value];
+                                } else {
+                                  updatedStatus = formData.status.filter(
+                                    (status) => status !== value
+                                  );
+                                }
+                                setFormData((prevState) => ({
+                                  ...prevState,
+                                  status: updatedStatus,
+                                }));
+                              }}
+                              className="peer hidden"
+                            />
+                            <div
+                              htmlFor={`hr-${option.value}`}
+                              className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
                             >
-                              <path
-                                d="M4 12.6111L8.92308 17.5L20 6.5"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              ></path>
-                            </svg>
-                          </div>
-                          {option.title}
-                        </label>
-                      ))}
-                    </div>
+                              <svg
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                className="size-5 stroke-dark"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M4 12.6111L8.92308 17.5L20 6.5"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                ></path>
+                              </svg>
+                            </div>
+                            {option.title}
+                          </label>
+                        ))}
+                      </div>
+                    </main>
                     {/* Categories */}
-                    <div className="rounded-md bg-white p-2 w-full ">
-                      <p className="montserrat text-gray-400 font-medium">
+                    <div className="rounded-md bg-white p-2">
+                      <p className="sf tracking-widest text-gray-400 font-medium">
                         Project Categories
                       </p>
                       <div className="flex w-64 justify-between flex-wrap">
@@ -418,7 +469,7 @@ const CreateModal = ({
                           <label
                             htmlFor={`hr-${option.value}`}
                             key={option.value}
-                            className={`flex flex-row w-32 items-center gap-1  montserrat cursor-pointer text-gray-400`}
+                            className={`flex flex-row w-32 items-center gap-1  sf tracking-widest cursor-pointer text-gray-400`}
                           >
                             <input
                               id={`hr-${option.value}`}
@@ -469,6 +520,7 @@ const CreateModal = ({
                     </div>
                   </section>
                 </div>
+
                 {/* Notes */}
                 <div className="flex items-center justify-end gap-1 my-1 lg:my-0">
                   <textarea
@@ -476,17 +528,17 @@ const CreateModal = ({
                     name="note"
                     value={formData.note}
                     onChange={inputHandle}
-                    className="rounded-md p-2 w-full h-32 montserrat outline-none"
+                    className="rounded-md p-2 w-full h-32 sf tracking-widest outline-none"
                   />
                   <div className="rounded-md bg-white h-32 p-2 w-1/3 ">
-                    <p className="montserrat text-gray-400 font-medium">
+                    <p className="sf tracking-widest text-gray-400 font-medium">
                       Payment Client
                     </p>
                     {payment.map((option) => (
                       <label
                         htmlFor={`hr-${option.value}`}
                         key={option.value}
-                        className={`flex flex-row items-center gap-2 montserrat cursor-pointer text-gray-400`}
+                        className={`flex flex-row items-center gap-2 sf tracking-widest cursor-pointer text-gray-400`}
                       >
                         <input
                           id={`hr-${option.value}`}
@@ -541,14 +593,14 @@ const CreateModal = ({
                     <button
                       type="button"
                       onClick={handleDelete}
-                      className="bg-red-500 text-white montserrat rounded-md py-2 w-full font-semibold tracking-wide"
+                      className="bg-red-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold tracking-wide"
                     >
                       Delete
                     </button>
                   )}
                   <button
                     type="submit"
-                    className="bg-green-500 text-white montserrat rounded-md py-2 w-full font-semibold tracking-wide"
+                    className="bg-green-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold tracking-wide"
                   >
                     {isEditing ? "Update" : "Add"}
                   </button>

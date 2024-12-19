@@ -12,9 +12,9 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
       {tableData.map((row, index) => (
         <tr
           onClick={() => handleRowClick(row)}
-          className={`h-20 w-screen montserrat text-xs font-medium tracking-wide transition ease-in-out duration-300 ${
+          className={`h-20 w-screen sf tracking-widest text-xs font-medium transition ease-in-out duration-300 ${
             index % 2 === 0 ? "bg-gray-200" : "bg-gray-300"
-          } hover:translate-x-3 duration-200 transition-all`}
+          } hover:brightness-90 duration-200 transition-all`}
           key={row._id}
         >
           <td className="w-10">
@@ -174,24 +174,24 @@ const MainTable = ({
   return (
     <main className="flex flex-col h-screen">
       <section className="flex-grow overflow-x-scroll lg:overflow-x-hidden">
-        <table className="border-collapse mt-10 select-none relative w-full table-fixed">
-          <thead className="montserrat">
+        <table className="border-collapse mt-32 select-none relative w-full table-fixed">
+          <thead className="sf tracking-widest">
             <tr>
-              <th className="w-10 sticky top-[2.5rem] md:top-[2.8rem] border-none bg-dark text-light text-md z-10 h-10">
+              <th className="w-10 sticky top-0 border-none bg-light text-dark shadow text-md z-10 h-10">
                 ID
               </th>
-              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 TITLE
               </th>
-              <th className="w-20 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 CLIENT
               </th>
-              <th className="w-20 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 PIC
               </th>
               <th
                 onClick={handleDate}
-                className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10"
+                className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10"
               >
                 <div className=" flex items-center justify-center cursor-pointer">
                   DUE DATE
@@ -211,25 +211,25 @@ const MainTable = ({
                   </svg>
                 </div>
               </th>
-              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 TAGS
               </th>
-              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 CREW
               </th>
-              <th className="w-20 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 PM
               </th>
-              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 FINAL FILE
               </th>
-              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 DOCUMENTS
               </th>
-              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 NOTE
               </th>
-              <th className="w-32 sticky top-[2.5rem] md:top-[2.8rem] border-none  bg-dark text-light text-md z-10 h-10">
+              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 PAYMENT
               </th>
             </tr>

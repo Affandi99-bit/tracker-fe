@@ -21,7 +21,7 @@ const Login = ({ onLoginSuccess }) => {
     );
 
     if (foundUser) {
-      console.log("Login successful!");
+      console.log("Login successf tracking-widestul!");
       if (rememberMe) {
         localStorage.setItem("username", username);
         localStorage.setItem("password", password);
@@ -45,19 +45,19 @@ const Login = ({ onLoginSuccess }) => {
         <div className="flex flex-col p-8">
           <header className="flex items-center gap-3 mb-4">
             <img src="/logo.png" className="size-9" alt="Logo" />
-            <p className="text-2xl text-gray-300 montserrat tracking-wide font-black">
+            <p className="text-2xl text-gray-300 sf tracking-widest  font-black">
               Project Manager
             </p>
           </header>
           <form className="flex flex-col gap-2" onSubmit={handleLogin}>
             <input
-              className="montserrat text-light bg-dark w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none"
+              className="sf tracking-widest text-light bg-dark w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none"
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
             <input
-              className="montserrat text-light bg-dark w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none"
+              className="sf tracking-widest text-light bg-dark w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none"
               type="password"
               placeholder="Password"
               value={password}
@@ -72,7 +72,7 @@ const Login = ({ onLoginSuccess }) => {
             </button>
             <label
               htmlFor="hr"
-              className="flex flex-row items-center gap-2.5 dark:text-white light:text-black montserrat"
+              className="flex flex-row items-center gap-2.5 dark:text-white light:text-black sf tracking-widest"
             >
               <input
                 id="hr"

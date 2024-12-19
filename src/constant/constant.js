@@ -1,3 +1,53 @@
+export const crew = [
+  {
+    name: "Andika",
+    value: "andika",
+  },
+  {
+    name: "Dhona",
+    value: "dhona",
+  },
+  {
+    name: "Nova",
+    value: "nova",
+  },
+  {
+    name: "Rully",
+    value: "rully",
+  },
+  {
+    name: "Audrey",
+    value: "audrey",
+  },
+  {
+    name: "Kevin",
+    value: "kevin",
+  },
+  {
+    name: "Adri",
+    value: "adri",
+  },
+  {
+    name: "Okta",
+    value: "okta",
+  },
+  {
+    name: "Rafli",
+    value: "rafli",
+  },
+  {
+    name: "Imam",
+    value: "imam",
+  },
+  {
+    name: "Delia",
+    value: "delia",
+  },
+  {
+    name: "Anin",
+    value: "anin",
+  },
+];
 export const tags = {
   progress: [
     {
@@ -16,9 +66,10 @@ export const tags = {
       color: "#ef4444",
     },
   ],
+
   projectType: [
     {
-      title: "Paid Pro.",
+      title: "Paid Project",
       value: "paid",
       color: "#114a4a",
     },
@@ -107,6 +158,11 @@ export const payment = [
   {
     title: "Pending",
     value: "pending",
+    color: "#8D0B41",
+  },
+  {
+    title: "Pitching",
+    value: "pitching",
     color: "#8D0B41",
   },
 ];

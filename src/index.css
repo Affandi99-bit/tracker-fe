@@ -3,6 +3,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "SF UI Display Light";
+  src: url("/font/SFUIDisplay-Light.ttf") format("truetype");
+}
+.sf {
+  font-family: "SF UI Display Light";
+}
 .montserrat {
   font-family: "Montserrat", sans-serif;
 }
