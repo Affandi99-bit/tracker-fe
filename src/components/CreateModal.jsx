@@ -136,15 +136,15 @@ const CreateModal = ({
           </div>
         ) : null} */}
         <main
-          className="backdrop fixed overflow-y-scroll z-20 top-0 w-full h-screen backdrop-blur-[2px]"
+          className="backdrop fixed z-20 top-0 w-full h-screen backdrop-blur-[2px]"
           onClick={handleBackdropClick}
         >
           <div
-            className={`absolute bottom-0 left-1/2 transform -translate-x-1/2`}
+            className={`absolute bottom-0 lg:bottom-10 left-1/2 transform -translate-x-1/2`}
           >
-            <section className="relative rounded-lg bg-dark shadow-lg w-screen md:w-full h-full">
+            <section className="relative overflow-y-auto rounded-lg bg-dark shadow-lg w-screen md:w-full h-full">
               <div className="flex justify-between items-center p-2">
-                <p className="hidden lg:block sf tracking-widest font-bold text-2xl text-white">
+                <p className="sf tracking-widest font-bold text-2xl text-white">
                   {isEditing ? "EDIT TASK" : "CREATE NEW TASK"}
                 </p>
                 <button
@@ -156,7 +156,7 @@ const CreateModal = ({
               </div>
               <form
                 onSubmit={handleSubmit}
-                className="w-full h-full lg:flex flex-col gap-1 p-2 "
+                className="w-full h-full overflow-auto max-h-[80dvh] lg:flex flex-col gap-1 p-2 "
               >
                 <section className="flex gap-1  ">
                   <div className="w-full lg:flex gap-1 flex-col">
@@ -172,7 +172,7 @@ const CreateModal = ({
                       />
                       <label
                         htmlFor="deadline"
-                        className="rounded-md p-2 w-full bg-white sf tracking-widest outline-none flex justify-between items-center"
+                        className="rounded-md p-2 w-full text-gray-400 bg-white sf tracking-widest outline-none flex justify-between items-center"
                       >
                         <p className="text-gray-400">Event Date:</p>
                         <input
@@ -212,10 +212,10 @@ const CreateModal = ({
                         name="pm"
                         value={formData.pm}
                         onChange={inputHandle}
-                        className="rounded-md p-2 w-1/2 sf tracking-widest outline-none mb-1 lg:mb-0 "
+                        className="rounded-md text-gray-500 p-2 w-1/2 sf tracking-widest outline-none mb-1 lg:mb-0 "
                       >
                         <option className="" value="">
-                          Select Project Manager
+                          Select PM
                         </option>
                         {crew.map((option) => (
                           <option
@@ -354,22 +354,20 @@ const CreateModal = ({
                           placeholder="Other.."
                           className="bg-white border-b border-gray-400 sf outline-none"
                         />
-                        <button onClick={addNewCrewMember}>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="#9CA3AF"
-                            className="size-8"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M12 4.5v15m7.5-7.5h-15"
-                            />
-                          </svg>
+                        {/* <button
+                          className="bg-slate-400 m-1 p-2"
+                          type="button"
+                          onClick={addNewCrewMember}
+                        >
+                          +
                         </button>
+                        <button
+                          className="bg-slate-400 m-1 p-2"
+                          type="button"
+                          onClick={() => setNewCrewMember("")}
+                        >
+                          -
+                        </button> */}
                       </div>
                     </div>
 
@@ -630,6 +628,7 @@ const CreateModal = ({
                   )}
                   <button
                     type="submit"
+                    onClick={addNewCrewMember}
                     className="bg-green-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold"
                   >
                     {isEditing ? "Update" : "Add"}

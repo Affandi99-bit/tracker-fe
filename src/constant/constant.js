@@ -160,11 +160,11 @@ export const payment = [
     value: "pending",
     color: "#8D0B41",
   },
-  {
-    title: "Pitching",
-    value: "pitching",
-    color: "#8D0B41",
-  },
+  // {
+  //   title: "Pitching",
+  //   value: "pitching",
+  //   color: "#8D0B41",
+  // },
 ];
 export const user = [
   {

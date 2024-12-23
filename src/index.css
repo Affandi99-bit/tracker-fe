@@ -18,7 +18,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #222222;
+  background-color: #f8f8f8;
 }
 body {
   overflow-x: hidden;
