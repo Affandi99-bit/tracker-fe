@@ -2,6 +2,7 @@ import { useState } from "react";
 import CreateModal from "./CreateModal";
 import { findTagColor } from "../utils/utils";
 import { Report } from "../pages";
+import { payment } from "../constant/constant";
 const TableModal = ({
   pro,
   showModal,
@@ -78,24 +79,24 @@ const TableModal = ({
                     {pro.crew.map((member, i) => (
                       <p
                         key={i}
-                        className="pl-10 flex justify-start sf tracking-widest"
+                        className="pl-10 flex justify-start items-center sf tracking-widest"
                       >
                         <span className="w-[3.5rem]">{member.name}</span>
 
                         <span
                           className={`rounded w-[4rem] text-xs text-center p-[0.15rem] m-1 ${
-                            member.payment === "pending"
+                            member.payment === "Pending"
                               ? "bg-yellow-500"
-                              : "bg-green-500"
+                              : "bg-transparent"
                           }`}
                         >
-                          {member.payment}
+                          Bonus {member.payment}
                         </span>
                       </p>
                     ))}
                   </div>
                 </div>
-                <div className="absolute bottom-32 lg:bottom-20 flex gap-3 items-center sf tracking-widest font-bold tracking-wider">
+                <div className="absolute bottom-32 lg:bottom-20 flex gap-3 items-center sf tracking-widest font-bold">
                   {pro.final_file ? (
                     <a
                       href={pro.final_file}

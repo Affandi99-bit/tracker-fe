@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { tags } from "../constant/constant";
-import { payment } from "../constant/constant";
-import { crew } from "../constant/constant";
+import { tags, crew, payment } from "../constant/constant";
+
 const CreateModal = ({
   showModal,
   setShowModal,
@@ -27,6 +26,23 @@ const CreateModal = ({
   };
   const [formData, setFormData] = useState(isEditing ? initialData : fromDatas);
   const [newCrewMember, setNewCrewMember] = useState("");
+  const [additionalCrewMembers, setAdditionalCrewMembers] = useState(
+    isEditing
+      ? formData.crew
+          .filter(
+            (member) =>
+              !crew.some(
+                (constantMember) => constantMember.name === member.name
+              )
+          )
+          .map((member) => ({
+            id: Date.now() + Math.random(),
+            value: member.name,
+          }))
+      : []
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
   const handleBackdropClick = (e) => {
     if (e.target.classList.contains("backdrop")) {
@@ -50,9 +66,6 @@ const CreateModal = ({
     }
   };
 
-  const handleNewCrewChange = (e) => {
-    setNewCrewMember(e.target.value);
-  };
   const addNewCrewMember = () => {
     if (newCrewMember.trim()) {
       const updatedCrew = [...formData.crew, { name: newCrewMember.trim() }];
@@ -60,21 +73,51 @@ const CreateModal = ({
       setNewCrewMember("");
     }
   };
+  const addAdditionalCrewField = () => {
+    setAdditionalCrewMembers((prev) => [
+      ...prev,
+      { id: Date.now(), value: "" },
+    ]);
+  };
+
+  const handleAdditionalCrewChange = (id, value) => {
+    setAdditionalCrewMembers((prev) =>
+      prev.map((member) => (member.id === id ? { ...member, value } : member))
+    );
+  };
+
+  const removeAdditionalCrewField = (id) => {
+    setAdditionalCrewMembers((prev) =>
+      prev.filter((member) => member.id !== id)
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
+    const allCrew = [
+      ...crew.filter((member) =>
+        formData.crew.some((selected) => selected.name === member.name)
+      ),
+      ...additionalCrewMembers.map((member) => ({ name: member.value })),
+    ];
+    const finalData = { ...formData, crew: allCrew };
+
     console.log("Form Data Submitted:", formData);
     if (isEditing) {
-      await updateData(formData);
+      await updateData(finalData);
       setTableModal(false);
     } else {
-      await addNewData(formData);
+      await addNewData(finalData);
     }
     setShowModal(false);
+    setIsLoading(false);
   };
 
   const handleDelete = async () => {
     if (isEditing && formData._id) {
+      setIsLoadingDelete(true);
       await deleteData(formData._id);
       setShowModal(false);
       setTableModal(false);
@@ -221,7 +264,7 @@ const CreateModal = ({
                           <option
                             className="bg-dark text-gray-400"
                             key={option.index}
-                            value={option.value}
+                            value={option.name}
                           >
                             {option.name}
                           </option>
@@ -313,7 +356,7 @@ const CreateModal = ({
                       <p className="sf tracking-widest text-gray-400 font-medium">
                         Crew
                       </p>
-                      <div className="flex flex-wrap">
+                      <div className="flex flex-wrap overflow-x-hidden">
                         {crew.map((option, index) => (
                           <label
                             key={index}
@@ -347,27 +390,43 @@ const CreateModal = ({
                             {option.name}
                           </label>
                         ))}
-                        <input
-                          type="text"
-                          value={newCrewMember}
-                          onChange={handleNewCrewChange}
-                          placeholder="Other.."
-                          className="bg-white border-b border-gray-400 sf outline-none"
-                        />
-                        {/* <button
-                          className="bg-slate-400 m-1 p-2"
-                          type="button"
-                          onClick={addNewCrewMember}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="bg-slate-400 m-1 p-2"
-                          type="button"
-                          onClick={() => setNewCrewMember("")}
-                        >
-                          -
-                        </button> */}
+                        <section>
+                          {additionalCrewMembers.map((member) => (
+                            <div
+                              key={member.id}
+                              className="flex items-center gap-1 text-gray-400"
+                            >
+                              <input
+                                type="text"
+                                placeholder="Add Crew"
+                                value={member.value}
+                                onChange={(e) =>
+                                  handleAdditionalCrewChange(
+                                    member.id,
+                                    e.target.value
+                                  )
+                                }
+                                className="bg-white border-b border-gray-400 outline-none p-1 w-[80%]"
+                              />
+                              <button
+                                type="button"
+                                className="text-lg"
+                                onClick={() =>
+                                  removeAdditionalCrewField(member.id)
+                                }
+                              >
+                                -
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            className="text-gray-400"
+                            onClick={addAdditionalCrewField}
+                          >
+                            Additional crew +
+                          </button>
+                        </section>
                       </div>
                     </div>
 
@@ -621,17 +680,53 @@ const CreateModal = ({
                     <button
                       type="button"
                       onClick={handleDelete}
-                      className="bg-red-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold"
+                      className="bg-red-500 flex items-center justify-center gap-1 text-white sf tracking-widest rounded-md py-2 w-full font-semibold"
                     >
                       Delete
+                      {isLoadingDelete && (
+                        <svg
+                          width="100%"
+                          height="100%"
+                          viewBox="0 0 24 24"
+                          className="size-5 animate-spin"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z"
+                            stroke="#f8f8f8"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
                     </button>
                   )}
                   <button
                     type="submit"
                     onClick={addNewCrewMember}
-                    className="bg-green-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold"
+                    className="bg-green-500 flex justify-center gap-1 items-center text-white sf tracking-widest rounded-md py-2 w-full font-semibold"
                   >
                     {isEditing ? "Update" : "Add"}
+                    {isLoading && (
+                      <svg
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 24 24"
+                        className="size-5 animate-spin"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z"
+                          stroke="#f8f8f8"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </form>
