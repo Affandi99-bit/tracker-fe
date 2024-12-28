@@ -83,15 +83,11 @@ const TableModal = ({
                       >
                         <span className="w-[3.5rem]">{member.name}</span>
 
-                        <span
-                          className={`rounded w-[4rem] text-xs text-center p-[0.15rem] m-1 ${
-                            member.payment === "Pending"
-                              ? "bg-yellow-500"
-                              : "bg-transparent"
-                          }`}
-                        >
-                          Bonus {member.payment}
-                        </span>
+                        {member.payment ? (
+                          <span className="rounded w-[4rem] text-xs text-center p-[0.15rem] m-1">
+                            Bonus {member.payment}
+                          </span>
+                        ) : null}
                       </p>
                     ))}
                   </div>

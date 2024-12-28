@@ -96,11 +96,27 @@ const CreateModal = ({
     e.preventDefault();
     setIsLoading(true);
 
+    // const allCrew = [
+    //   ...crew.filter((member) =>
+    //     formData.crew.some((selected) => selected.name === member.name)
+    //   ),
+    //   ...additionalCrewMembers.map((member) => ({ name: member.value })),
+    // ];
     const allCrew = [
-      ...crew.filter((member) =>
-        formData.crew.some((selected) => selected.name === member.name)
-      ),
-      ...additionalCrewMembers.map((member) => ({ name: member.value })),
+      ...crew
+        .filter((member) =>
+          formData.crew.some((selected) => selected.name === member.name)
+        )
+        .map((member) => ({
+          name: member.name,
+          payment:
+            formData.crew.find((selected) => selected.name === member.name)
+              ?.payment || "",
+        })),
+      ...additionalCrewMembers.map((member) => ({
+        name: member.value,
+        payment: "",
+      })),
     ];
     const finalData = { ...formData, crew: allCrew };
 
@@ -127,65 +143,14 @@ const CreateModal = ({
   return (
     showModal && (
       <div>
-        {/* {isEditing ? (
-          <div className="fixed z-30 right-40 top-20">
-            <section className="w-96 relative rounded-lg border-light bg-dark">
-              <p className="sf tracking-widest p-1 font-bold text-light">
-                Edit Bonuses
-              </p>
-              <form className="w-full h-full lg:flex flex-col gap-1 p-2 ">
-                <div className="w-full lg:flex gap-1 flex-col">
-                  <div className="flex flex-col gap-1">
-                    {formData.crew.map((item, index) => {
-                      return (
-                        <div key={Math.random()} className="flex gap-1">
-                          <input
-                            placeholder="Name"
-                            readOnly
-                            type="text"
-                            value={item.name}
-                            className="rounded-md p-2 w-full sf tracking-widest outline-none"
-                          />
-                          <select
-                            placeholder="Bonus"
-                            value={item.payment}
-                            onChange={(e) => {
-                              const updatedCrew = [...formData.crew];
-                              updatedCrew[index].payment = e.target.value;
-                              setFormData({ ...formData, crew: updatedCrew });
-                            }}
-                            className="rounded-md p-2 w-full sf tracking-widest outline-none"
-                          >
-                            <option value="">Select Bonus</option>
-                            {payment.map((tag) => (
-                              <option key={tag.value} value={tag.value}>
-                                {tag.title}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                {/* <button
-                  type="submit"
-                  className="bg-green-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold tracking-wide"
-                >
-                  Save
-                </button> 
-              {/* </form>
-            </section>
-          </div>
-        ) : null} */}
         <main
-          className="backdrop fixed z-20 top-0 w-full h-screen backdrop-blur-[2px]"
+          className="backdrop fixed overflow-y-auto z-20 top-0 w-full h-screen backdrop-blur-[2px]"
           onClick={handleBackdropClick}
         >
           <div
-            className={`absolute bottom-0 lg:bottom-10 left-1/2 transform -translate-x-1/2`}
+            className={`absolute overflow-auto max-h-[90dvh] no-scrollbar flex justify-center items-start gap-1 bottom-0 left-1/2 transform -translate-x-1/2`}
           >
-            <section className="relative overflow-y-auto rounded-lg bg-dark shadow-lg w-screen md:w-full h-full">
+            <section className="relative rounded-lg bg-dark shadow-lg w-screen md:w-[44rem] h-full">
               <div className="flex justify-between items-center p-2">
                 <p className="sf tracking-widest font-bold text-2xl text-white">
                   {isEditing ? "EDIT TASK" : "CREATE NEW TASK"}
@@ -199,7 +164,7 @@ const CreateModal = ({
               </div>
               <form
                 onSubmit={handleSubmit}
-                className="w-full h-full overflow-auto max-h-[80dvh] lg:flex flex-col gap-1 p-2 "
+                className="w-full h-full lg:flex flex-col gap-1 p-2 "
               >
                 <section className="flex gap-1  ">
                   <div className="w-full lg:flex gap-1 flex-col">
@@ -352,7 +317,7 @@ const CreateModal = ({
                 <div className="lg:flex flex-col gap-1 w-full">
                   <section className="flex-wrap lg:flex-nowrap flex gap-1">
                     {/* Crew */}
-                    <div className="rounded-md bg-white p-2 ">
+                    <div className="rounded-md w-[36rem] bg-white p-2 ">
                       <p className="sf tracking-widest text-gray-400 font-medium">
                         Crew
                       </p>
@@ -730,7 +695,61 @@ const CreateModal = ({
                   </button>
                 </div>
               </form>
-            </section>
+            </section>{" "}
+            {isEditing ? (
+              <div className="relative bg-dark">
+                <section className="w-96 relative rounded-lg border-light ">
+                  <p className="sf tracking-widest p-1 font-bold text-light">
+                    Edit Bonuses
+                  </p>
+                  <form className="w-full h-full lg:flex flex-col gap-1 p-2 ">
+                    <div className="w-full lg:flex gap-1 flex-col">
+                      <div className="flex flex-col gap-1">
+                        {formData.crew.map((item, index) => {
+                          return (
+                            <div key={Math.random()} className="flex gap-1">
+                              <input
+                                placeholder="Name"
+                                readOnly
+                                type="text"
+                                value={item.name}
+                                className="rounded-md p-2 w-full sf tracking-widest outline-none"
+                              />
+                              <select
+                                placeholder="Bonus"
+                                value={item.payment}
+                                onChange={(e) => {
+                                  const updatedCrew = [...formData.crew];
+                                  updatedCrew[index].payment = e.target.value;
+                                  setFormData({
+                                    ...formData,
+                                    crew: updatedCrew,
+                                  });
+                                }}
+                                className="rounded-md p-2 w-full sf tracking-widest outline-none"
+                              >
+                                <option value="">Select Bonus</option>
+                                {payment.map((tag) => (
+                                  <option key={tag.value} value={tag.value}>
+                                    {tag.title}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      className="bg-green-500 text-white sf tracking-widest rounded-md py-2 w-full font-semibold"
+                    >
+                      Save
+                    </button>
+                  </form>
+                </section>
+              </div>
+            ) : null}
           </div>
         </main>
       </div>
