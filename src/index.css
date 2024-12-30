@@ -30,18 +30,14 @@
 body {
   overflow-x: hidden;
 }
-/* Dropdown Input */
-.input-container {
-  position: relative;
-  margin: 20px;
-  color: #e8e8e8;
+.glass {
+  background: rgba(34, 34, 34, 0.15);
+  backdrop-filter: blur(10.5px);
+  -webkit-backdrop-filter: blur(10.5px);
+  border-radius: 10px;
 }
-.input-field {
-  display: block;
-  width: 100%;
-  font-size: 16px;
-  border: none;
-  border-bottom: 2px solid #e8e8e8;
-  outline: none;
+input,
+textarea,
+select {
   background-color: transparent;
 }

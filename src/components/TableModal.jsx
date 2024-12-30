@@ -2,7 +2,6 @@ import { useState } from "react";
 import CreateModal from "./CreateModal";
 import { findTagColor } from "../utils/utils";
 import { Report } from "../pages";
-import { payment } from "../constant/constant";
 const TableModal = ({
   pro,
   showModal,
@@ -46,19 +45,21 @@ const TableModal = ({
                   {pro.title}
                 </h1>
                 <div className="flex flex-wrap">
-                  {pro.status.map((chip, i) => (
-                    <p
-                      key={i}
-                      style={{
-                        backgroundColor: findTagColor(chip),
-                      }}
-                      className="rounded-md w-[15%] text-center p-1 m-1"
-                    >
-                      <span className="text-white text-sm font-extralight">
-                        {chip}
-                      </span>
-                    </p>
-                  ))}
+                  {[...pro.status, ...pro.categories, ...pro.type].map(
+                    (chip, i) => (
+                      <p
+                        key={i}
+                        style={{
+                          backgroundColor: findTagColor(chip),
+                        }}
+                        className="rounded-md w-[15%] text-center p-1 m-1"
+                      >
+                        <span className="text-white text-sm font-extralight">
+                          {chip}
+                        </span>
+                      </p>
+                    )
+                  )}
                 </div>
                 <h3 className="sf tracking-widest mb-5 text-lg font-bold">
                   {pro.client} - {pro.pic}
@@ -82,12 +83,6 @@ const TableModal = ({
                         className="pl-10 flex justify-start items-center sf tracking-widest"
                       >
                         <span className="w-[3.5rem]">{member.name}</span>
-
-                        {member.payment ? (
-                          <span className="rounded w-[4rem] text-xs text-center p-[0.15rem] m-1">
-                            Bonus {member.payment}
-                          </span>
-                        ) : null}
                       </p>
                     ))}
                   </div>

@@ -52,120 +52,88 @@ export const tags = {
   progress: [
     {
       title: "Done",
-      value: "done",
+      value: "Done",
       color: "#22c55e",
     },
     {
       title: "Ongoing",
-      value: "ongoing",
+      value: "Ongoing",
       color: "#D89216",
-    },
-    {
-      title: "Cancel",
-      value: "cancel",
-      color: "#ef4444",
     },
   ],
 
   projectType: [
     {
       title: "Paid",
-      value: "paid",
+      value: "Paid",
       color: "#114a4a",
     },
     {
-      title: "Karya",
-      value: "karya",
+      title: "Unpaid",
+      value: "Unpaid",
       color: "#114a4a",
+    },
+    {
+      title: "Pitching",
+      value: "Pitching",
+      color: "#114a4a",
+    },
+    {
+      title: "Cancel",
+      value: "Cancel",
+      color: "#ef4444",
     },
   ],
-  addons: [
+  addons: [],
+  projectCategories: [
     {
-      title: "Add Ed",
-      value: "add ed",
+      title: "Add",
+      value: "Add",
       color: "#104e4a",
     },
     {
-      title: "Add VG",
-      value: "add vg",
-      color: "#205b5f",
-    },
-    {
-      title: "Add FG",
-      value: "add fg",
-      color: "#2f5e6f",
-    },
-    {
-      title: "Add Dr",
-      value: "add dr",
-      color: "#295469",
-    },
-  ],
-  projectCategories: [
-    {
-      title: "Internal",
-      value: "internal",
-      color: "#18435a",
-    },
-    {
       title: "Event",
-      value: "event",
+      value: "Event",
       color: "#124549",
     },
     {
       title: "Produksi",
-      value: "produksi",
+      value: "Produksi",
       color: "#16324f",
     },
     {
       title: "Sem Pro",
-      value: "sem pro",
+      value: "Sem pro",
       color: "#13293d",
     },
     {
       title: "Dok",
-      value: "dok",
+      value: "Dok",
       color: "#051c3d",
     },
     {
       title: "Motion",
-      value: "motion",
+      value: "Motion",
       color: "#1e3e3b",
     },
     {
       title: "Design",
-      value: "design",
+      value: "Design",
       color: "#384d56",
     },
     {
       title: "VFX",
-      value: "vfx",
+      value: "VFX",
       color: "#071e40",
     },
     {
       title: "Editing",
-      value: "editing",
+      value: "Editing",
       color: "#132a4b",
     },
   ],
 };
-export const payment = [
-  {
-    title: "Lunas",
-    value: "lunas",
-    color: "#355F2E",
-  },
-  {
-    title: "Pending",
-    value: "pending",
-    color: "#8D0B41",
-  },
-  // {
-  //   title: "Pitching",
-  //   value: "pitching",
-  //   color: "#8D0B41",
-  // },
-];
+
 export const user = [
   {
     user: "blackfamz",

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { tags, payment } from "../constant/constant";
+import { tags } from "../constant/constant";
 
 const Dropdown = ({ selectedTags, setSelectedTags }) => {
   const handleTagChange = (tag) => {
@@ -88,42 +88,7 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
               {option.title}
             </label>
           ))}
-          {tags.addons.map((option) => (
-            <label
-              htmlFor={`hr-${option.value}`}
-              key={option.value}
-              className={`flex flex-row w-32 items-center gap-2 sf tracking-widest cursor-pointer text-light p-2`}
-            >
-              <input
-                id={`hr-${option.value}`}
-                type="checkbox"
-                name="status"
-                value={option.value}
-                checked={selectedTags.includes(option.value)}
-                onChange={() => handleTagChange(option.value)}
-                className="peer hidden"
-              />
-              <div
-                htmlFor={`hr-${option.value}`}
-                className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
-              >
-                <svg
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="size-5 stroke-dark"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 12.6111L8.92308 17.5L20 6.5"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>
-                </svg>
-              </div>
-              {option.title}
-            </label>
-          ))}
+
           {tags.projectType.map((option) => (
             <label
               htmlFor={`hr-${option.value}`}
@@ -203,16 +168,16 @@ const Navbar = ({
           onSearch={onSearch}
         />
       ) : null}
-      <section className="fixed select-none top-0 flex justify-center items-center bg-dark py-2 px-5 w-full overflow-hidden">
+      <section className="fixed select-none top-0 flex justify-start items-center bg-dark py-1 px-5 w-full overflow-hidden">
         <div className="flex flex-col items-center justify-center">
-          <img src="/black.png" alt="logo" className=" w-40" />
+          {/* <img src="/black.png" alt="logo" className=" w-40" /> */}
           <img
             src="/PM.png"
             alt="PM"
             onClick={() => {
               window.location.reload();
             }}
-            className=" w-56 mt-3 object-contain cursor-pointer"
+            className=" w-56 mt-1 object-contain cursor-pointer"
           />
         </div>
       </section>
