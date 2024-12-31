@@ -27,14 +27,14 @@ const TableModal = ({
           <section className="relative rounded-lg  bg-dark shadow-lg w-screen h-screen lg:w-[80rem] lg:h-[30rem]">
             <button
               onClick={() => setShowModal(false)}
-              className="z-20 absolute right-5 top-10 lg:top-5 bg-red-500 text-white sf tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+              className="z-20 absolute right-5 top-10 lg:top-5 border border-dashed border-light text-white sf tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
             >
               Close
             </button>
 
             <button
               onClick={() => setShowEditModal(true)}
-              className="z-10 absolute right-5 bottom-16 lg:bottom-5 bg-green-500 text-white sf tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+              className="z-10 absolute right-5 bottom-16 lg:bottom-5 bg-light text-dark sf tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
             >
               Edit
             </button>

@@ -142,7 +142,7 @@ const CreateModal = ({
       <div>
         <main className="fixed overflow-y-auto z-20 top-0 text-dark h-screen">
           <section className="relative overflow-auto w-screen h-full no-scrollbar bg-zinc-100 ">
-            <section className="fixed -right-40 -bottom-56 select-none flex gap-1 z-0">
+            <section className="hidden fixed -right-40 -bottom-56 select-none md:flex gap-1 z-0">
               <img
                 src="/camera.png"
                 className="object-contain size-[70rem] scale-x-[-1] -rotate-45"
@@ -182,7 +182,7 @@ const CreateModal = ({
               onSubmit={handleSubmit}
               className="flex flex-col gap-1 p-2 w-full "
             >
-              <section className="flex select-none flex-col w-1/2 z-10">
+              <section className="flex select-none flex-col w-full md:w-1/2 z-10">
                 <div className="flex flex-col gap-1 w-full">
                   {/* Title */}
                   <label className="sf font-semibold tracking-widest flex flex-col">
@@ -197,7 +197,7 @@ const CreateModal = ({
                       className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none"
                     />
                   </label>
-                  <div className="flex gap-1">
+                  <div className="flex flex-col md:flex-row gap-1">
                     {/* Client */}
                     <label className="sf font-semibold tracking-widest flex flex-col">
                       Client
