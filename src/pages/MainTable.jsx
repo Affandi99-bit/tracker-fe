@@ -129,8 +129,8 @@ const MainTable = ({
     if (!tableData) return;
 
     const filteredTableData = tableData.filter((item) => {
-      const Month = new Date();
-      Month.setMonth(Month.getMonth() - 1);
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
       const matchesSearch =
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -138,22 +138,25 @@ const MainTable = ({
         item.pic.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.pm.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const isWithinMonth =
-        new Date(item.createdAt) >= Month &&
-        new Date(item.createdAt) <= new Date();
-
+      const isWithinMonth = new Date(item.createdAt) >= oneMonthAgo;
+      const isOngoing = item.status.includes("ongoing");
       const isDone = item.status.includes("done");
-
-      const isOngoing =
-        isWithinMonth ||
-        item.status.includes("ongoing") ||
-        (!isDone && !isWithinMonth);
 
       const matchesTags =
         selectedTags.length === 0 ||
-        selectedTags.every((tag) => item.status.includes(tag));
+        selectedTags.every(
+          (tag) =>
+            item.status.includes(tag) ||
+            item.type?.includes(tag) ||
+            item.categories?.includes(tag)
+        );
 
-      return matchesSearch && matchesTags && (showHidden || isOngoing);
+      // Archive logic: Show hidden if enabled, otherwise show ongoing or recent
+      return (
+        matchesSearch &&
+        matchesTags &&
+        (showHidden || isWithinMonth || isOngoing)
+      );
     });
 
     const sorted = [...filteredTableData].sort((a, b) => {
