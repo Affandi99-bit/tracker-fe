@@ -139,9 +139,8 @@ const MainTable = ({
         item.pm.toLowerCase().includes(searchQuery.toLowerCase());
 
       const isWithinMonth = new Date(item.createdAt) >= oneMonthAgo;
-      const isOngoing = item.status.includes("ongoing");
-      const isDone = item.status.includes("done");
-
+      const isNotDone = !item.status.includes("Done");
+      const isOngoing = item.status.includes("Ongoing");
       const matchesTags =
         selectedTags.length === 0 ||
         selectedTags.every(
@@ -151,11 +150,10 @@ const MainTable = ({
             item.categories?.includes(tag)
         );
 
-      // Archive logic: Show hidden if enabled, otherwise show ongoing or recent
       return (
         matchesSearch &&
         matchesTags &&
-        (showHidden || isWithinMonth || isOngoing)
+        (showHidden || (isWithinMonth && isNotDone) || isOngoing)
       );
     });
 

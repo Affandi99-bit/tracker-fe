@@ -15,7 +15,6 @@ const App = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     fetchProjects();

@@ -37,12 +37,13 @@ const CreateModal = ({
                 (constantMember) => constantMember.name === member.name
               )
           )
-          .map((member) => ({
-            id: Date.now() + Math.random(),
+          .map((member, index) => ({
+            id: index,
             value: member.name,
           }))
       : []
   );
+
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
@@ -81,6 +82,21 @@ const CreateModal = ({
     setAdditionalCrewMembers((prev) =>
       prev.map((member) => (member.id === id ? { ...member, value } : member))
     );
+    const updatedCrew = additionalCrewMembers.map((member) =>
+      member.id === id ? { ...member, name: value } : member
+    );
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      crew: [
+        ...prevFormData.crew.filter(
+          (crewMember) =>
+            !additionalCrewMembers.some(
+              (additionalMember) => additionalMember.id === crewMember.id
+            )
+        ),
+        ...updatedCrew,
+      ],
+    }));
   };
 
   const removeAdditionalCrewField = (id) => {
@@ -93,12 +109,6 @@ const CreateModal = ({
     e.preventDefault();
     setIsLoading(true);
 
-    // const allCrew = [
-    //   ...crew.filter((member) =>
-    //     formData.crew.some((selected) => selected.name === member.name)
-    //   ),
-    //   ...additionalCrewMembers.map((member) => ({ name: member.value })),
-    // ];
     const allCrew = [
       ...crew
         .filter((member) =>
@@ -238,18 +248,6 @@ const CreateModal = ({
                     </label>
                   </div>
                   <section className="flex gap-1 items-center w-full">
-                    {/* Document */}
-                    <label className="sf font-semibold tracking-widest">
-                      Document Links
-                      <input
-                        placeholder="Document Links"
-                        type="text"
-                        name="final_report_file"
-                        value={formData.final_report_file}
-                        onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 h-full w-full sf tracking-widest outline-none mb-1 lg:mb-0"
-                      />
-                    </label>
                     {/* Final File */}
                     <label className="sf font-semibold tracking-widest">
                       Final File Link
@@ -258,6 +256,18 @@ const CreateModal = ({
                         type="text"
                         name="final_file"
                         value={formData.final_file}
+                        onChange={inputHandle}
+                        className="glass border border-gray-400 font-light rounded p-2 h-full w-full sf tracking-widest outline-none mb-1 lg:mb-0"
+                      />
+                    </label>
+                    {/* Document */}
+                    <label className="sf font-semibold tracking-widest">
+                      Document Links
+                      <input
+                        placeholder="Document Links"
+                        type="text"
+                        name="final_report_file"
+                        value={formData.final_report_file}
                         onChange={inputHandle}
                         className="glass border border-gray-400 font-light rounded p-2 h-full w-full sf tracking-widest outline-none mb-1 lg:mb-0"
                       />
