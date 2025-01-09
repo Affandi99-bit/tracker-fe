@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { roles, expenses } from "../../constant/constant";
 
-const Produksi = () => {
+const Produksi = ({ pro }) => {
   const [crew, setCrew] = useState([{ name: "", role: "" }]);
   const [days, setDays] = useState([{ crew: [], expenses: [], backups: [] }]);
   const [expenses, setExpenses] = useState([
@@ -20,44 +21,33 @@ const Produksi = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-5 mt-20">
+    <div className="grid grid-cols-4 gap-5 mt-20">
       {/* Pra Produksi */}
       <section className="bg-gray-100 relative p-5 rounded-lg">
         <h1 className="font-bold  text-xl mb-3">Pra Produksi</h1>
         <h2 className="font-bold">Crew</h2>
         {crew.map((_, idx) => (
-          <div key={idx} className="flex items-center gap-2 mb-3">
-            <input
-              type="text"
-              placeholder="Name"
-              className="border p-2 rounded flex-1"
-            />
+          <div key={idx} className="flex items-center gap-2 mb-3 w-full">
+            {pro.map((item) => {
+              <input
+                type="text"
+                placeholder="Name"
+                className="border"
+                value={item.title}
+              />;
+            })}
             <span>as</span>
-            <select className="border p-2 rounded flex-1">
-              <option>Foto</option>
-              <option>Video</option>
-              <option>Editor</option>
-              <option>Drone</option>
-              <option>Helper</option>
-              <option>FPV</option>
-              <option>Freelance</option>
-              <option>Lighting</option>
-              <option>Directer</option>
-              <option>Art Prop</option>
-              <option>Sound</option>
-              <option>Logistik</option>
-              <option>Man Loc</option>
-              <option>BTS</option>
-              <option>Ass Dir</option>
-              <option>Tal Co</option>
-              <option>Ass Cam</option>
-              <option>DOP</option>
+            <select className="border">
+              <option value="">Select</option>
+              {roles.map((role) => {
+                return <option key={role.id}>{role.name}</option>;
+              })}
             </select>
             <button
               onClick={() => setCrew(crew.filter((_, index) => index !== idx))}
-              className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              className="ml-2 p-1"
             >
-              Delete
+              -
             </button>
           </div>
         ))}
@@ -78,11 +68,9 @@ const Produksi = () => {
             />
             <span>for</span>
             <select className="border p-2 rounded flex-1">
-              <option>Sewa</option>
-              <option>Akomodasi</option>
-              <option>Transport</option>
-              <option>Makan</option>
-              <option>Snack</option>
+              {expenses.map((expend, index) => {
+                return <option key={index}>{expend.name}</option>;
+              })}
             </select>
             <input
               type="text"

@@ -133,7 +133,33 @@ export const tags = {
     },
   ],
 };
-
+export const roles = [
+  { id: 1, name: "Photo" },
+  { id: 2, name: "Video" },
+  { id: 3, name: "Editor" },
+  { id: 4, name: "Drone" },
+  { id: 5, name: "Helper" },
+  { id: 6, name: "FPV" },
+  { id: 7, name: "Freelance" },
+  { id: 8, name: "Lighting" },
+  { id: 9, name: "Director" },
+  { id: 10, name: "Art Prop" },
+  { id: 11, name: "Sound" },
+  { id: 12, name: "Logistik" },
+  { id: 13, name: "Man Loc" },
+  { id: 14, name: "BTS" },
+  { id: 15, name: "Ass Dir" },
+  { id: 16, name: "Tal Co" },
+  { id: 17, name: "Ass Cam" },
+  { id: 18, name: "DOP" },
+];
+export const expenses = [
+  { id: 1, name: "Sewa" },
+  { id: 2, name: "Akomodasi" },
+  { id: 3, name: "Transport" },
+  { id: 4, name: "Makan" },
+  { id: 5, name: "Snack" },
+];
 export const user = [
   {
     user: "blackfamz",
