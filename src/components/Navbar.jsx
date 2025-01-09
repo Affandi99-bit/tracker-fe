@@ -168,18 +168,23 @@ const Navbar = ({
           onSearch={onSearch}
         />
       ) : null}
-      <section className="fixed select-none top-0 flex justify-start items-center bg-dark py-1 px-5 w-full overflow-hidden">
-        <div className="flex flex-col items-center justify-center">
-          {/* <img src="/black.png" alt="logo" className=" w-40" /> */}
-          <img
-            src="/PM.png"
-            alt="PM"
-            onClick={() => {
-              window.location.reload();
-            }}
-            className=" w-56 mt-1 object-contain cursor-pointer"
-          />
-        </div>
+      <section className="fixed select-none top-0 flex justify-between items-center bg-dark py-1 px-5 w-full overflow-hidden">
+        <img
+          src="/PM.png"
+          alt="PM"
+          onClick={() => {
+            window.location.reload();
+          }}
+          className=" w-56 mt-1 object-contain cursor-pointer"
+        />
+        <img
+          src="/black.png"
+          alt="PM"
+          onClick={() => {
+            window.location.reload();
+          }}
+          className=" w-56 mt-1 object-contain cursor-pointer"
+        />
       </section>
       <nav className="fixed z-20 px-5 rounded-t-xl bg-dark bottom-0 left-1/2 transform -translate-x-1/2 flex items-center gap-7 h-12">
         {/* Filter Button */}

@@ -162,7 +162,7 @@ const CreateModal = ({
             <div className="flex justify-between items-center p-2 mb-5">
               <button
                 onClick={() => setShowModal(false)}
-                className="z-10 sf flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95"
+                className="z-10 sf flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:-translate-x-1 active:scale-90 duration-300"
               >
                 <span>
                   <svg

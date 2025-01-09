@@ -8,7 +8,7 @@
   src: url("/font/SFUIDisplay-Light.ttf") format("truetype");
 }
 .sf {
-  font-family: "SF UI Display Light";
+  font-family: "SF UI Display Light", sans-serif;
 }
 .montserrat {
   font-family: "Montserrat", sans-serif;

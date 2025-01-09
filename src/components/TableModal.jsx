@@ -1,7 +1,7 @@
 import { useState } from "react";
 import CreateModal from "./CreateModal";
 import { findTagColor } from "../utils/utils";
-import { Report } from "../pages";
+import Home from "../pages/generator/Home";
 const TableModal = ({
   pro,
   showModal,
@@ -18,7 +18,11 @@ const TableModal = ({
   };
 
   return (
-    showModal && (
+    <>
+      {showReportGenerator && (
+        <Home setShowReportGenerator={setShowReportGenerator} pro={pro} />
+      )}
+      showModal && (
       <main
         onClick={handleBackdropClick}
         className="backdrop z-30 h-screen w-full fixed top-0 backdrop-blur-[2px]"
@@ -73,7 +77,7 @@ const TableModal = ({
               <section className="z-10 text-light p-5 h-full w-1/2 flex flex-col items-start">
                 <div>
                   <h1 className="sf tracking-widest font-bold text-2xl">
-                    Event Date : {pro.deadline}
+                    Due Date : {pro.deadline}
                   </h1>
                   <p className="sf tracking-widest font-bold">Crew :</p>
                   <div className="flex flex-col flex-wrap h-40">
@@ -109,8 +113,8 @@ const TableModal = ({
                     <>
                       <button
                         onClick={() => {
-                          // setShowReportGenerator(true);
-                          alert("BA Generator Under Development");
+                          setShowReportGenerator(true);
+                          // alert("BA Generator Under Development");
                         }}
                         className="size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
                       >
@@ -157,12 +161,9 @@ const TableModal = ({
             setTableModal={setShowModal}
           />
         )}
-
-        {showReportGenerator && (
-          <Report setShowReportGenerator={setShowReportGenerator} />
-        )}
       </main>
-    )
+      )
+    </>
   );
 };
 
