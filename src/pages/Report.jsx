@@ -1,376 +1,131 @@
-import React from "react";
-const App = (setShowReportGenerator) => {
-  const [selectedOption, setSelectedOption] = React.useState("design-motion");
-  const [designInputs, setDesignInputs] = React.useState([""]);
-  const [documentationInputs, setDocumentationInputs] = React.useState([
-    { crews: [], expenses: [] },
-  ]);
-
-  const handleChange = (event) => {
-    setSelectedOption(event.target.value);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log(`Submitted ${selectedOption} form`);
-  };
-
-  const addDesignInput = () => {
-    setDesignInputs([...designInputs, ""]);
-  };
-
-  const addDocumentationInput = () => {
-    setDocumentationInputs([
-      ...documentationInputs,
-      { crews: [], expenses: [] },
-    ]);
-  };
-
-  const deleteDesignInput = (index) => {
-    const newInputs = designInputs.filter((_, i) => i !== index);
-    setDesignInputs(newInputs);
-  };
-
-  const deleteDocumentationInput = (index) => {
-    const newInputs = documentationInputs.filter((_, i) => i !== index);
-    setDocumentationInputs(newInputs);
-  };
-
-  const addCrewInput = (index) => {
-    const newInputs = [...documentationInputs];
-    newInputs[index].crews.push("");
-    setDocumentationInputs(newInputs);
-  };
-
-  const addExpenseInput = (index) => {
-    const newInputs = [...documentationInputs];
-    newInputs[index].expenses.push("");
-    setDocumentationInputs(newInputs);
-  };
-
-  const deleteCrewInput = (docIndex, crewIndex) => {
-    const newInputs = [...documentationInputs];
-    newInputs[docIndex].crews.splice(crewIndex, 1);
-    setDocumentationInputs(newInputs);
-  };
-
-  const deleteExpenseInput = (docIndex, expenseIndex) => {
-    const newInputs = [...documentationInputs];
-    newInputs[docIndex].expenses.splice(expenseIndex, 1);
-    setDocumentationInputs(newInputs);
-  };
-
+import React, { useState } from "react";
+import { roles } from "../constant/constant";
+const Report = ({ setShowReportGenerator, pro }) => {
   return (
-    <main className="h-screen w-full z-20 bg-light fixed ">
-      <section className="h-20 w-full fixed top-0 flex items-center justify-between p-5">
-        <div className="flex justify-around items-center">
-          <button
-            onClick={() => {
-              setShowReportGenerator(false);
-            }}
+    <main className="fixed top-0 z-40 bg-light w-full h-screen">
+      {/* Navbar */}
+      <nav className="absolute flex justify-between px-10 text-light sf text-sm tracking-wider items-center top-0 w-[75%] h-10 bg-dark">
+        <button
+          className="flex gap-1 items-center"
+          onClick={() => {
+            setShowReportGenerator(false);
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={0.5}
+            stroke="#e8e8e8"
+            className="size-6"
           >
-            BACK
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"
+            />
+          </svg>
+          Back
+        </button>
+        <p>{pro.title}</p>
+        <p>
+          {new Date(pro.createdAt).toLocaleDateString("en-GB")} | {pro.deadline}
+        </p>
+      </nav>
+      {/* Aside */}
+      <aside className="absolute top-0 right-0 w-1/4 h-full sf font-thin text-sm tracking-wider">
+        <div className="mt-5 px-5">
+          <label className="font-medium">Invoice</label>
+          <input
+            type="date"
+            className="border border-dark p-2 rounded w-full mt-1"
+          />
+        </div>
+        <div className="mt-5 px-5">
+          <label className="font-medium">DP</label>
+          <input
+            type="date"
+            className="border border-dark p-2 rounded w-full mt-1"
+          />
+        </div>
+        <div className="mt-5 px-5">
+          <label className="font-medium">Pelunasan</label>
+          <input
+            type="date"
+            className="border border-dark p-2 rounded w-full mt-1"
+          />
+        </div>
+        <div className="mt-5 px-5">
+          <label className="font-medium">Bonus</label>
+          <input
+            type="date"
+            className="border border-dark p-2 rounded w-full mt-1"
+          />
+        </div>
+        <div className="mt-5 px-5">
+          <label className="font-medium">Total Expense</label>
+          <input
+            type="text"
+            placeholder="Rp. 0"
+            className="border border-dark p-2 rounded w-full mt-1"
+            disabled
+          />
+        </div>
+        <div className="mt-5 px-5">
+          <label className="font-medium">Link Final</label>
+          <input
+            type="url"
+            placeholder="https://link"
+            className="border border-dark p-2 rounded w-full mt-1"
+          />
+        </div>
+        <div className="text-right mt-5 px-5 flex items-center justify-between">
+          <button className="border-dashed border border-dark px-4 py-2 rounded">
+            Export
           </button>
-          <p className="text-2xl font-bold">BA Generator</p>
+          <button className="border bg-dark text-light px-4 py-2 rounded">
+            Save
+          </button>
         </div>
-        <div className="">
-          <select
-            className="border rounded p-2"
-            onChange={handleChange}
-            value={selectedOption}
-          >
-            <option value="design-motion">Design/Motion</option>
-            <option value="documentation-production">
-              Documentation/Production
-            </option>
-          </select>
-        </div>
-      </section>
-      <div className="mt-32 px-10">
-        <form onSubmit={handleSubmit} className="flex gap-5 flex-wrap">
-          {selectedOption === "design-motion" && (
-            <>
-              {designInputs.map((input, index) => (
-                <div key={index} className="flex items-center">
+      </aside>
+      {/* Content */}
+      <main className="w-[75%] h-full flex flex-wrap">
+        <section className="w-1/3 h-48 mt-20 ml-1">
+          <div className="border border-dark flex items-center gap-5 sf text-xs font-thin">
+            {pro.crew.map((item, index) => {
+              return (
+                <>
                   <input
+                    key={index}
                     type="text"
-                    placeholder={`Design Input ${index + 1}`}
-                    className="border rounded p-2 mx-2 my-1 w-1/2 outline-none"
-                    value={input}
-                    onChange={(e) => {
-                      const newInputs = [...designInputs];
-                      newInputs[index] = e.target.value;
-                      setDesignInputs(newInputs);
-                    }}
+                    placeholder="Name"
+                    value={item.name}
+                    className="border border-dark p-px rounded outline-none m-1 sf text-xs font-thin"
                   />
-                  <button
-                    type="button"
-                    onClick={() => deleteDesignInput(index)}
-                    className="p-2"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addDesignInput}
-                className="mt-2 rounded flex justify-center p-2 bg-gray-500 bg-opacity-20 w-1/2"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="black"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-              </button>
-            </>
-          )}
-          {selectedOption === "documentation-production" && (
-            <>
-              {documentationInputs.map((input, index) => (
-                <main
-                  key={index}
-                  className="flex relative w-1/3 border rounded items-center"
-                >
-                  <div>
-                    <p className=" -rotate-90">H-{index}</p>
-                    <button
-                      type="button"
-                      onClick={() => deleteDocumentationInput(index)}
-                      className="absolute left-1 top-1"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="black"
-                        className="size-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6 18 18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  <section className="">
-                    <div>
-                      <p className="p-2">Crews</p>
-                      {input.crews.map((crew, crewIndex) => (
-                        <div key={crewIndex} className="flex items-center">
-                          <input
-                            type="text"
-                            placeholder={`Crew ${crewIndex + 1}`}
-                            className="border rounded p-2 mr-2"
-                            value={crew}
-                            onChange={(e) => {
-                              const newInputs = [...documentationInputs];
-                              newInputs[index].crews[crewIndex] =
-                                e.target.value;
-                              setDocumentationInputs(newInputs);
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => deleteCrewInput(index, crewIndex)}
-                            className="p-2"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="size-6"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M5 12h14"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => addCrewInput(index)}
-                        className="p-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="black"
-                          className="size-6"
+                  <p>as</p>
+                  <select name="roles" id="">
+                    {roles.map((role) => {
+                      return (
+                        <option
+                          className="outline-none"
+                          key={role.id}
+                          value={role.name}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 4.5v15m7.5-7.5h-15"
-                          />{" "}
-                        </svg>
-                      </button>
-                    </div>
-                    <div>
-                      <p className="p-2">Expenses</p>
-
-                      {input.expenses.map((expense, expenseIndex) => (
-                        <div key={expenseIndex} className="flex items-center">
-                          <input
-                            type="text"
-                            placeholder={`Expense ${expenseIndex + 1}`}
-                            className="border rounded p-2 mr-2"
-                            value={expense}
-                            onChange={(e) => {
-                              const newInputs = [...documentationInputs];
-                              newInputs[index].expenses[expenseIndex] =
-                                e.target.value;
-                              setDocumentationInputs(newInputs);
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              deleteExpenseInput(index, expenseIndex)
-                            }
-                            className="p-2"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="size-6"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M5 12h14"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => addExpenseInput(index)}
-                        className="p-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="black"
-                          className="size-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 4.5v15m7.5-7.5h-15"
-                          />{" "}
-                        </svg>
-                      </button>
-                    </div>
-                  </section>
-                </main>
-              ))}
-              <button
-                type="button"
-                onClick={addDocumentationInput}
-                className="mt-2 "
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                  />
-                </svg>
-              </button>
-            </>
-          )}
-          <div className="fixed right-5 top-[4rem] w-80 h-[30rem] border rounded bg-slate-600">
-            <label>
-              <input
-                className="border rounded p-2 m-1"
-                type="text"
-                placeholder="Backup"
-              />
-            </label>
-            <label>
-              <input
-                className="border rounded p-2 m-1"
-                type="text"
-                placeholder="Kirim Invoice"
-              />
-            </label>
-            <label>
-              <input
-                className="border rounded p-2 m-1"
-                type="text"
-                placeholder="DP"
-              />
-            </label>
-            <label>
-              <input
-                className="border rounded p-2 m-1"
-                type="text"
-                placeholder="Pelunasan"
-              />
-            </label>
-            <label>
-              <input
-                className="border rounded p-2 m-1"
-                type="text"
-                placeholder="Bonus"
-              />
-            </label>
-            <p>Total Expense: </p>
+                          {role.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </>
+              );
+            })}
           </div>
-          <button
-            type="submit"
-            className="fixed bottom-3 right-3 mt-2 border rounded p-2 bg-gray-800 text-white"
-          >
-            Submit
-          </button>
-        </form>
-      </div>
+        </section>
+
+        {/* <div className="border border-dark w-1/2 h-48 mt-20 ml-1"></div> */}
+      </main>
     </main>
   );
 };
-export default App;
+
+export default Report;

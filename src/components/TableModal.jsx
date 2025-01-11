@@ -1,7 +1,7 @@
 import { useState } from "react";
 import CreateModal from "./CreateModal";
 import { findTagColor } from "../utils/utils";
-import Home from "../pages/generator/Home";
+import { Report } from "../pages";
 const TableModal = ({
   pro,
   showModal,
@@ -20,7 +20,8 @@ const TableModal = ({
   return (
     <>
       {showReportGenerator && (
-        <Home setShowReportGenerator={setShowReportGenerator} pro={pro} />
+        // <Home setShowReportGenerator={setShowReportGenerator} pro={pro} />
+        <Report setShowReportGenerator={setShowReportGenerator} pro={pro} />
       )}
       showModal && (
       <main

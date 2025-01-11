@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { tags } from "../constant/constant";
-
+import { due, filter, arsip, asc, add, edit, del, ba } from "../assets";
 const Dropdown = ({ selectedTags, setSelectedTags }) => {
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
@@ -130,6 +130,53 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
     </>
   );
 };
+
+const Guide = () => {
+  return (
+    <section className="w-[60%] h-[85%] bg-dark rounded-md fixed top-20 left-1/2 transform -translate-x-1/2 z-30">
+      <h1 className="text-2xl text-center text-light sf tracking-widest font-bold p-2">
+        Guide
+      </h1>
+      <ul className="list-decimal px-10 h-[27rem] overflow-y-auto">
+        <li className="text-sm font-thin text-light sf tracking-wider">
+          <p>Klik DUE DATE untuk mengurutkan dari deadline paling lama</p>
+          <img src={due} alt="" />
+        </li>
+        <li className="text-sm font-thin text-light sf tracking-wider">
+          <p>Klik Filter untuk filter item berdasarkan kategori</p>
+          <img src={filter} alt="" />
+        </li>
+        <li className="text-sm font-thin text-light sf tracking-wider">
+          <p>
+            Klik Arsip untuk menyimpan item dangan kategori DONE. Jika sudah
+            membuat project data dan tidak ditampilkan di layar. Mungkin ada
+            dalam arsip
+          </p>
+          <img src={arsip} alt="" />
+        </li>
+        <li className="text-sm font-thin text-light sf tracking-wider">
+          <p>Klik Urutkan untuk mengatur urutan item</p>
+          <img src={asc} alt="" />
+        </li>
+        <li className="text-sm font-thin text-light sf tracking-wider">
+          <p>
+            Untuk additional crew, klik tombol Additional Crew untuk menampilkan
+            text input untuk diisi crew tambahan
+          </p>
+          <img src={add} alt="" />
+        </li>
+        <li className="text-sm font-thin text-light sf tracking-wider">
+          <p>Klik Edit untuk mengubah detail item yang ada</p>
+          <img src={edit} alt="" />
+        </li>
+        <li className="text-sm font-thin text-light sf tracking-wider">
+          <p>Klik Hapus untuk menghapus item yang tidak diperlukan</p>
+          <img src={del} alt="" />
+        </li>
+      </ul>
+    </section>
+  );
+};
 const Navbar = ({
   onSearch,
   onSort,
@@ -144,6 +191,7 @@ const Navbar = ({
   const [showArchive, setShowArchive] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showLastMonth, setShowLastMonth] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const handleInput = (e) => {
     onSearch(e.target.value);
@@ -159,8 +207,23 @@ const Navbar = ({
     onLogout();
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const button = document.getElementById("guide-button");
+      if (button) {
+        button.classList.add("animate-bounce");
+        setTimeout(() => {
+          button.classList.remove("animate-bounce");
+        }, 2000);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
+      {showGuide ? <Guide /> : null}
       {showFilter ? (
         <Dropdown
           selectedTags={selectedTags}
@@ -177,14 +240,38 @@ const Navbar = ({
           }}
           className=" w-56 mt-1 object-contain cursor-pointer"
         />
-        <img
-          src="/black.png"
-          alt="PM"
-          onClick={() => {
-            window.location.reload();
-          }}
-          className=" w-56 mt-1 object-contain cursor-pointer"
-        />
+        <div className="flex gap-5 items-center">
+          <button
+            id="guide-button"
+            onClick={() => {
+              setShowGuide(!showGuide);
+            }}
+            className="hover:brightness-75"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="#f8f8f8"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+              />
+            </svg>
+          </button>
+          <img
+            src="/black.png"
+            alt="PM"
+            onClick={() => {
+              window.location.reload();
+            }}
+            className=" w-56 object-contain cursor-pointer"
+          />
+        </div>
       </section>
       <nav className="fixed z-20 px-5 rounded-t-xl bg-dark bottom-0 left-1/2 transform -translate-x-1/2 flex items-center gap-7 h-12">
         {/* Filter Button */}

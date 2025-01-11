@@ -1,6 +1,8 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { TableModal, Loader } from "../components";
 import { findTagColor } from "../utils/utils";
+// import Produksi from "../pages/generator/Produksi";
+
 const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
   const handleRowClick = (rowData) => {
     setSelectedRowData(rowData);
@@ -264,6 +266,7 @@ const MainTable = ({
           />
         )}
       </section>
+      {/* <Produksi selectedProject={selectedRowData} /> */}
     </main>
   );
 };
