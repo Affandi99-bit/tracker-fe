@@ -1,10 +1,32 @@
 import React, { useState } from "react";
 import { roles, expenses } from "../constant/constant";
 const Report = ({ setShowReportGenerator, pro }) => {
+  const [operationalExpenses, setOperationalExpenses] = useState([]); // State to hold operational expenses
+  const [sewaExpenses, setSewaExpenses] = useState([]); // State to hold operational expenses
+
+  const addSewaExpense = () => {
+    const newExpense = {
+      name: "",
+      price: "",
+      quantity: "",
+      category: "",
+    };
+    setSewaExpenses([...sewaExpenses, newExpense]); // Update state with new expense
+  };
+
+  const addOperationalExpense = () => {
+    const newExpense = {
+      name: "",
+      price: "",
+      quantity: "",
+      category: "",
+    };
+    setOperationalExpenses([...operationalExpenses, newExpense]); // Update state with new expense
+  };
   return (
-    <main className="fixed top-0 z-40 bg-light w-full h-screen">
+    <main className="fixed top-0 z-40 bg-light w-full h-screen flex flex-col items-start">
       {/* Navbar */}
-      <nav className="absolute flex justify-between px-10 text-light sf text-sm tracking-wider items-center top-0 w-[75%] h-10 bg-dark">
+      <nav className="fixed flex justify-between px-10 text-light sf text-sm tracking-wider items-center top-0 w-[75%] h-10 bg-dark">
         <button
           className="flex gap-1 items-center"
           onClick={() => {
@@ -117,8 +139,9 @@ const Report = ({ setShowReportGenerator, pro }) => {
         </div>
       </aside>
       {/* Content */}
-      <div className="w-[75%] h-full flex flex-wrap">
-        <main className="w-full h-48 mt-20 ml-1 flex items-center gap-1">
+      <div className="w-[75%] flex ">
+        <main className="w-full min-h-48 mt-20 ml-1 flex items-center gap-1">
+          {/* Crew section */}
           <section className="p-2 border h-full border-dark flex flex-col gap-1 sf text-xs font-thin w-1/3">
             <p>Crew</p>
             {pro.crew.map((item, index) => {
@@ -152,51 +175,137 @@ const Report = ({ setShowReportGenerator, pro }) => {
               );
             })}
           </section>
-          <section className="h-full w-2/3 p-2 border border-dark flex flex-col gap-1 sf text-xs font-thin">
+          {/* Expenses section */}
+          <section className="relative p-2 border h-full border-dark flex flex-col gap-1 sf text-xs font-thin w-2/3">
+            <button className="absolute right-1 top-0">x</button>
             <p>Pengeluaran Sewa</p>
-            <div className="flex items-center gap-1">
-              <input
-                className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                type="text"
-                placeholder="Nama Barang"
-              />
-              <input
-                className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                type="number"
-                placeholder="Harga"
-              />
-              <input
-                className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                type="number"
-                placeholder="Qty"
-              />
-            </div>
+            {sewaExpenses.map(
+              (
+                expense,
+                index // Added mapping for sewaExpenses
+              ) => (
+                <div className="flex items-center gap-1" key={index}>
+                  <input
+                    className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                    type="text"
+                    placeholder="Nama Barang"
+                    value={expense.name}
+                    onChange={(e) => {
+                      const updatedExpenses = [...sewaExpenses]; // Updated to sewaExpenses
+                      updatedExpenses[index].name = e.target.value;
+                      setSewaExpenses(updatedExpenses); // Updated to setSewaExpenses
+                    }}
+                  />
+                  <input
+                    className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                    type="number"
+                    placeholder="Harga"
+                    value={expense.price}
+                    onChange={(e) => {
+                      const updatedExpenses = [...sewaExpenses]; // Updated to sewaExpenses
+                      updatedExpenses[index].price = e.target.value;
+                      setSewaExpenses(updatedExpenses); // Updated to setSewaExpenses
+                    }}
+                  />
+                  <input
+                    className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                    type="number"
+                    placeholder="Qty"
+                    value={expense.quantity}
+                    onChange={(e) => {
+                      const updatedExpenses = [...sewaExpenses]; // Updated to sewaExpenses
+                      updatedExpenses[index].quantity = e.target.value;
+                      setSewaExpenses(updatedExpenses); // Updated to setSewaExpenses
+                    }}
+                  />
+                  <button
+                    className="sf text-xs font-thin ml-5"
+                    onClick={() => {
+                      const updatedExpenses = [...sewaExpenses]; // Updated to sewaExpenses
+                      updatedExpenses.splice(index, 1);
+                      setSewaExpenses(updatedExpenses); // Updated to setSewaExpenses
+                    }}
+                  >
+                    -
+                  </button>
+                </div>
+              )
+            )}
+            <button
+              onClick={addSewaExpense} // Added function to add sewa expense
+              className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+            >
+              Add
+            </button>
             <p>Pengeluaran Operasional</p>
-            <div className="flex items-center gap-1">
-              <input
-                className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                type="text"
-                placeholder="Nama Barang"
-              />
-              <input
-                className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                type="number"
-                placeholder="Harga"
-              />
-              <input
-                className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                type="number"
-                placeholder="Qty"
-              />
-              <select name="" id="">
-                <option value="">Categories</option>
-                <option value="Akomodasi">Akomodasi</option>
-                <option value="Transport">Transport</option>
-                <option value="Makan">Makan</option>
-                <option value="Snack">Snack</option>
-                <option value="Lain">Lain</option>
-              </select>
-            </div>
+            {operationalExpenses.map((expense, index) => (
+              <div className="flex items-center gap-1" key={index}>
+                <input
+                  className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                  type="text"
+                  placeholder="Nama Barang"
+                  value={expense.name}
+                  onChange={(e) => {
+                    const updatedExpenses = [...operationalExpenses];
+                    updatedExpenses[index].name = e.target.value;
+                    setOperationalExpenses(updatedExpenses);
+                  }}
+                />
+                <input
+                  className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                  type="number"
+                  placeholder="Harga"
+                  value={expense.price}
+                  onChange={(e) => {
+                    const updatedExpenses = [...operationalExpenses];
+                    updatedExpenses[index].price = e.target.value;
+                    setOperationalExpenses(updatedExpenses);
+                  }}
+                />
+                <input
+                  className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                  type="number"
+                  placeholder="Qty"
+                  value={expense.quantity}
+                  onChange={(e) => {
+                    const updatedExpenses = [...operationalExpenses];
+                    updatedExpenses[index].quantity = e.target.value;
+                    setOperationalExpenses(updatedExpenses);
+                  }}
+                />
+                <select
+                  value={expense.category}
+                  onChange={(e) => {
+                    const updatedExpenses = [...operationalExpenses];
+                    updatedExpenses[index].category = e.target.value;
+                    setOperationalExpenses(updatedExpenses);
+                  }}
+                >
+                  <option value="">Categories</option>
+                  <option value="Akomodasi">Akomodasi</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Makan">Makan</option>
+                  <option value="Snack">Snack</option>
+                  <option value="Lain">Lain</option>
+                </select>
+                <button
+                  className="sf text-xs font-thin ml-5"
+                  onClick={() => {
+                    const updatedExpenses = [...operationalExpenses];
+                    updatedExpenses.splice(index, 1);
+                    setOperationalExpenses(updatedExpenses);
+                  }}
+                >
+                  -
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={addOperationalExpense}
+              className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+            >
+              Add
+            </button>
             <textarea
               placeholder="Note"
               className="h-full border border-dark outline-none p-2"
@@ -204,6 +313,20 @@ const Report = ({ setShowReportGenerator, pro }) => {
           </section>
         </main>
       </div>
+      <button
+        className="w-20 m-1 text-light bg-dark flex justify-center sf text-xs font-thin"
+        onClick={() => {
+          const content = document.querySelector(".w-[75%]"); // Select the div to copy
+          const range = document.createRange();
+          range.selectNodeContents(content);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          document.execCommand("copy"); // Copy the selected content
+        }}
+      >
+        Add
+      </button>
     </main>
   );
 };
