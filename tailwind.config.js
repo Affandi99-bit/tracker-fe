@@ -7,6 +7,12 @@ export default {
         dark: "#222222",
         light: "#E8E8E8",
       },
+      keyframes: {
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-5deg)" },
+          "50%": { transform: "rotate(5deg)" },
+        },
+      },
     },
   },
   plugins: [],

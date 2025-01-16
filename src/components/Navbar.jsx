@@ -207,20 +207,6 @@ const Navbar = ({
     onLogout();
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const button = document.getElementById("guide-button");
-      if (button) {
-        button.classList.add("animate-bounce");
-        setTimeout(() => {
-          button.classList.remove("animate-bounce");
-        }, 2000);
-      }
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <>
       {showGuide ? <Guide /> : null}
@@ -231,22 +217,21 @@ const Navbar = ({
           onSearch={onSearch}
         />
       ) : null}
-      <section className="fixed select-none top-0 flex justify-between items-center bg-dark py-1 px-5 w-full overflow-hidden">
+      <section className="fixed select-none z-0 top-0 flex justify-between items-center bg-dark py-3 px-5 w-full overflow-hidden">
         <img
           src="/PM.png"
           alt="PM"
           onClick={() => {
             window.location.reload();
           }}
-          className=" w-56 mt-1 object-contain cursor-pointer"
+          className=" w-56 object-contain cursor-pointer"
         />
         <div className="flex gap-5 items-center">
           <button
-            id="guide-button"
             onClick={() => {
               setShowGuide(!showGuide);
             }}
-            className="hover:brightness-75"
+            className="hover:brightness-75 animate-[wiggle_1s_ease-in-out_infinite]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -263,14 +248,7 @@ const Navbar = ({
               />
             </svg>
           </button>
-          <img
-            src="/black.png"
-            alt="PM"
-            onClick={() => {
-              window.location.reload();
-            }}
-            className=" w-56 object-contain cursor-pointer"
-          />
+          <img src="/black.png" alt="PM" className=" w-56 object-contain" />
         </div>
       </section>
       <nav className="fixed z-20 px-5 rounded-t-xl bg-dark bottom-0 left-1/2 transform -translate-x-1/2 flex items-center gap-7 h-12">

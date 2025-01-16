@@ -84,7 +84,7 @@ export const tags = {
       color: "#ef4444",
     },
   ],
-  addons: [],
+
   projectCategories: [
     {
       title: "Add",

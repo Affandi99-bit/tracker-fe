@@ -1,7 +1,6 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { TableModal, Loader } from "../components";
 import { findTagColor } from "../utils/utils";
-// import Produksi from "../pages/generator/Produksi";
 
 const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
   const handleRowClick = (rowData) => {
@@ -14,9 +13,9 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
       {tableData.map((row, index) => (
         <tr
           onClick={() => handleRowClick(row)}
-          className={`h-20  w-screen sf tracking-widest text-xs font-medium transition ease-in-out duration-300 ${
+          className={`h-20 w-screen sf tracking-widest text-xs ${
             index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-          } hover:brightness-75 duration-200 transition-all`}
+          } hover:brightness-75`}
           key={row._id}
         >
           <td className="w-10 border-x border-gray-400">
@@ -38,9 +37,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
                   }}
                   className="rounded-md w-[3.6rem] py-[0.15rem]"
                 >
-                  <span className="text-white text-xs font-extralight">
-                    {chip}
-                  </span>
+                  <span className="text-light text-xs font-thin">{chip}</span>
                 </p>
               ))}
             </div>
@@ -188,7 +185,7 @@ const MainTable = ({
   return (
     <main className="flex flex-col h-screen">
       <section className="flex-grow overflow-x-scroll lg:overflow-x-hidden">
-        <table className="border-collapse  mt-[5.5rem] select-none relative w-full table-fixed">
+        <table className="border-collapse  mt-[6rem] select-none relative w-full table-fixed">
           <thead className="sf tracking-widest">
             <tr>
               <th className="w-10 sticky top-0 border-none bg-light text-dark shadow text-md z-10 h-10">

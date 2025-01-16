@@ -1,7 +1,7 @@
 import { useState } from "react";
 import CreateModal from "./CreateModal";
-import { findTagColor } from "../utils/utils";
 import { Report } from "../pages";
+
 const TableModal = ({
   pro,
   showModal,
@@ -16,7 +16,6 @@ const TableModal = ({
       setShowModal(false);
     }
   };
-
   return (
     <>
       {showReportGenerator && (
@@ -26,78 +25,89 @@ const TableModal = ({
       showModal && (
       <main
         onClick={handleBackdropClick}
-        className="backdrop z-30 h-screen w-full fixed top-0 backdrop-blur-[2px]"
+        className="backdrop z-30 h-screen backdrop-blur w-full fixed top-0"
       >
-        <div className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <section className="relative rounded-lg  bg-dark shadow-lg w-screen h-screen lg:w-[80rem] lg:h-[30rem]">
-            <button
-              onClick={() => setShowModal(false)}
-              className="z-20 absolute right-5 top-10 lg:top-5 border border-dashed border-light text-white sf tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
-            >
-              Close
-            </button>
-
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="z-10 absolute right-5 bottom-16 lg:bottom-5 bg-light text-dark sf tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
-            >
-              Edit
-            </button>
-
-            <main className="flex flex-col-reverse lg:flex-row w-full justify-start lg:items-start">
-              <section className="text-light p-5 h-full w-full lg:w-1/2">
-                <h1 className="sf tracking-widest font-bold text-2xl">
+        <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-[95%] h-[35rem]">
+          <section className="relative overflow-hidden h-full bg-light border border-dark rounded">
+            <nav className="fixed w-full top-0 z-20 flex items-center justify-between p-3 gap-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="z-10 sf flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
+              >
+                <span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"
+                    />
+                  </svg>
+                </span>
+                Back
+              </button>
+              <div className="flex flex-col items-center justify-center">
+                <h1 className="sf text-dark tracking-widest font-bold text-2xl">
                   {pro.title}
                 </h1>
-                <div className="flex flex-wrap">
+                <div className="flex sf flex-wrap">
                   {[...pro.status, ...pro.categories, ...pro.type].map(
                     (chip, i) => (
-                      <p
-                        key={i}
-                        style={{
-                          backgroundColor: findTagColor(chip),
-                        }}
-                        className="rounded-md w-[15%] text-center p-1 m-1"
-                      >
-                        <span className="text-white text-sm font-extralight">
-                          {chip}
-                        </span>
-                      </p>
+                      <>
+                        <p key={i} className="text-dark text-center">
+                          &nbsp;
+                          <span className=" tracking-widest text-[0.60rem] leading-[0.5rem] font-thin">
+                            {chip}
+                          </span>
+                          &nbsp; |
+                        </p>
+                      </>
                     )
                   )}
                 </div>
-                <h3 className="sf tracking-widest mb-5 text-lg font-bold">
+              </div>
+              <button
+                onClick={() => setShowEditModal(true)}
+                className=" bg-dark text-light sf tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+              >
+                Edit
+              </button>
+            </nav>
+
+            <main className="flex flex-col lg:flex-row w-full justify-start lg:items-start">
+              <section className=" z-10 text-dark p-5 h-full w-full lg:w-1/2 mt-20">
+                <p className="sf tracking-widest font-bold text-xl">
                   {pro.client} - {pro.pic}
-                </h3>
-                <p className="sf tracking-widest">
-                  <span className="font-bold">Project Manager :</span> {pro.pm}
+                </p>
+                <p className="sf tracking-widest font-bold text-md">
+                  Due Date :
+                  <span className="text-xs font-normal">
+                    &nbsp;{pro.deadline}
+                  </span>{" "}
+                </p>
+                <p className="sf tracking-widest font-bold text-md">
+                  Project Manager :
+                  <span className="text-xs font-normal">&nbsp;{pro.pm}</span>
                 </p>
                 <p className="sf tracking-widest font-bold">Note :</p>
-                <p className=" sf tracking-widest pl-5 text-sm">{pro.note}</p>
-              </section>
-              <section className="z-10 text-light p-5 h-full w-1/2 flex flex-col items-start">
-                <div>
-                  <h1 className="sf tracking-widest font-bold text-2xl">
-                    Due Date : {pro.deadline}
-                  </h1>
-                  <p className="sf tracking-widest font-bold">Crew :</p>
-                  <div className="flex flex-col flex-wrap h-40">
-                    {pro.crew.map((member, i) => (
-                      <p
-                        key={i}
-                        className="pl-10 flex justify-start items-center sf tracking-widest"
-                      >
-                        <span className="w-[3.5rem]">{member.name}</span>
-                      </p>
-                    ))}
-                  </div>
-                </div>
-                <div className="absolute bottom-32 lg:bottom-20 flex gap-3 items-center sf tracking-widest font-bold">
+                <textarea
+                  readOnly
+                  className="no-scrollbar outline-none sf tracking-widest h-32 w-96 pl-5 text-xs"
+                  value={pro.note}
+                />
+
+                <div className="flex gap-3 items-center sf tracking-widest font-bold">
                   {pro.final_file ? (
                     <a
                       href={pro.final_file}
                       target="_blank"
-                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
+                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-dark text-dark bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 rounded-lg"
                     >
                       Final File
                     </a>
@@ -106,7 +116,7 @@ const TableModal = ({
                     <a
                       href={pro.final_report_file}
                       target="_blank"
-                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
+                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-dark text-dark bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 rounded-lg"
                     >
                       Event Report
                     </a>
@@ -115,9 +125,8 @@ const TableModal = ({
                       <button
                         onClick={() => {
                           setShowReportGenerator(true);
-                          // alert("BA Generator Under Development");
                         }}
-                        className="size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-light text-light bg-opacity-5 hover:bg-opacity-10 transition-all duration-300 rounded-lg"
+                        className="size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-dark text-dark bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 rounded-lg"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -142,27 +151,41 @@ const TableModal = ({
                   {new Date(pro.createdAt).toLocaleDateString("en-GB")}
                 </p>
               </section>
+              <section className="relative z-10 text-dark p-5 h-full w-1/2 flex flex-col items-start mt-20 gradient">
+                <p className="sf tracking-widest font-bold">Crew :</p>
+                <div className="flex flex-col flex-wrap h-40">
+                  {pro.crew.map((member, i) => (
+                    <p
+                      key={i}
+                      className="pl-5 flex justify-start items-center sf tracking-widest"
+                    >
+                      <span className="w-[3.5rem] text-xs font-normal">
+                        {member.name}
+                      </span>
+                    </p>
+                  ))}
+                </div>
+              </section>
               <img
                 src="/logo.png"
                 alt="logo"
-                className="opacity-5  absolute right-0 top-20 z-0 object-contain -rotate-12"
+                className="absolute select-none z-0 -bottom-20 -right-20 opacity-10 -rotate-12 mix-blend-difference object-contain"
               />
             </main>
           </section>
         </div>
-
-        {showEditModal && (
-          <CreateModal
-            showModal={showEditModal}
-            setShowModal={setShowEditModal}
-            initialData={pro}
-            updateData={updateData}
-            isEditing={true}
-            deleteData={deleteData}
-            setTableModal={setShowModal}
-          />
-        )}
       </main>
+      {showEditModal && (
+        <CreateModal
+          showModal={showEditModal}
+          setShowModal={setShowEditModal}
+          initialData={pro}
+          updateData={updateData}
+          isEditing={true}
+          deleteData={deleteData}
+          setTableModal={setShowModal}
+        />
+      )}
       )
     </>
   );

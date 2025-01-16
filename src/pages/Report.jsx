@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { roles, expenses } from "../constant/constant";
 const Report = ({ setShowReportGenerator, pro }) => {
-  const [operationalExpenses, setOperationalExpenses] = useState([]); // State to hold operational expenses
-  const [sewaExpenses, setSewaExpenses] = useState([]); // State to hold operational expenses
+  const [operationalExpenses, setOperationalExpenses] = useState([]);
+  const [sewaExpenses, setSewaExpenses] = useState([]);
 
   const addSewaExpense = () => {
     const newExpense = {
@@ -11,7 +11,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
       quantity: "",
       category: "",
     };
-    setSewaExpenses([...sewaExpenses, newExpense]); // Update state with new expense
+    setSewaExpenses([...sewaExpenses, newExpense]);
   };
 
   const addOperationalExpense = () => {
@@ -21,7 +21,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
       quantity: "",
       category: "",
     };
-    setOperationalExpenses([...operationalExpenses, newExpense]); // Update state with new expense
+    setOperationalExpenses([...operationalExpenses, newExpense]);
   };
   return (
     <main className="fixed top-0 z-40 bg-light w-full h-screen flex flex-col items-start">
@@ -60,7 +60,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
             <input
               type="text"
               value={pro.pm}
-              className="border border-dark p-2 w-full mt-1 outline-none"
+              className="border border-gray-400 p-2 w-full mt-1 outline-none"
               readOnly
             />
           </div>
@@ -69,7 +69,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
             <input
               type="text"
               value={pro.client}
-              className="border border-dark p-2 w-full mt-1 outline-none"
+              className="border border-gray-400 p-2 w-full mt-1 outline-none"
               readOnly
             />
           </div>
@@ -78,7 +78,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
             <input
               type="text"
               value={pro.pic}
-              className="border border-dark p-2 w-full mt-1 outline-none"
+              className="border border-gray-400 p-2 w-full mt-1 outline-none"
               readOnly
             />
           </div>
@@ -87,30 +87,30 @@ const Report = ({ setShowReportGenerator, pro }) => {
           <label className="font-medium">Invoice</label>
           <input
             type="date"
-            className="border border-dark p-2 w-full mt-1 outline-none"
+            className="border border-gray-400 p-2 w-full mt-1 outline-none"
           />
         </div>
         <div className="mt-2 px-5">
           <label className="font-medium">DP</label>
           <input
             type="date"
-            className="border border-dark p-2 w-full mt-1 outline-none"
+            className="border border-gray-400 p-2 w-full mt-1 outline-none"
           />
         </div>
         <div className="mt-2 px-5">
           <label className="font-medium">Pelunasan</label>
           <input
             type="date"
-            className="border border-dark p-2 w-full mt-1 outline-none"
+            className="border border-gray-400 p-2 w-full mt-1 outline-none"
           />
         </div>
 
         <div className="mt-2 px-5">
-          <label className="font-medium">Jumlah Total</label>
+          <label className="font-medium">Jumlah Total Expenses</label>
           <input
             type="text"
             placeholder="Rp. 0"
-            className="border border-dark p-2 w-full mt-1 outline-none"
+            className="border border-gray-400 p-2 w-full mt-1 outline-none"
             disabled
           />
         </div>
@@ -119,7 +119,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
           <input
             type="url"
             value={pro.final_file}
-            className="border border-dark p-2 w-full mt-1 outline-none"
+            className="border border-gray-400 p-2 w-full mt-1 outline-none"
             readOnly
           />
         </div>
@@ -128,11 +128,11 @@ const Report = ({ setShowReportGenerator, pro }) => {
           <textarea
             placeholder="Note"
             value={pro.note}
-            className="border border-dark p-2 w-full mt-1 outline-none"
+            className="border border-gray-400 p-2 w-full mt-1 outline-none"
           />
         </div>
         <div className="text-right mt-5 px-5 flex items-center justify-between">
-          <button className="border-dashed border border-dark px-4 py-2">
+          <button className="border-dashed border border-gray-400 px-4 py-2">
             Export
           </button>
           <button className="border bg-dark text-light px-4 py-2">Save</button>
@@ -142,7 +142,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
       <div className="w-[75%] flex ">
         <main className="w-full min-h-48 mt-20 ml-1 flex items-center gap-1">
           {/* Crew section */}
-          <section className="p-2 border h-full border-dark flex flex-col gap-1 sf text-xs font-thin w-1/3">
+          <section className="p-2 border h-full border-gray-400 flex flex-col gap-1 sf text-xs font-thin w-1/3">
             <p>Crew</p>
             {pro.crew.map((item, index) => {
               return (
@@ -155,7 +155,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                     placeholder="Name"
                     value={item.name}
                     readOnly
-                    className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                    className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                   />
                   <p>as</p>
                   <select name="roles" id="">
@@ -176,63 +176,58 @@ const Report = ({ setShowReportGenerator, pro }) => {
             })}
           </section>
           {/* Expenses section */}
-          <section className="relative p-2 border h-full border-dark flex flex-col gap-1 sf text-xs font-thin w-2/3">
+          <section className="relative p-2 border h-full border-gray-400 flex flex-col gap-1 sf text-xs font-thin w-2/3">
             <button className="absolute right-1 top-0">x</button>
             <p>Pengeluaran Sewa</p>
-            {sewaExpenses.map(
-              (
-                expense,
-                index // Added mapping for sewaExpenses
-              ) => (
-                <div className="flex items-center gap-1" key={index}>
-                  <input
-                    className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                    type="text"
-                    placeholder="Nama Barang"
-                    value={expense.name}
-                    onChange={(e) => {
-                      const updatedExpenses = [...sewaExpenses]; // Updated to sewaExpenses
-                      updatedExpenses[index].name = e.target.value;
-                      setSewaExpenses(updatedExpenses); // Updated to setSewaExpenses
-                    }}
-                  />
-                  <input
-                    className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                    type="number"
-                    placeholder="Harga"
-                    value={expense.price}
-                    onChange={(e) => {
-                      const updatedExpenses = [...sewaExpenses]; // Updated to sewaExpenses
-                      updatedExpenses[index].price = e.target.value;
-                      setSewaExpenses(updatedExpenses); // Updated to setSewaExpenses
-                    }}
-                  />
-                  <input
-                    className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
-                    type="number"
-                    placeholder="Qty"
-                    value={expense.quantity}
-                    onChange={(e) => {
-                      const updatedExpenses = [...sewaExpenses]; // Updated to sewaExpenses
-                      updatedExpenses[index].quantity = e.target.value;
-                      setSewaExpenses(updatedExpenses); // Updated to setSewaExpenses
-                    }}
-                  />
-                  <button
-                    className="sf text-xs font-thin ml-5"
-                    onClick={() => {
-                      const updatedExpenses = [...sewaExpenses]; // Updated to sewaExpenses
-                      updatedExpenses.splice(index, 1);
-                      setSewaExpenses(updatedExpenses); // Updated to setSewaExpenses
-                    }}
-                  >
-                    -
-                  </button>
-                </div>
-              )
-            )}
+            {sewaExpenses.map((expense, index) => (
+              <div className="flex items-center gap-1" key={index}>
+                <input
+                  className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                  type="text"
+                  placeholder="Nama Barang"
+                  value={expense.name}
+                  onChange={(e) => {
+                    const updatedExpenses = [...sewaExpenses];
+                    updatedExpenses[index].name = e.target.value;
+                    setSewaExpenses(updatedExpenses);
+                  }}
+                />
+                <input
+                  className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                  type="number"
+                  placeholder="Harga"
+                  value={expense.price}
+                  onChange={(e) => {
+                    const updatedExpenses = [...sewaExpenses];
+                    updatedExpenses[index].price = e.target.value;
+                    setSewaExpenses(updatedExpenses);
+                  }}
+                />
+                <input
+                  className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                  type="number"
+                  placeholder="Qty"
+                  value={expense.quantity}
+                  onChange={(e) => {
+                    const updatedExpenses = [...sewaExpenses];
+                    updatedExpenses[index].quantity = e.target.value;
+                    setSewaExpenses(updatedExpenses);
+                  }}
+                />
+                <button
+                  className="sf text-xs font-thin ml-5"
+                  onClick={() => {
+                    const updatedExpenses = [...sewaExpenses];
+                    updatedExpenses.splice(index, 1);
+                    setSewaExpenses(updatedExpenses);
+                  }}
+                >
+                  -
+                </button>
+              </div>
+            ))}
             <button
-              onClick={addSewaExpense} // Added function to add sewa expense
+              onClick={addSewaExpense}
               className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
             >
               Add
@@ -241,7 +236,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
             {operationalExpenses.map((expense, index) => (
               <div className="flex items-center gap-1" key={index}>
                 <input
-                  className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                  className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                   type="text"
                   placeholder="Nama Barang"
                   value={expense.name}
@@ -252,7 +247,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                   }}
                 />
                 <input
-                  className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                  className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                   type="number"
                   placeholder="Harga"
                   value={expense.price}
@@ -263,7 +258,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                   }}
                 />
                 <input
-                  className="border border-dark p-px outline-none m-1 sf text-xs font-thin"
+                  className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                   type="number"
                   placeholder="Qty"
                   value={expense.quantity}
@@ -306,25 +301,20 @@ const Report = ({ setShowReportGenerator, pro }) => {
             >
               Add
             </button>
-            <textarea
-              placeholder="Note"
-              className="h-full border border-dark outline-none p-2"
-            />
+            <div className="w-full flex items-center gap-1">
+              <textarea
+                placeholder="Note"
+                className="h-full w-2/3 border border-gray-400 outline-none p-2"
+              />
+              <div className="w-1/3 h-full">
+                <p className="bg-dark text-gray-400">Total Expenses</p>
+                <p>Rp.0</p>
+              </div>
+            </div>
           </section>
         </main>
       </div>
-      <button
-        className="w-20 m-1 text-light bg-dark flex justify-center sf text-xs font-thin"
-        onClick={() => {
-          const content = document.querySelector(".w-[75%]"); // Select the div to copy
-          const range = document.createRange();
-          range.selectNodeContents(content);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-          document.execCommand("copy"); // Copy the selected content
-        }}
-      >
+      <button className="w-20 m-1 text-light bg-dark flex justify-center sf text-xs font-thin">
         Add
       </button>
     </main>

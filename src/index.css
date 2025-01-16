@@ -27,9 +27,11 @@
 ::-webkit-scrollbar-thumb {
   background-color: #f8f8f8;
 }
+
 body {
-  overflow-x: hidden;
+  overflow: hidden;
 }
+
 .glass {
   background: rgba(211, 211, 211, 0.15);
   backdrop-filter: blur(10.5px);

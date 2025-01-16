@@ -150,7 +150,7 @@ const CreateModal = ({
   return (
     showModal && (
       <div>
-        <main className="fixed overflow-y-auto z-20 top-0 text-dark h-screen">
+        <main className="fixed overflow-y-auto z-50 top-0 text-dark h-screen">
           <section className="relative overflow-auto w-screen h-full no-scrollbar bg-zinc-100 ">
             <section className="hidden fixed -right-40 -bottom-56 select-none md:flex gap-1 z-0">
               <img
@@ -162,7 +162,7 @@ const CreateModal = ({
             <div className="flex justify-between items-center p-2 mb-5">
               <button
                 onClick={() => setShowModal(false)}
-                className="z-10 sf flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:-translate-x-1 active:scale-90 duration-300"
+                className="z-10 sf flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
               >
                 <span>
                   <svg
