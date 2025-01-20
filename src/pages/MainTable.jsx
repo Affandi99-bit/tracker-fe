@@ -177,7 +177,17 @@ const MainTable = ({
 
     setSortedDataLocal(sortedByDeadline);
   };
+  const handleTitle = () => {
+    setIsSorted((prev) => !prev);
 
+    const sortedByTitle = [...sortedData].sort((a, b) => {
+      return isSorted
+        ? a.title.localeCompare(b.title)
+        : b.title.localeCompare(a.title);
+    });
+
+    setSortedDataLocal(sortedByTitle);
+  };
   if (!tableData || !sortedData) {
     return <Loader />;
   }
@@ -191,8 +201,27 @@ const MainTable = ({
               <th className="w-10 sticky top-0 border-none bg-light text-dark shadow text-md z-10 h-10">
                 ID
               </th>
-              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
-                Project Title
+              <th
+                onClick={handleTitle}
+                className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10"
+              >
+                <div className=" flex items-center justify-center cursor-pointer">
+                  Project Title
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-6 "
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
+                    />
+                  </svg>
+                </div>
               </th>
               <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
                 Client
