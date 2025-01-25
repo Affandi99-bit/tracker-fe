@@ -107,8 +107,8 @@ export const tags = {
       color: "#13293d",
     },
     {
-      title: "Dok",
-      value: "Dok",
+      title: "Dokumentasi",
+      value: "Dokumentasi",
       color: "#051c3d",
     },
     {
@@ -131,9 +131,29 @@ export const tags = {
       value: "Editing",
       color: "#132a4b",
     },
+    // {
+    //   title: "Offline Editing",
+    //   value: "Editing",
+    //   color: "#132a4b",
+    // },
+    // {
+    //   title: "Online Editing",
+    //   value: "Editing",
+    //   color: "#132a4b",
+    // },
+    {
+      title: "Edit Foto",
+      value: "Edit Foto",
+      color: "#132a4b",
+    },
+    {
+      title: "Retouch Foto",
+      value: "Retouch Foto",
+      color: "#132a4b",
+    },
   ],
 };
-export const roles = [
+export const roleProduction = [
   { id: 1, name: "Photo" },
   { id: 2, name: "Video" },
   { id: 3, name: "Editor" },
@@ -153,12 +173,15 @@ export const roles = [
   { id: 17, name: "Ass Cam" },
   { id: 18, name: "DOP" },
 ];
-export const expenses = [
-  { id: 1, name: "Sewa" },
-  { id: 2, name: "Akomodasi" },
-  { id: 3, name: "Transport" },
-  { id: 4, name: "Makan" },
-  { id: 5, name: "Snack" },
+export const roleGraphic = [
+  { id: 1, name: "Motion" },
+  { id: 2, name: "Design Layout" },
+  { id: 3, name: "Illustration" },
+  { id: 4, name: "Layer Splitting" },
+  { id: 5, name: "Compositing" },
+  { id: 6, name: "VFX" },
+  { id: 7, name: "Freelance" },
+  { id: 8, name: "Voice Over" },
 ];
 export const user = [
   {

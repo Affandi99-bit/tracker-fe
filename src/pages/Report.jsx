@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { NumericFormat } from "react-number-format";
-import { roles, expenses } from "../constant/constant";
+import { roleProduction, roleGraphic } from "../constant/constant";
 const Report = ({ setShowReportGenerator, pro }) => {
   const [template, setTemplate] = useState();
   const [days, setDays] = useState([
     {
+      id: Date.now(),
       crew: pro.crew,
       sewaExpenses: [],
       operationalExpenses: [],
@@ -26,19 +27,28 @@ const Report = ({ setShowReportGenerator, pro }) => {
       },
     ]);
   };
+
   const calculateTotalExpenses = (day) => {
+    if (!day) return 0;
+
+    const parseNumber = (value) =>
+      isNaN(parseFloat(value)) ? 0 : parseFloat(value);
+
     const sewaTotal = day.sewaExpenses.reduce(
       (total, expense) =>
-        total + parseFloat(expense.price || 0) * (expense.quantity || 0),
+        total + parseNumber(expense.price) * (parseInt(expense.quantity) || 0),
       0
     );
+
     const operationalTotal = day.operationalExpenses.reduce(
       (total, expense) =>
-        total + parseFloat(expense.price || 0) * (expense.quantity || 0),
+        total + parseNumber(expense.price) * (parseInt(expense.quantity) || 0),
       0
     );
+
     return sewaTotal + operationalTotal;
   };
+
   const handleAddExpense = (dayIndex, type) => {
     setDays((prevDays) => {
       return prevDays.map((day, index) => {
@@ -58,20 +68,33 @@ const Report = ({ setShowReportGenerator, pro }) => {
       });
     });
   };
+
   const handleExpenseChange = (dayIndex, type, expenseIndex, field, value) => {
     setDays((prevDays) => {
-      const newDays = [...prevDays];
-      const day = { ...newDays[dayIndex] };
-      const expenses = [...day[type]];
-      expenses[expenseIndex][field] = value;
-      day[type] = expenses;
+      const updatedDays = prevDays.map((day, index) => {
+        if (index === dayIndex) {
+          const updatedExpenses = day[type].map((expense, idx) =>
+            idx === expenseIndex ? { ...expense, [field]: value } : expense
+          );
 
-      day.totalExpenses = calculateTotalExpenses(day);
+          const updatedDay = {
+            ...day,
+            [type]: updatedExpenses,
+            totalExpenses: calculateTotalExpenses({
+              ...day,
+              [type]: updatedExpenses,
+            }),
+          };
 
-      newDays[dayIndex] = day;
-      return newDays;
+          return updatedDay;
+        }
+        return day;
+      });
+
+      return updatedDays;
     });
   };
+
   return (
     <main className="fixed top-0 z-40 bg-light w-full h-screen flex flex-col items-start">
       {/* Navbar */}
@@ -162,7 +185,10 @@ const Report = ({ setShowReportGenerator, pro }) => {
                 displayType="input"
                 thousandSeparator
                 prefix={"Rp. "}
-                // value={}
+                value={days.reduce(
+                  (acc, day) => acc + calculateTotalExpenses(day),
+                  0
+                )}
                 placeholder="Rp. 0"
                 className="border border-gray-400 p-2 w-full mt-1 outline-none"
                 disabled
@@ -198,7 +224,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
       <div className="w-[75%] flex flex-col gap-5 mt-10 h-screen overflow-y-auto no-scrollbar">
         {/* Data per Day */}
         {days.map((day, dayIndex) => (
-          <main key={day.id} className="w-full min-h-48 p-1 flex items-center">
+          <main key={day.id} className="w-full p-1 flex items-center">
             <div className="flex h-full w-full gap-1">
               {/* Crew section */}
               <section className="p-2 border h-full border-gray-400 flex flex-col gap-1 sf text-xs font-thin w-1/3">
@@ -219,17 +245,37 @@ const Report = ({ setShowReportGenerator, pro }) => {
                       className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                     />
                     <p>as</p>
-                    <select name="roles" id="">
-                      {roles.map((role) => (
-                        <option
-                          className="outline-none"
-                          key={role.id}
-                          value={role.name}
-                        >
-                          {role.name}
-                        </option>
-                      ))}
-                    </select>
+                    {template ? (
+                      <>
+                        <select name="roleProduction" id="">
+                          <option value="">Select</option>
+                          {roleProduction.map((role) => (
+                            <option
+                              className="outline-none"
+                              key={role.id}
+                              value={role.name}
+                            >
+                              {role.name}
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    ) : (
+                      <>
+                        <select name="roleGraphic" id="">
+                          <option value="">Select</option>
+                          {roleGraphic.map((role) => (
+                            <option
+                              className="outline-none"
+                              key={role.id}
+                              value={role.name}
+                            >
+                              {role.name}
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    )}
                   </div>
                 ))}
               </section>
@@ -306,47 +352,40 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <NumericFormat
                           displayType="input"
                           thousandSeparator
+                          allowNegative={false}
                           prefix={"Rp. "}
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           placeholder="Prices"
-                          value={expense.price}
-                          onChange={(e) => {
+                          value={expense.price || ""}
+                          onValueChange={(values) => {
+                            const { value } = values;
                             handleExpenseChange(
                               dayIndex,
                               "sewaExpenses",
                               index,
                               "price",
-                              e.target.value
+                              value
                             );
-                            const updatedExpenses = [...day.sewaExpenses];
-                            updatedExpenses[index].price = e.target.value;
-                            setDays((prevDays) => {
-                              const newDays = [...prevDays];
-                              newDays[dayIndex].sewaExpenses = updatedExpenses;
-                              return newDays;
-                            });
                           }}
                         />
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="number"
                           placeholder="Qty"
-                          value={expense.quantity}
+                          value={expense.quantity || ""}
+                          min="1"
                           onChange={(e) => {
+                            const value =
+                              e.target.value === ""
+                                ? ""
+                                : Math.max(1, parseInt(e.target.value) || 1);
                             handleExpenseChange(
                               dayIndex,
                               "sewaExpenses",
                               index,
                               "quantity",
-                              e.target.value
+                              value
                             );
-                            const updatedExpenses = [...day.sewaExpenses];
-                            updatedExpenses[index].quantity = e.target.value;
-                            setDays((prevDays) => {
-                              const newDays = [...prevDays];
-                              newDays[dayIndex].sewaExpenses = updatedExpenses;
-                              return newDays;
-                            });
                           }}
                         />
                         <button
@@ -403,36 +442,37 @@ const Report = ({ setShowReportGenerator, pro }) => {
                           prefix={"Rp. "}
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           placeholder="Prices"
-                          value={expense.price}
-                          onChange={(e) => {
-                            const updatedExpenses = [
-                              ...day.operationalExpenses,
-                            ];
-                            updatedExpenses[index].price = e.target.value;
-                            setDays((prevDays) => {
-                              const newDays = [...prevDays];
-                              newDays[dayIndex].operationalExpenses =
-                                updatedExpenses;
-                              return newDays;
-                            });
+                          value={expense.price || ""}
+                          allowNegative={false}
+                          onValueChange={(values) => {
+                            const { value } = values;
+                            handleExpenseChange(
+                              dayIndex,
+                              "operationalExpenses",
+                              index,
+                              "price",
+                              value
+                            );
                           }}
                         />
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="number"
                           placeholder="Qty"
-                          value={expense.quantity}
+                          value={expense.quantity || ""}
+                          min="1"
                           onChange={(e) => {
-                            const updatedExpenses = [
-                              ...day.operationalExpenses,
-                            ];
-                            updatedExpenses[index].quantity = e.target.value;
-                            setDays((prevDays) => {
-                              const newDays = [...prevDays];
-                              newDays[dayIndex].operationalExpenses =
-                                updatedExpenses;
-                              return newDays;
-                            });
+                            const value =
+                              e.target.value === ""
+                                ? ""
+                                : Math.max(1, parseInt(e.target.value) || 1);
+                            handleExpenseChange(
+                              dayIndex,
+                              "operationalExpenses",
+                              index,
+                              "quantity",
+                              value
+                            );
                           }}
                         />
                         <select
@@ -553,6 +593,118 @@ const Report = ({ setShowReportGenerator, pro }) => {
                     >
                       Add
                     </button>
+                    {/* Expense */}
+                    <p className="sf text-xs font-thin tracking-widest">
+                      Operational Expenses
+                    </p>
+                    {day.operationalExpenses.map((expense, index) => (
+                      <div className="flex items-center gap-1" key={index}>
+                        <input
+                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          type="text"
+                          placeholder="Item Name"
+                          value={expense.name}
+                          onChange={(e) => {
+                            const updatedExpenses = [
+                              ...day.operationalExpenses,
+                            ];
+                            updatedExpenses[index].name = e.target.value;
+                            setDays((prevDays) => {
+                              const newDays = [...prevDays];
+                              newDays[dayIndex].operationalExpenses =
+                                updatedExpenses;
+                              return newDays;
+                            });
+                          }}
+                        />
+                        <NumericFormat
+                          displayType="input"
+                          thousandSeparator
+                          prefix={"Rp. "}
+                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          placeholder="Prices"
+                          value={expense.price || ""}
+                          allowNegative={false}
+                          onValueChange={(values) => {
+                            const { value } = values;
+                            handleExpenseChange(
+                              dayIndex,
+                              "operationalExpenses",
+                              index,
+                              "price",
+                              value
+                            );
+                          }}
+                        />
+                        <input
+                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          type="number"
+                          placeholder="Qty"
+                          value={expense.quantity || ""}
+                          min="1"
+                          onChange={(e) => {
+                            const value =
+                              e.target.value === ""
+                                ? ""
+                                : Math.max(1, parseInt(e.target.value) || 1);
+                            handleExpenseChange(
+                              dayIndex,
+                              "operationalExpenses",
+                              index,
+                              "quantity",
+                              value
+                            );
+                          }}
+                        />
+                        <select
+                          value={expense.category}
+                          onChange={(e) => {
+                            const updatedExpenses = [
+                              ...day.operationalExpenses,
+                            ];
+                            updatedExpenses[index].category = e.target.value;
+                            setDays((prevDays) => {
+                              const newDays = [...prevDays];
+                              newDays[dayIndex].operationalExpenses =
+                                updatedExpenses;
+                              return newDays;
+                            });
+                          }}
+                        >
+                          <option value="">Categories</option>
+                          <option value="Acomodation">Acomodation</option>
+                          <option value="Transport">Transport</option>
+                          <option value="Food">Food</option>
+                          <option value="Snack">Snack</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <button
+                          className="sf text-xs font-thin ml-5"
+                          onClick={() => {
+                            const updatedExpenses = [
+                              ...day.operationalExpenses,
+                            ];
+                            updatedExpenses.splice(index, 1);
+                            setDays((prevDays) => {
+                              const newDays = [...prevDays];
+                              newDays[dayIndex].operationalExpenses =
+                                updatedExpenses;
+                              return newDays;
+                            });
+                          }}
+                        >
+                          -
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() =>
+                        handleAddExpense(dayIndex, "operationalExpenses")
+                      }
+                      className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+                    >
+                      Add
+                    </button>
                   </div>
                 )}
                 {/* Note & Total */}
@@ -562,19 +714,27 @@ const Report = ({ setShowReportGenerator, pro }) => {
                     className="h-full w-2/3 border border-gray-400 outline-none p-2"
                   />
                   <div className="w-1/3 h-full">
-                    {template ? (
-                      <>
-                        <p className="bg-dark text-gray-400">Total Expenses</p>
-                        <NumericFormat
-                          displayType="input"
-                          thousandSeparator
-                          prefix={"Rp. "}
-                          value={calculateTotalExpenses(day)}
-                          readOnly
-                          className="outline-none"
-                        />
-                      </>
-                    ) : null}
+                    <p className="bg-dark text-light sf text-xs font-thin tracking-widest pl-1">
+                      Total Expenses
+                    </p>
+
+                    <NumericFormat
+                      displayType="input"
+                      readOnly
+                      thousandSeparator
+                      prefix={"Rp. "}
+                      value={
+                        day.sewaExpenses.reduce(
+                          (acc, exp) => acc + (exp.price * exp.quantity || 0),
+                          0
+                        ) +
+                        day.operationalExpenses.reduce(
+                          (acc, exp) => acc + (exp.price * exp.quantity || 0),
+                          0
+                        )
+                      }
+                      className="outline-none pt-2 select-none"
+                    />
                   </div>
                 </div>
               </section>
