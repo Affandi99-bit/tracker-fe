@@ -4,5 +4,5 @@ export const findTagColor = (tagValue) => {
     const foundTag = tags[category].find((tag) => tag.value === tagValue);
     if (foundTag) return foundTag.color;
   }
-  return "#FFFFFF";
+  return "#222222";
 };

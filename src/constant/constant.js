@@ -108,7 +108,7 @@ export const tags = {
     },
     {
       title: "Dokumentasi",
-      value: "Dokumentasi",
+      value: "Dok",
       color: "#051c3d",
     },
     {
