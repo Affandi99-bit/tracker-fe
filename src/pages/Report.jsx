@@ -7,7 +7,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
   const [days, setDays] = useState([
     {
       id: Date.now(),
-      crew: pro.crew,
+      crew: pro.day[0].crew,
       sewaExpenses: [],
       operationalExpenses: [],
       orderList: [],

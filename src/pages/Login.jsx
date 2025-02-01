@@ -25,10 +25,6 @@ const Login = ({ onLoginSuccess }) => {
       if (rememberMe) {
         localStorage.setItem("username", username);
         localStorage.setItem("password", password);
-        setTimeout(() => {
-          localStorage.removeItem("username");
-          localStorage.removeItem("password");
-        }, 7200000);
       } else {
         localStorage.removeItem("username");
         localStorage.removeItem("password");
