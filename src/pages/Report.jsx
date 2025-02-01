@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NumericFormat } from "react-number-format";
 import { roleProduction, roleGraphic } from "../constant/constant";
+
 const Report = ({ setShowReportGenerator, pro }) => {
   const [template, setTemplate] = useState();
   const [days, setDays] = useState([
@@ -100,6 +101,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
       {/* Navbar */}
       <nav className="fixed flex justify-between px-10 text-light sf text-sm tracking-wider items-center top-0 w-[75%] h-10 bg-dark">
         <button
+          type="button"
           className="flex gap-1 items-center"
           onClick={() => {
             setShowReportGenerator(false);
@@ -178,23 +180,19 @@ const Report = ({ setShowReportGenerator, pro }) => {
         </div>
 
         <div className="mt-2 px-5">
-          {template ? (
-            <>
-              <label className="font-medium">Total Expenses</label>
-              <NumericFormat
-                displayType="input"
-                thousandSeparator
-                prefix={"Rp. "}
-                value={days.reduce(
-                  (acc, day) => acc + calculateTotalExpenses(day),
-                  0
-                )}
-                placeholder="Rp. 0"
-                className="border border-gray-400 p-2 w-full mt-1 outline-none"
-                disabled
-              />
-            </>
-          ) : null}
+          <label className="font-medium">Total Expenses</label>
+          <NumericFormat
+            displayType="input"
+            thousandSeparator
+            prefix={"Rp. "}
+            value={days.reduce(
+              (acc, day) => acc + calculateTotalExpenses(day),
+              0
+            )}
+            placeholder="Rp. 0"
+            className="border border-gray-400 p-2 w-full mt-1 outline-none"
+            disabled
+          />
         </div>
         <div className="mt-2 px-5">
           <label className="font-medium">Final Link</label>
@@ -214,14 +212,22 @@ const Report = ({ setShowReportGenerator, pro }) => {
           />
         </div>
         <div className="text-right mt-5 px-5 flex items-center justify-between">
-          <button className="border-dashed border border-gray-400 px-4 py-2">
+          <button
+            type="button"
+            className="border-dashed border border-gray-400 px-4 py-2"
+          >
             Export
           </button>
-          <button className="border bg-dark text-light px-4 py-2">Save</button>
+          <button type="button" className="border bg-dark text-light px-4 py-2">
+            Save
+          </button>
         </div>
+        <p className="text-dark px-5 pt-3 sf italic font-thin text-xs">
+          *Note: Please save before export
+        </p>
       </aside>
       {/* Content */}
-      <div className="w-[75%] flex flex-col gap-5 mt-10 h-screen overflow-y-auto no-scrollbar">
+      <form className="w-[75%] flex flex-col gap-5 mt-10 h-screen overflow-y-auto no-scrollbar">
         {/* Data per Day */}
         {days.map((day, dayIndex) => (
           <main key={day.id} className="w-full p-1 flex items-center">
@@ -231,10 +237,12 @@ const Report = ({ setShowReportGenerator, pro }) => {
                 <p contentEditable className="outline-none">{`Day ${
                   dayIndex + 1
                 }`}</p>
-                <p className="sf text-xs font-thin tracking-widest">Crew</p>
+                <p className="sf text-xs font-thin tracking-widest pl-4">
+                  Crew
+                </p>
                 {day.crew.map((item, index) => (
                   <div
-                    className="flex items-center justify-between w-full"
+                    className="flex items-center justify-start gap-2 w-full flex-wrap"
                     key={index}
                   >
                     <input
@@ -245,37 +253,94 @@ const Report = ({ setShowReportGenerator, pro }) => {
                       className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                     />
                     <p>as</p>
-                    {template ? (
-                      <>
-                        <select name="roleProduction" id="">
-                          <option value="">Select</option>
-                          {roleProduction.map((role) => (
-                            <option
-                              className="outline-none"
-                              key={role.id}
-                              value={role.name}
-                            >
-                              {role.name}
-                            </option>
-                          ))}
-                        </select>
-                      </>
-                    ) : (
-                      <>
-                        <select name="roleGraphic" id="">
-                          <option value="">Select</option>
-                          {roleGraphic.map((role) => (
-                            <option
-                              className="outline-none"
-                              key={role.id}
-                              value={role.name}
-                            >
-                              {role.name}
-                            </option>
-                          ))}
-                        </select>
-                      </>
-                    )}
+                    {(item.roles || []).map((role, roleIndex) => (
+                      <div key={roleIndex} className="flex items-center">
+                        {template ? (
+                          <select
+                            name="roleProduction"
+                            value={role}
+                            onChange={(e) => {
+                              const updatedCrew = [...day.crew];
+                              updatedCrew[index].roles[roleIndex] =
+                                e.target.value;
+                              setDays((prevDays) => {
+                                const newDays = [...prevDays];
+                                newDays[dayIndex].crew = updatedCrew;
+                                return newDays;
+                              });
+                            }}
+                            className="w-14"
+                          >
+                            <option value="">Select</option>
+                            {roleProduction.map((r) => (
+                              <option key={r.id} value={r.name}>
+                                {r.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <select
+                            name="roleGraphic"
+                            value={role}
+                            onChange={(e) => {
+                              const updatedCrew = [...day.crew];
+                              updatedCrew[index].roles[roleIndex] =
+                                e.target.value;
+                              setDays((prevDays) => {
+                                const newDays = [...prevDays];
+                                newDays[dayIndex].crew = updatedCrew;
+                                return newDays;
+                              });
+                            }}
+                            className="w-14"
+                          >
+                            <option value="">Select</option>
+                            {roleGraphic.map((r) => (
+                              <option key={r.id} value={r.name}>
+                                {r.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    ))}
+                    <div className="flex flex-col p-0 rounded overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updatedCrew = [...day.crew];
+                          if (!updatedCrew[index].roles) {
+                            updatedCrew[index].roles = [];
+                          }
+                          updatedCrew[index].roles.push("");
+                          setDays((prevDays) => {
+                            const newDays = [...prevDays];
+                            newDays[dayIndex].crew = updatedCrew;
+                            return newDays;
+                          });
+                        }}
+                        className="text-xs w-5 sf leading-none hover:bg-slate-400"
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updatedCrew = [...day.crew];
+                          if (updatedCrew[index].roles?.length > 0) {
+                            updatedCrew[index].roles.pop();
+                            setDays((prevDays) => {
+                              const newDays = [...prevDays];
+                              newDays[dayIndex].crew = updatedCrew;
+                              return newDays;
+                            });
+                          }
+                        }}
+                        className="text-xs w-5 sf leading-none hover:bg-slate-400"
+                      >
+                        -
+                      </button>
+                    </div>
                   </div>
                 ))}
               </section>
@@ -287,7 +352,22 @@ const Report = ({ setShowReportGenerator, pro }) => {
                       ? "Production | Documentation"
                       : "Design |  Motion"}
                   </p>
-                  <button onClick={() => setTemplate(!template)}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTemplate(!template);
+
+                      setDays((prevDays) =>
+                        prevDays.map((day) => ({
+                          ...day,
+                          sewaExpenses: [],
+                          operationalExpenses: [],
+                          orderList: [],
+                          totalExpenses: 0,
+                        }))
+                      );
+                    }}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -304,6 +384,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                     </svg>
                   </button>
                   <button
+                    type="button"
                     onClick={() =>
                       setDays((prevDays) =>
                         prevDays.filter((day) => day.id !== days[dayIndex].id)
@@ -337,6 +418,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="text"
+                          required
                           placeholder="Item Name"
                           value={expense.name}
                           onChange={(e) => {
@@ -352,6 +434,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <NumericFormat
                           displayType="input"
                           thousandSeparator
+                          required
                           allowNegative={false}
                           prefix={"Rp. "}
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
@@ -371,6 +454,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="number"
+                          required
                           placeholder="Qty"
                           value={expense.quantity || ""}
                           min="1"
@@ -389,6 +473,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                           }}
                         />
                         <button
+                          type="button"
                           className="sf text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [...day.sewaExpenses];
@@ -405,6 +490,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                       </div>
                     ))}
                     <button
+                      type="button"
                       onClick={() => {
                         handleAddExpense(dayIndex, "sewaExpenses");
                       }}
@@ -421,6 +507,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="text"
+                          required
                           placeholder="Item Name"
                           value={expense.name}
                           onChange={(e) => {
@@ -439,6 +526,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <NumericFormat
                           displayType="input"
                           thousandSeparator
+                          required
                           prefix={"Rp. "}
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           placeholder="Prices"
@@ -459,6 +547,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="number"
                           placeholder="Qty"
+                          required
                           value={expense.quantity || ""}
                           min="1"
                           onChange={(e) => {
@@ -498,6 +587,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                           <option value="Other">Other</option>
                         </select>
                         <button
+                          type="button"
                           className="sf text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [
@@ -517,6 +607,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                       </div>
                     ))}
                     <button
+                      type="button"
                       onClick={() =>
                         handleAddExpense(dayIndex, "operationalExpenses")
                       }
@@ -534,6 +625,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="text"
+                          required
                           placeholder="Item Name"
                           value={order.name}
                           onChange={(e) => {
@@ -551,6 +643,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="number"
                           placeholder="Qty"
+                          required
                           value={order.quantity}
                           onChange={(e) => {
                             handleExpenseChange(
@@ -570,6 +663,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                           }}
                         />
                         <button
+                          type="button"
                           className="sf text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [...day.orderList];
@@ -586,6 +680,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                       </div>
                     ))}
                     <button
+                      type="button"
                       onClick={() => {
                         handleAddExpense(dayIndex, "orderList");
                       }}
@@ -602,6 +697,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="text"
+                          required
                           placeholder="Item Name"
                           value={expense.name}
                           onChange={(e) => {
@@ -620,6 +716,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                         <NumericFormat
                           displayType="input"
                           thousandSeparator
+                          required
                           prefix={"Rp. "}
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           placeholder="Prices"
@@ -640,6 +737,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
                           type="number"
                           placeholder="Qty"
+                          required
                           value={expense.quantity || ""}
                           min="1"
                           onChange={(e) => {
@@ -679,6 +777,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                           <option value="Other">Other</option>
                         </select>
                         <button
+                          type="button"
                           className="sf text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [
@@ -698,6 +797,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                       </div>
                     ))}
                     <button
+                      type="button"
                       onClick={() =>
                         handleAddExpense(dayIndex, "operationalExpenses")
                       }
@@ -715,7 +815,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
                   />
                   <div className="w-1/3 h-full">
                     <p className="bg-dark text-light sf text-xs font-thin tracking-widest pl-1">
-                      Total Expenses
+                      Expenses
                     </p>
 
                     <NumericFormat
@@ -742,12 +842,13 @@ const Report = ({ setShowReportGenerator, pro }) => {
           </main>
         ))}
         <button
+          type="button"
           className="w-20 m-1 text-light bg-dark flex justify-center sf text-xs font-thin"
           onClick={addDay}
         >
           Add Day
         </button>
-      </div>
+      </form>
     </main>
   );
 };
