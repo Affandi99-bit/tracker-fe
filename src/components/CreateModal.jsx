@@ -16,21 +16,35 @@ const CreateModal = ({
     pm: "",
     deadline: "",
     status: [],
-    crew: [],
     client: "",
     pic: "",
     final_file: "",
     final_report_file: "",
     note: "",
-    payment: "",
     categories: [],
     type: [],
+    day: [
+      {
+        crew: [],
+        expense: {
+          sewa: [],
+          operational: [],
+          orderlist: [],
+        },
+        note: "",
+      },
+    ],
+    dp: "",
+    invoice: "",
+    total: "",
   };
   const [formData, setFormData] = useState(isEditing ? initialData : fromDatas);
   const [newCrewMember, setNewCrewMember] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [additionalCrewMembers, setAdditionalCrewMembers] = useState(
     isEditing
-      ? formData.crew
+      ? formData.day[0].crew
           .filter(
             (member) =>
               !crew.some(
@@ -44,16 +58,22 @@ const CreateModal = ({
       : []
   );
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
-
   const inputHandle = (e) => {
     const { name, value, checked, type } = e.target;
     if (name === "crew" && type === "checkbox") {
       const updatedCrew = checked
-        ? [...formData.crew, { name: value }]
-        : formData.crew.filter((member) => member.name !== value);
-      setFormData({ ...formData, crew: updatedCrew });
+        ? [...formData.day[0].crew, { name: value }]
+        : formData.day[0].crew.filter((member) => member.name !== value);
+
+      setFormData({
+        ...formData,
+        day: [
+          {
+            ...formData.day[0],
+            crew: updatedCrew,
+          },
+        ],
+      });
     } else if (name === "status" && type === "checkbox") {
       const updatedStatus = checked
         ? [...formData.status, value]
@@ -66,7 +86,10 @@ const CreateModal = ({
 
   const addNewCrewMember = () => {
     if (newCrewMember.trim()) {
-      const updatedCrew = [...formData.crew, { name: newCrewMember.trim() }];
+      const updatedCrew = [
+        ...formData.day.crew,
+        { name: newCrewMember.trim() },
+      ];
       setFormData({ ...formData, crew: updatedCrew });
       setNewCrewMember("");
     }
@@ -88,7 +111,7 @@ const CreateModal = ({
     setFormData((prevFormData) => ({
       ...prevFormData,
       crew: [
-        ...prevFormData.crew.filter(
+        ...prevFormData.day[0].crew.filter(
           (crewMember) =>
             !additionalCrewMembers.some(
               (additionalMember) => additionalMember.id === crewMember.id
@@ -112,21 +135,30 @@ const CreateModal = ({
     const allCrew = [
       ...crew
         .filter((member) =>
-          formData.crew.some((selected) => selected.name === member.name)
+          formData.day[0].crew.some((selected) => selected.name === member.name)
         )
         .map((member) => ({
           name: member.name,
-          payment:
-            formData.crew.find((selected) => selected.name === member.name)
-              ?.payment || "",
         })),
       ...additionalCrewMembers.map((member) => ({
         name: member.value,
-        payment: "",
       })),
     ];
-    const finalData = { ...formData, crew: allCrew };
 
+    const finalData = {
+      ...formData,
+      day: [
+        {
+          crew: allCrew,
+          expense: {
+            sewa: [],
+            operational: [],
+            orderlist: [],
+          },
+          note: formData.note,
+        },
+      ],
+    };
     console.log("Form Data Submitted:", formData);
     if (isEditing) {
       await updateData(finalData);
@@ -493,7 +525,7 @@ const CreateModal = ({
                             type="checkbox"
                             name="crew"
                             value={option.name}
-                            checked={formData.crew.some(
+                            checked={formData.day[0].crew.some(
                               (member) => member.name === option.name
                             )}
                             onChange={inputHandle}

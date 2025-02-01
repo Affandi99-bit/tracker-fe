@@ -20,7 +20,7 @@ const Report = ({ setShowReportGenerator, pro }) => {
       ...days,
       {
         id: Date.now(),
-        crew: pro.crew,
+        crew: pro.day[0].crew,
         sewaExpenses: [],
         operationalExpenses: [],
         orderList: [],

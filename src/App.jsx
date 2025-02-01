@@ -117,7 +117,7 @@ const App = () => {
 
   return (
     <>
-      {/* {!isLoggedIn ? (
+      {!isLoggedIn ? (
         <Login onLoginSuccess={handleLoginSuccess} />
       ) : (
         <>
@@ -181,8 +181,8 @@ const App = () => {
             </div>
           )}
         </>
-      )} */}
-      <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen bg-light">
+      )}
+      {/* <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen bg-light">
         <div className="flex flex-col items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +202,7 @@ const App = () => {
             Project Manager dalam Maintenance
           </p>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

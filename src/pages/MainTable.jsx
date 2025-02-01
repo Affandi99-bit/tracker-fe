@@ -26,7 +26,9 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
           <td className="w-20 border-x border-gray-400">{row.title}</td>
           <td className="w-20 border-x border-gray-400">{row.client}</td>
           <td className="w-20 border-x border-gray-400">{row.pic}</td>
-          <td className="w-32 border-x border-gray-400">{row.deadline}</td>
+          <td className="w-32 border-x border-gray-400">
+            {new Date(row.deadline).toLocaleDateString("en-GB")}
+          </td>
           <td className="w-20 border-x border-gray-400">
             <div className="flex flex-wrap gap-1 justify-center items-center">
               {row.status.map((chip, i) => (
