@@ -26,17 +26,10 @@ const CreateModal = ({
     day: [
       {
         crew: [],
-        expense: {
-          sewa: [],
-          operational: [],
-          orderlist: [],
-        },
-        note: "",
+
       },
     ],
-    dp: "",
-    invoice: "",
-    total: "",
+
   };
   const [formData, setFormData] = useState(isEditing ? initialData : fromDatas);
   const [newCrewMember, setNewCrewMember] = useState("");
@@ -45,16 +38,16 @@ const CreateModal = ({
   const [additionalCrewMembers, setAdditionalCrewMembers] = useState(
     isEditing
       ? formData.day[0].crew
-          .filter(
-            (member) =>
-              !crew.some(
-                (constantMember) => constantMember.name === member.name
-              )
-          )
-          .map((member, index) => ({
-            id: index,
-            value: member.name,
-          }))
+        .filter(
+          (member) =>
+            !crew.some(
+              (constantMember) => constantMember.name === member.name
+            )
+        )
+        .map((member, index) => ({
+          id: index,
+          value: member.name,
+        }))
       : []
   );
 
@@ -94,6 +87,7 @@ const CreateModal = ({
       setNewCrewMember("");
     }
   };
+
   const addAdditionalCrewField = () => {
     setAdditionalCrewMembers((prev) => [
       ...prev,
@@ -150,12 +144,7 @@ const CreateModal = ({
       day: [
         {
           crew: allCrew,
-          expense: {
-            sewa: [],
-            operational: [],
-            orderlist: [],
-          },
-          note: formData.note,
+
         },
       ],
     };
@@ -270,7 +259,7 @@ const CreateModal = ({
                     <label className="sf font-semibold tracking-widest flex flex-col">
                       Event Date:
                       <input
-                        required
+
                         className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none mb-1 lg:mb-0"
                         type="date"
                         name="deadline"

@@ -19,7 +19,7 @@ const TableModal = ({
   return (
     <>
       {showReportGenerator && (
-        <Report setShowReportGenerator={setShowReportGenerator} pro={pro} />
+        <Report setShowReportGenerator={setShowReportGenerator} pro={pro} updateData={updateData} />
       )}
       showModal && (
       <main

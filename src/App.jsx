@@ -135,9 +135,8 @@ const App = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="white"
-                  className={`size-8 transition-all duration-300 ${
-                    showCreateModal ? "rotate-45" : "rotate-180"
-                  }`}
+                  className={`size-8 transition-all duration-300 ${showCreateModal ? "rotate-45" : "rotate-180"
+                    }`}
                 >
                   <path
                     strokeLinecap="round"
