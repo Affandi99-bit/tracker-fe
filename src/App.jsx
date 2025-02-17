@@ -38,6 +38,7 @@ const App = () => {
       setIsLoading(true);
       const response = await axios.get(
         `https://tracker-be-omega.vercel.app/api/report/getallprojects`
+        // tracker-be-omega.vercel.app
       );
       setTableData(response.data);
       setIsLoading(false);

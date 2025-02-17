@@ -11,10 +11,10 @@ const CreateModal = ({
   initialData,
   setTableModal,
 }) => {
-  const fromDatas = {
+  const initialFormData = {
     title: "",
     pm: "",
-    deadline: "",
+    deadline: new Date().toISOString().split('T')[0],
     status: [],
     client: "",
     pic: "",
@@ -26,18 +26,25 @@ const CreateModal = ({
     day: [
       {
         crew: [],
-
+        expense: {
+          rent: [],
+          operational: [],
+          orderlist: [],
+        },
+        note: '',
+        totalExpenses: 0,
       },
     ],
-
   };
-  const [formData, setFormData] = useState(isEditing ? initialData : fromDatas);
-  const [newCrewMember, setNewCrewMember] = useState("");
+  const [formData, setFormData] = useState(isEditing ? {
+    ...initialData,
+    deadline: initialData.deadline ? initialData.deadline.split('T')[0] : ''
+  } : initialFormData);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [additionalCrewMembers, setAdditionalCrewMembers] = useState(
     isEditing
-      ? formData.day[0].crew
+      ? (initialData.day[0]?.crew || [])
         .filter(
           (member) =>
             !crew.some(
@@ -54,37 +61,43 @@ const CreateModal = ({
   const inputHandle = (e) => {
     const { name, value, checked, type } = e.target;
     if (name === "crew" && type === "checkbox") {
+      const currentCrew = formData.day[0]?.crew || [];
       const updatedCrew = checked
-        ? [...formData.day[0].crew, { name: value }]
-        : formData.day[0].crew.filter((member) => member.name !== value);
+        ? [...currentCrew, { name: value }]
+        : currentCrew.filter((member) => member.name !== value);
 
       setFormData({
         ...formData,
         day: [
           {
-            ...formData.day[0],
+            ...formData.day[0] || {},
             crew: updatedCrew,
           },
         ],
       });
     } else if (name === "status" && type === "checkbox") {
-      const updatedStatus = checked
-        ? [...formData.status, value]
-        : formData.status.filter((status) => status !== value);
-      setFormData({ ...formData, status: updatedStatus });
+      setFormData(prev => ({
+        ...prev,
+        status: checked
+          ? [...prev.status, value]
+          : prev.status.filter(item => item !== value)
+      }));
+    } else if (name === "type" && type === "checkbox") {
+      setFormData(prev => ({
+        ...prev,
+        type: checked
+          ? [...prev.type, value]
+          : prev.type.filter(item => item !== value)
+      }));
+    } else if (name === "categories" && type === "checkbox") {
+      setFormData(prev => ({
+        ...prev,
+        categories: checked
+          ? [...prev.categories, value]
+          : prev.categories.filter(item => item !== value)
+      }));
     } else {
       setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  const addNewCrewMember = () => {
-    if (newCrewMember.trim()) {
-      const updatedCrew = [
-        ...formData.day.crew,
-        { name: newCrewMember.trim() },
-      ];
-      setFormData({ ...formData, crew: updatedCrew });
-      setNewCrewMember("");
     }
   };
 
@@ -96,30 +109,34 @@ const CreateModal = ({
   };
 
   const handleAdditionalCrewChange = (id, value) => {
-    setAdditionalCrewMembers((prev) =>
-      prev.map((member) => (member.id === id ? { ...member, value } : member))
+    setAdditionalCrewMembers(prev =>
+      prev.map(member =>
+        member.id === id ? { ...member, value } : member
+      )
     );
-    const updatedCrew = additionalCrewMembers.map((member) =>
-      member.id === id ? { ...member, name: value } : member
-    );
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      crew: [
-        ...prevFormData.day[0].crew.filter(
-          (crewMember) =>
-            !additionalCrewMembers.some(
-              (additionalMember) => additionalMember.id === crewMember.id
-            )
-        ),
-        ...updatedCrew,
-      ],
-    }));
+    setFormData(prevFormData => {
+      const currentDay = prevFormData.day[0] || {};
+      const updatedCrew = (currentDay.crew || []).map(member =>
+        member.id === id ? { ...member, name: value } : member
+      );
+      return {
+        ...prevFormData,
+        day: [{ ...currentDay, crew: updatedCrew }]
+      };
+    });
   };
 
   const removeAdditionalCrewField = (id) => {
     setAdditionalCrewMembers((prev) =>
       prev.filter((member) => member.id !== id)
     );
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      day: [{
+        ...prevFormData.day[0] || {},
+        crew: (prevFormData.day[0]?.crew || []).filter(member => member.id !== id)
+      }]
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -127,28 +144,23 @@ const CreateModal = ({
     setIsLoading(true);
 
     const allCrew = [
-      ...crew
-        .filter((member) =>
-          formData.day[0].crew.some((selected) => selected.name === member.name)
-        )
-        .map((member) => ({
-          name: member.name,
-        })),
-      ...additionalCrewMembers.map((member) => ({
-        name: member.value,
-      })),
-    ];
+      ...(formData.day[0].crew || []).filter(m => m.name.trim() !== ""),
+      ...additionalCrewMembers
+        .filter(member => member.value.trim() !== "")
+        .map(member => ({
+          name: member.value.trim(),
+          roles: []
+        }))
+    ].filter((v, i, a) => a.findIndex(t => t.name === v.name) === i);
 
     const finalData = {
       ...formData,
-      day: [
-        {
-          crew: allCrew,
-
-        },
-      ],
+      day: [{
+        ...formData.day[0],
+        crew: allCrew,
+      }],
     };
-    console.log("Form Data Submitted:", formData);
+    console.log("Form Data Submitted:", finalData);
     if (isEditing) {
       await updateData(finalData);
       setTableModal(false);
@@ -259,12 +271,12 @@ const CreateModal = ({
                     <label className="sf font-semibold tracking-widest flex flex-col">
                       Event Date:
                       <input
-
-                        className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none mb-1 lg:mb-0"
                         type="date"
                         name="deadline"
                         value={formData.deadline}
+                        required
                         onChange={inputHandle}
+                        className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none mb-1 lg:mb-0"
                       />
                     </label>
                   </div>
@@ -335,19 +347,12 @@ const CreateModal = ({
                             value={option.value}
                             checked={formData.status.includes(option.value)}
                             onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              const { value } = e.target;
-                              let updatedStatus = [...formData.status];
-                              if (isChecked) {
-                                updatedStatus = [...formData.status, value];
-                              } else {
-                                updatedStatus = formData.status.filter(
-                                  (status) => status !== value
-                                );
-                              }
-                              setFormData((prevState) => ({
-                                ...prevState,
-                                status: updatedStatus,
+                              const { checked, value } = e.target;
+                              setFormData(prev => ({
+                                ...prev,
+                                status: checked
+                                  ? [...prev.status, value]
+                                  : prev.status.filter(item => item !== value)
                               }));
                             }}
                             className="peer hidden"
@@ -393,19 +398,12 @@ const CreateModal = ({
                               value={option.value}
                               checked={formData.type.includes(option.value)}
                               onChange={(e) => {
-                                const isChecked = e.target.checked;
-                                const { value } = e.target;
-                                let updatedType = [...formData.type];
-                                if (isChecked) {
-                                  updatedType = [...formData.type, value];
-                                } else {
-                                  updatedType = formData.type.filter(
-                                    (type) => type !== value
-                                  );
-                                }
-                                setFormData((prevState) => ({
-                                  ...prevState,
-                                  type: updatedType,
+                                const { checked, value } = e.target;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  type: checked
+                                    ? [...prev.type, value]
+                                    : prev.type.filter(item => item !== value)
                                 }));
                               }}
                               className="peer hidden"
@@ -454,25 +452,12 @@ const CreateModal = ({
                                 option.value
                               )}
                               onChange={(e) => {
-                                const isChecked = e.target.checked;
-                                const { value } = e.target;
-                                let updatedCategories = [
-                                  ...formData.categories,
-                                ];
-                                if (isChecked) {
-                                  updatedCategories = [
-                                    ...formData.categories,
-                                    value,
-                                  ];
-                                } else {
-                                  updatedCategories =
-                                    formData.categories.filter(
-                                      (categories) => categories !== value
-                                    );
-                                }
-                                setFormData((prevState) => ({
-                                  ...prevState,
-                                  categories: updatedCategories,
+                                const { checked, value } = e.target;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  categories: checked
+                                    ? [...prev.categories, value]
+                                    : prev.categories.filter(item => item !== value)
                                 }));
                               }}
                               className="peer hidden"
@@ -514,7 +499,7 @@ const CreateModal = ({
                             type="checkbox"
                             name="crew"
                             value={option.name}
-                            checked={formData.day[0].crew.some(
+                            checked={(formData.day[0]?.crew || []).some(
                               (member) => member.name === option.name
                             )}
                             onChange={inputHandle}
@@ -616,7 +601,6 @@ const CreateModal = ({
                     )}
                     <button
                       type="submit"
-                      onClick={addNewCrewMember}
                       className="border bg-dark text-light flex justify-center gap-1 items-center sf tracking-widest rounded  py-2 w-56 font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95"
                     >
                       {isEditing ? "Update" : "Add"}

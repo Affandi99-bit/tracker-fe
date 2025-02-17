@@ -1,32 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NumericFormat } from "react-number-format";
 import { roleProduction, roleGraphic } from "../constant/constant";
 
 const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const [pro, setPro] = useState(initialPro);
-  const [template, setTemplate] = useState();
-  const [days, setDays] = useState(pro.day.map(day => ({
-    id: Date.now(),
-    crew: day.crew,
-    expense: {
-      sewaExpenses: [],
-      operationalExpenses: [],
-      orderList: [],
-    },
-    note: '',
-    totalExpenses: 0,
-  })));
+  const [template, setTemplate] = useState(false);
+  const [loading, setLoading] = useState(false)
+  const [days, setDays] = useState(
+    initialPro?.day?.map(day => ({
+      id: Date.now() + Math.random(),
+      crew: day.crew || [],
+      expense: {
+        rent: day.expense?.rent || [],
+        operational: day.expense?.operational || [],
+        orderlist: day.expense?.orderlist || [],
+      },
+      note: day.note || '',
+      totalExpenses: 0,
+    })) || []
+  );
+
+  useEffect(() => {
+    if (initialPro) {
+      setPro(initialPro);
+      setDays(initialPro.day?.map(day => ({
+        ...day,
+        expense: {
+          rent: day.expense?.rent || [],
+          operational: day.expense?.operational || [],
+          orderlist: day.expense?.orderlist || []
+        }
+      })) || []);
+    }
+  }, [initialPro]);
 
   const addDay = () => {
     setDays([
       ...days,
       {
-        id: Date.now(),
-        crew: pro.day[days.length % pro.day.length].crew,
+        id: Date.now() + Math.random()
+        ,
+        crew: (pro.day?.length > 0 ? pro.day[days.length % pro.day.length].crew : []),
         expense: {
-          sewaExpenses: [],
-          operationalExpenses: [],
-          orderList: [],
+          rent: [],
+          operational: [],
+          orderlist: [],
         },
         note: '',
         totalExpenses: 0,
@@ -39,19 +57,19 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     const parseNumber = (value) =>
       isNaN(parseFloat(value)) ? 0 : parseFloat(value);
 
-    const sewaTotal = day.expense.sewaExpenses.reduce(
+    const rentTotal = day.expense.rent.reduce(
       (total, expense) =>
-        total + parseNumber(expense.price) * (parseInt(expense.quantity) || 0),
+        total + parseNumber(expense.price) * (parseInt(expense.qty) || 0),
       0
     );
 
-    const operationalTotal = day.expense.operationalExpenses.reduce(
+    const operationalTotal = day.expense.operational.reduce(
       (total, expense) =>
-        total + parseNumber(expense.price) * (parseInt(expense.quantity) || 0),
+        total + parseNumber(expense.price) * (parseInt(expense.qty) || 0),
       0
     );
 
-    return sewaTotal + operationalTotal;
+    return rentTotal + operationalTotal;
   };
 
   const handleAddExpense = (dayIndex, type) => {
@@ -61,8 +79,8 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           const newExpense = {
             name: "",
             price: "",
-            quantity: "",
-            ...(type === "operationalExpenses" && { category: "" }),
+            qty: "",
+            ...(type === "operational" && { category: "" }),
           };
           return {
             ...day,
@@ -103,25 +121,39 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     }));
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
     try {
       const updatedPro = {
         ...pro,
         day: days.map(day => ({
           ...day,
-          totalExpenses: calculateTotalExpenses(day)
-        }))
+          expense: {
+            rent: day.expense.rent.map(expense => ({
+              ...expense,
+              price: expense.price.replace(/[^0-9]/g, ""),
+            })),
+            operational: day.expense.operational.map(expense => ({
+              ...expense,
+              price: expense.price.replace(/[^0-9]/g, ""),
+            })),
+            orderlist: day.expense.orderlist,
+          },
+        })),
       };
-
-      await updateData(updatedPro);
-      alert("Report saved successfully!");
+      setLoading(true);
+      updateData(updatedPro)
+        .then(response => {
+          console.log("Update Response:", response);
+        })
+        .catch(error => {
+          console.error("Update Error:", error);
+        })
+        .finally(() => setLoading(false));
     } catch (error) {
       console.error('Save error:', error);
-      alert(`Failed to save report: ${error.message}`);
     }
   };
-
   return (
     <main className="fixed top-0 z-40 bg-light w-full h-screen flex flex-col items-start">
       {/* Navbar */}
@@ -161,7 +193,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
               type="text"
               value={pro.pm}
               className="border border-gray-400 p-2 w-full mt-1 outline-none"
-              readOnly
+              disabled
             />
           </div>
           <div className="mt-2">
@@ -170,7 +202,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
               type="text"
               value={pro.client}
               className="border border-gray-400 p-2 w-full mt-1 outline-none"
-              readOnly
+              disabled
             />
           </div>
           <div className="mt-2">
@@ -179,7 +211,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
               type="text"
               value={pro.pic}
               className="border border-gray-400 p-2 w-full mt-1 outline-none"
-              readOnly
+              disabled
             />
           </div>
         </div>
@@ -213,7 +245,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
 
         <div className="mt-2 px-5">
           <label className="font-medium">Total Expenses</label>
-
           <NumericFormat
             displayType="input"
             thousandSeparator
@@ -230,7 +261,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             type="url"
             value={pro.final_file}
             className="border border-gray-400 p-2 w-full mt-1 outline-none"
-            readOnly
+            disabled
           />
         </div>
         <div className="mt-2 px-5">
@@ -248,8 +279,25 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           >
             Export
           </button>
-          <button type="submit" onClick={handleSubmit} className="border bg-dark text-light px-4 py-2">
-            Save
+          <button type="submit" onClick={handleSubmit} className="border flex gap-2 items-center bg-dark text-light px-4 py-2">
+            Save {loading ? <span className="animate-spin">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 24 24"
+                className="size-5 animate-spin"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z"
+                  stroke="#f8f8f8"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span> : null}
           </button>
         </div>
         <p className="text-dark px-5 pt-3 sf italic font-thin text-xs">
@@ -260,7 +308,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       <form onSubmit={handleSubmit} className="w-[75%] flex flex-col gap-5 mt-10 h-screen overflow-y-auto no-scrollbar">
         {/* Data per Day */}
         {days.map((day, dayIndex) => (
-          <main key={day.id} className="w-full p-1 flex items-center">
+          <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">
             <div className="flex h-full w-full gap-1">
               {/* Crew section */}
               <section className="p-2 border h-full border-gray-400 flex flex-col gap-1 sf text-xs font-thin w-1/3">
@@ -386,15 +434,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     onClick={() => {
                       setTemplate(!template);
 
-                      setDays((prevDays) =>
-                        prevDays.map((day) => ({
-                          ...day,
-                          sewaExpenses: [],
-                          operationalExpenses: [],
-                          orderList: [],
-                          totalExpenses: 0,
-                        }))
-                      );
                     }}
                   >
                     <svg
@@ -414,11 +453,9 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      setDays((prevDays) =>
-                        prevDays.filter((day) => day.id !== days[dayIndex].id)
-                      )
-                    }
+                    onClick={() => {
+                      setDays(prevDays => prevDays.filter((_, index) => index !== dayIndex));
+                    }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -442,7 +479,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     <p className="sf text-xs font-thin tracking-widest">
                       Rent Expenses
                     </p>
-                    {day.expense.sewaExpenses.map((expense, index) => (
+                    {day.expense.rent.map((expense, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
@@ -451,11 +488,11 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           placeholder="Item Name"
                           value={expense.name}
                           onChange={(e) => {
-                            const updatedExpenses = [...day.expense.sewaExpenses];
+                            const updatedExpenses = [...day.expense.rent];
                             updatedExpenses[index].name = e.target.value;
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.sewaExpenses = updatedExpenses;
+                              newDays[dayIndex].expense.rent = updatedExpenses;
                               return newDays;
                             });
                           }}
@@ -473,7 +510,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             const { value } = values;
                             handleExpenseChange(
                               dayIndex,
-                              "sewaExpenses",
+                              "rent",
                               index,
                               "price",
                               value
@@ -485,7 +522,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           type="number"
                           required
                           placeholder="Qty"
-                          value={expense.quantity || ""}
+                          value={expense.qty || ""}
                           min="1"
                           onChange={(e) => {
                             const value =
@@ -494,9 +531,9 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                                 : Math.max(1, parseInt(e.target.value) || 1);
                             handleExpenseChange(
                               dayIndex,
-                              "sewaExpenses",
+                              "rent",
                               index,
-                              "quantity",
+                              "qty",
                               value
                             );
                           }}
@@ -505,11 +542,11 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           type="button"
                           className="sf text-xs font-thin ml-5"
                           onClick={() => {
-                            const updatedExpenses = [...day.expense.sewaExpenses];
+                            const updatedExpenses = [...day.expense.rent];
                             updatedExpenses.splice(index, 1);
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.sewaExpenses = updatedExpenses;
+                              newDays[dayIndex].expense.rent = updatedExpenses;
                               return newDays;
                             });
                           }}
@@ -521,7 +558,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     <button
                       type="button"
                       onClick={() => {
-                        handleAddExpense(dayIndex, "sewaExpenses");
+                        handleAddExpense(dayIndex, "rent");
                       }}
                       className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
                     >
@@ -531,7 +568,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     <p className="sf text-xs font-thin tracking-widest">
                       Operational Expenses
                     </p>
-                    {day.expense.operationalExpenses.map((expense, index) => (
+                    {day.expense.operational.map((expense, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
@@ -541,12 +578,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           value={expense.name}
                           onChange={(e) => {
                             const updatedExpenses = [
-                              ...day.expense.operationalExpenses,
+                              ...day.expense.operational,
                             ];
                             updatedExpenses[index].name = e.target.value;
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.operationalExpenses =
+                              newDays[dayIndex].expense.operational =
                                 updatedExpenses;
                               return newDays;
                             });
@@ -565,7 +602,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             const { value } = values;
                             handleExpenseChange(
                               dayIndex,
-                              "operationalExpenses",
+                              "operational",
                               index,
                               "price",
                               value
@@ -577,7 +614,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           type="number"
                           placeholder="Qty"
                           required
-                          value={expense.quantity || ""}
+                          value={expense.qty || ""}
                           min="1"
                           onChange={(e) => {
                             const value =
@@ -586,9 +623,9 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                                 : Math.max(1, parseInt(e.target.value) || 1);
                             handleExpenseChange(
                               dayIndex,
-                              "operationalExpenses",
+                              "operational",
                               index,
-                              "quantity",
+                              "qty",
                               value
                             );
                           }}
@@ -597,12 +634,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           value={expense.category}
                           onChange={(e) => {
                             const updatedExpenses = [
-                              ...day.expense.operationalExpenses,
+                              ...day.expense.operational,
                             ];
                             updatedExpenses[index].category = e.target.value;
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.operationalExpenses =
+                              newDays[dayIndex].expense.operational =
                                 updatedExpenses;
                               return newDays;
                             });
@@ -620,12 +657,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           className="sf text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [
-                              ...day.expense.operationalExpenses,
+                              ...day.expense.operational,
                             ];
                             updatedExpenses.splice(index, 1);
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.operationalExpenses =
+                              newDays[dayIndex].expense.operational =
                                 updatedExpenses;
                               return newDays;
                             });
@@ -638,7 +675,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     <button
                       type="button"
                       onClick={() =>
-                        handleAddExpense(dayIndex, "operationalExpenses")
+                        handleAddExpense(dayIndex, "operational")
                       }
                       className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
                     >
@@ -649,7 +686,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   <div>
                     {/* Design */}
                     <p>Order List</p>
-                    {day.expense.orderList.map((order, index) => (
+                    {(day.expense?.orderlist || []).map((order, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
@@ -658,11 +695,11 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           placeholder="Item Name"
                           value={order.name}
                           onChange={(e) => {
-                            const updatedExpenses = [...day.expense.orderList];
+                            const updatedExpenses = [...day.expense.orderlist];
                             updatedExpenses[index].name = e.target.value;
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.orderList = updatedExpenses;
+                              newDays[dayIndex].expense.orderlist = updatedExpenses;
                               return newDays;
                             });
                           }}
@@ -674,20 +711,20 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           placeholder="Qty"
                           required
                           min={1}
-                          value={order.quantity}
+                          value={order.qty}
                           onChange={(e) => {
                             handleExpenseChange(
                               dayIndex,
-                              "orderList",
+                              "orderlist",
                               index,
-                              "quantity",
+                              "qty",
                               e.target.value
                             );
-                            const updatedExpenses = [...day.expense.orderList];
-                            updatedExpenses[index].quantity = e.target.value;
+                            const updatedExpenses = [...day.expense.orderlist];
+                            updatedExpenses[index].qty = e.target.value;
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.orderList = updatedExpenses;
+                              newDays[dayIndex].expense.orderlist = updatedExpenses;
                               return newDays;
                             });
                           }}
@@ -696,11 +733,11 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           type="button"
                           className="sf text-xs font-thin ml-5"
                           onClick={() => {
-                            const updatedExpenses = [...day.expense.orderList];
+                            const updatedExpenses = [...day.expense.orderlist];
                             updatedExpenses.splice(index, 1);
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.orderList = updatedExpenses;
+                              newDays[dayIndex].expense.orderlist = updatedExpenses;
                               return newDays;
                             });
                           }}
@@ -712,7 +749,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     <button
                       type="button"
                       onClick={() => {
-                        handleAddExpense(dayIndex, "orderList");
+                        handleAddExpense(dayIndex, "orderlist");
                       }}
                       className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
                     >
@@ -722,7 +759,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     <p className="sf text-xs font-thin tracking-widest">
                       Operational Expenses
                     </p>
-                    {day.expense.operationalExpenses.map((expense, index) => (
+                    {day.expense.operational.map((expense, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
                           className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
@@ -732,12 +769,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           value={expense.name}
                           onChange={(e) => {
                             const updatedExpenses = [
-                              ...day.expense.operationalExpenses,
+                              ...day.expense.operational,
                             ];
                             updatedExpenses[index].name = e.target.value;
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.operationalExpenses =
+                              newDays[dayIndex].expense.operational =
                                 updatedExpenses;
                               return newDays;
                             });
@@ -756,7 +793,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             const { value } = values;
                             handleExpenseChange(
                               dayIndex,
-                              "operationalExpenses",
+                              "operational",
                               index,
                               "price",
                               value
@@ -768,7 +805,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           type="number"
                           placeholder="Qty"
                           required
-                          value={expense.quantity || ""}
+                          value={expense.qty || ""}
                           min="1"
                           onChange={(e) => {
                             const value =
@@ -777,9 +814,9 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                                 : Math.max(1, parseInt(e.target.value) || 1);
                             handleExpenseChange(
                               dayIndex,
-                              "operationalExpenses",
+                              "operational",
                               index,
-                              "quantity",
+                              "qty",
                               value
                             );
                           }}
@@ -788,12 +825,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           value={expense.category}
                           onChange={(e) => {
                             const updatedExpenses = [
-                              ...day.expense.operationalExpenses,
+                              ...day.expense.operational,
                             ];
                             updatedExpenses[index].category = e.target.value;
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.operationalExpenses =
+                              newDays[dayIndex].expense.operational =
                                 updatedExpenses;
                               return newDays;
                             });
@@ -811,12 +848,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           className="sf text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [
-                              ...day.expense.operationalExpenses,
+                              ...day.expense.operational,
                             ];
                             updatedExpenses.splice(index, 1);
                             setDays((prevDays) => {
                               const newDays = [...prevDays];
-                              newDays[dayIndex].expense.operationalExpenses =
+                              newDays[dayIndex].expense.operational =
                                 updatedExpenses;
                               return newDays;
                             });
@@ -829,7 +866,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     <button
                       type="button"
                       onClick={() =>
-                        handleAddExpense(dayIndex, "operationalExpenses")
+                        handleAddExpense(dayIndex, "operational")
                       }
                       className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
                     >
@@ -842,6 +879,11 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   <textarea
                     placeholder="Note"
                     value={day.note}
+                    onChange={(e) => {
+                      setDays(prevDays => prevDays.map((d, idx) =>
+                        idx === dayIndex ? { ...d, note: e.target.value } : d
+                      ));
+                    }}
                     className="h-full w-2/3 border border-gray-400 outline-none p-2"
                   />
                   <div className="w-1/3 h-full">
@@ -855,12 +897,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       thousandSeparator
                       prefix={"Rp. "}
                       value={
-                        day.expense.sewaExpenses.reduce(
-                          (acc, exp) => acc + (exp.price * exp.quantity || 0),
+                        day.expense.rent.reduce(
+                          (acc, exp) => acc + (exp.price * exp.qty || 0),
                           0
                         ) +
-                        day.expense.operationalExpenses.reduce(
-                          (acc, exp) => acc + (exp.price * exp.quantity || 0),
+                        day.expense.operational.reduce(
+                          (acc, exp) => acc + (exp.price * exp.qty || 0),
                           0
                         )
                       }
