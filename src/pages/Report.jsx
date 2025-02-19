@@ -4,7 +4,6 @@ import { roleProduction, roleGraphic } from "../constant/constant";
 
 const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const [pro, setPro] = useState(initialPro);
-  const [template, setTemplate] = useState(false);
   const [loading, setLoading] = useState(false)
   const [days, setDays] = useState(
     initialPro?.day?.map(day => ({
@@ -17,6 +16,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       },
       note: day.note || '',
       totalExpenses: 0,
+      template: day.template || false,
     })) || []
   );
 
@@ -38,9 +38,14 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     setDays([
       ...days,
       {
-        id: Date.now() + Math.random()
-        ,
-        crew: (pro.day?.length > 0 ? pro.day[days.length % pro.day.length].crew : []),
+        id: Date.now() + Math.random(),
+        crew: days.length > 0 ?
+          // Copy crew from the last day in current state
+          days[days.length - 1].crew.map(member => ({
+            ...member,
+            roles: [...member.roles]
+          }))
+          : [],
         expense: {
           rent: [],
           operational: [],
@@ -48,6 +53,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         },
         note: '',
         totalExpenses: 0,
+        template: false,
       },
     ]);
   };
@@ -332,16 +338,20 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     <p>as</p>
                     {(item.roles || []).map((role, roleIndex) => (
                       <div key={roleIndex} className="flex items-center">
-                        {template ? (
+                        {day.template ? (
                           <select
                             name="roleProduction"
                             value={role}
                             onChange={(e) => {
-                              const updatedCrew = [...day.crew];
-                              updatedCrew[index].roles[roleIndex] =
-                                e.target.value;
-                              setDays((prevDays) => {
+                              setDays(prevDays => {
                                 const newDays = [...prevDays];
+                                const updatedCrew = [...newDays[dayIndex].crew];
+                                updatedCrew[index] = {
+                                  ...updatedCrew[index],
+                                  roles: updatedCrew[index].roles.map((r, i) =>
+                                    i === roleIndex ? e.target.value : r
+                                  )
+                                };
                                 newDays[dayIndex].crew = updatedCrew;
                                 return newDays;
                               });
@@ -360,11 +370,15 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             name="roleGraphic"
                             value={role}
                             onChange={(e) => {
-                              const updatedCrew = [...day.crew];
-                              updatedCrew[index].roles[roleIndex] =
-                                e.target.value;
-                              setDays((prevDays) => {
+                              setDays(prevDays => {
                                 const newDays = [...prevDays];
+                                const updatedCrew = [...newDays[dayIndex].crew];
+                                updatedCrew[index] = {
+                                  ...updatedCrew[index],
+                                  roles: updatedCrew[index].roles.map((r, i) =>
+                                    i === roleIndex ? e.target.value : r
+                                  )
+                                };
                                 newDays[dayIndex].crew = updatedCrew;
                                 return newDays;
                               });
@@ -385,13 +399,13 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       <button
                         type="button"
                         onClick={() => {
-                          const updatedCrew = [...day.crew];
-                          if (!updatedCrew[index].roles) {
-                            updatedCrew[index].roles = [];
-                          }
-                          updatedCrew[index].roles.push("");
-                          setDays((prevDays) => {
+                          setDays(prevDays => {
                             const newDays = [...prevDays];
+                            const updatedCrew = [...newDays[dayIndex].crew];
+                            updatedCrew[index] = {
+                              ...updatedCrew[index],
+                              roles: [...(updatedCrew[index].roles || []), ""]
+                            };
                             newDays[dayIndex].crew = updatedCrew;
                             return newDays;
                           });
@@ -403,15 +417,15 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       <button
                         type="button"
                         onClick={() => {
-                          const updatedCrew = [...day.crew];
-                          if (updatedCrew[index].roles?.length > 0) {
-                            updatedCrew[index].roles.pop();
-                            setDays((prevDays) => {
-                              const newDays = [...prevDays];
+                          setDays(prevDays => {
+                            const newDays = [...prevDays];
+                            const updatedCrew = [...newDays[dayIndex].crew];
+                            if (updatedCrew[index].roles?.length > 0) {
+                              updatedCrew[index].roles.pop();
                               newDays[dayIndex].crew = updatedCrew;
-                              return newDays;
-                            });
-                          }
+                            }
+                            return newDays;
+                          });
                         }}
                         className="text-xs w-5 sf leading-none hover:bg-slate-400"
                       >
@@ -425,15 +439,16 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
               <section className="relative p-2 border h-full border-gray-400 flex flex-col gap-1 sf text-xs font-thin w-2/3">
                 <div className="absolute right-1 top-0 flex items-center gap-2">
                   <p className="sf text-xs font-thin tracking-widest">
-                    {template
+                    {day.template
                       ? "Production | Documentation"
                       : "Design |  Motion"}
                   </p>
                   <button
                     type="button"
                     onClick={() => {
-                      setTemplate(!template);
-
+                      setDays(prevDays => prevDays.map((day, idx) =>
+                        idx === dayIndex ? { ...day, template: !day.template } : day
+                      ));
                     }}
                   >
                     <svg
@@ -473,7 +488,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     </svg>
                   </button>
                 </div>
-                {template ? (
+                {day.template ? (
                   <div>
                     {/* Rent */}
                     <p className="sf text-xs font-thin tracking-widest">

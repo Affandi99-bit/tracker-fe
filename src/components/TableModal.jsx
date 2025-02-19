@@ -161,7 +161,7 @@ const TableModal = ({
                         className="pl-5 flex justify-start items-center sf tracking-widest"
                       >
                         <span className="text-xs font-normal">
-                          {member.name}  {Array.isArray(member.roles) ? member.roles.join(', ') : member.roles}
+                          {member.name}
                         </span>
                       </p>
                     ))
