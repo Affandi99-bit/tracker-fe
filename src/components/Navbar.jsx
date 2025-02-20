@@ -219,7 +219,7 @@ const Navbar = ({
       ) : null}
       <section className="fixed select-none z-0 top-0 flex justify-between items-center bg-dark py-3 px-5 w-full overflow-hidden">
         <img
-          src="/PM.png"
+          src="/PM.webp"
           alt="PM"
           onClick={() => {
             window.location.reload();
@@ -248,7 +248,7 @@ const Navbar = ({
               />
             </svg>
           </button>
-          <img src="/black.png" alt="PM" className=" w-56 object-contain" />
+          <img src="/black.webp" alt="PM" className=" w-56 object-contain" />
         </div>
       </section>
       <nav className="fixed z-20 px-5 rounded-t-xl bg-dark bottom-0 left-1/2 transform -translate-x-1/2 flex items-center gap-7 h-12">

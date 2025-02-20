@@ -187,7 +187,7 @@ const CreateModal = ({
           <section className="relative overflow-auto w-screen h-full no-scrollbar bg-zinc-100 ">
             <section className="hidden fixed -right-40 -bottom-56 select-none md:flex gap-1 z-0">
               <img
-                src="/camera.png"
+                src="/camera.webp"
                 className="object-contain size-[70rem] scale-x-[-1] -rotate-45"
                 alt=""
               />

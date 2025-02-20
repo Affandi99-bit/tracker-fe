@@ -51,12 +51,12 @@ const Login = ({ onLoginSuccess }) => {
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <section className="w-96 overflow-hidden rounded-2xl bg-dark relative flex flex-col p-8 z-10">
           <img
-            src="/PM.png"
+            src="/PM.webp"
             className="absolute left-0 top-16 opacity-30"
             alt=""
           />
           <header className="flex items-center gap-3 mb-4">
-            <img src="/logo.png" className="size-9" alt="Logo" />
+            <img src="/logo.webp" className="size-9" alt="Logo" />
             <p className="text-2xl text-gray-300 sf tracking-widest font-black">
               Project Manager
             </p>

@@ -168,7 +168,7 @@ const TableModal = ({
                 </div>
               </section>
               <img
-                src="/logo.png"
+                src="/logo.webp"
                 alt="logo"
                 className="absolute select-none z-0 -bottom-20 -right-20 opacity-10 -rotate-12 mix-blend-difference object-contain"
               />
