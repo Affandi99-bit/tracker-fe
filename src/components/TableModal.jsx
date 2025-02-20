@@ -153,9 +153,8 @@ const TableModal = ({
               <section className="relative z-10 text-dark p-5 h-full w-1/2 flex flex-col items-start mt-20 gradient">
                 <p className="sf tracking-widest font-bold">Crew :</p>
                 <div className="flex flex-col flex-wrap h-40 overflow-y-auto">
-
                   {
-                    pro.day[0].crew.map((member, i) => (
+                    pro.day?.[0]?.crew?.map((member, i) => (
                       <p
                         key={i}
                         className="pl-5 flex justify-start items-center sf tracking-widest"
@@ -164,8 +163,7 @@ const TableModal = ({
                           {member.name}
                         </span>
                       </p>
-                    ))
-
+                    )) || <p className="text-xs pl-5">No crew members listed</p>
                   }
                 </div>
               </section>

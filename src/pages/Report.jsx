@@ -17,6 +17,8 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       note: day.note || '',
       totalExpenses: 0,
       template: day.template || false,
+      date: day.date || '',
+      backup: day.backup || [],
     })) || []
   );
 
@@ -40,10 +42,9 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       {
         id: Date.now() + Math.random(),
         crew: days.length > 0 ?
-          // Copy crew from the last day in current state
           days[days.length - 1].crew.map(member => ({
             ...member,
-            roles: [...member.roles]
+            roles: [...(member.roles || [])]
           }))
           : [],
         expense: {
@@ -54,6 +55,8 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         note: '',
         totalExpenses: 0,
         template: false,
+        date: '',
+        backup: [],
       },
     ]);
   };
@@ -87,6 +90,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             price: "",
             qty: "",
             ...(type === "operational" && { category: "" }),
+            note: "",
           };
           return {
             ...day,
@@ -155,7 +159,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         .catch(error => {
           console.error("Update Error:", error);
         })
-        .finally(() => setLoading(false));
+        .finally(() => { setLoading(false); alert("Project Saved") });
     } catch (error) {
       console.error('Save error:', error);
     }
@@ -188,7 +192,26 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           Back
         </button>
         <p>{pro.title}</p>
-        <p>{new Date(pro.deadline).toLocaleDateString("en-GB")}</p>
+        <main className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
+            <p>Start :</p>
+            <input
+              type="date"
+              value={pro.start}
+              onChange={(e) => handleInputChange('start', e.target.value)}
+              className="border border-gray-400 p-px outline-none m-1 sf text-light text-xs font-thin"
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            <p>Deadline :</p>
+            <input
+              type="date"
+              value={pro.deadline}
+              readOnly
+              className="border border-gray-400 p-px outline-none m-1 sf text-xs text-light font-thin"
+            />
+          </div>
+        </main>
       </nav>
       {/* Aside */}
       <aside className="absolute top-0 right-0 w-1/4 h-full sf font-thin text-sm tracking-wider">
@@ -318,8 +341,23 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <div className="flex h-full w-full gap-1">
               {/* Crew section */}
               <section className="p-2 border h-full border-gray-400 flex flex-col gap-1 sf text-xs font-thin w-1/3">
-                <p className="outline-none">{`Day ${dayIndex + 1
-                  }`}</p>
+                <div className="flex items-center justify-between">
+                  <p className="outline-none">{`Day ${dayIndex + 1
+                    }`}</p>
+                  <div className="flex items-center gap-1">
+                    <p>Date :</p>
+                    <input
+                      type="date"
+                      value={day.date || ''}
+                      onChange={(e) => {
+                        setDays(prevDays => prevDays.map((d, idx) =>
+                          idx === dayIndex ? { ...d, date: e.target.value } : d
+                        ))
+                      }}
+                      className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                    />
+                  </div>
+                </div>
                 <p className="sf text-xs font-thin tracking-widest pl-4">
                   Crew
                 </p>
@@ -400,16 +438,26 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                         type="button"
                         onClick={() => {
                           setDays(prevDays => {
-                            const newDays = [...prevDays];
-                            const updatedCrew = [...newDays[dayIndex].crew];
-                            updatedCrew[index] = {
-                              ...updatedCrew[index],
-                              roles: [...(updatedCrew[index].roles || []), ""]
-                            };
-                            newDays[dayIndex].crew = updatedCrew;
-                            return newDays;
+                            return prevDays.map((day, dIndex) => {
+                              if (dIndex === dayIndex) {
+                                return {
+                                  ...day,
+                                  crew: day.crew.map((member, mIndex) => {
+                                    if (mIndex === index) {
+                                      return {
+                                        ...member,
+                                        roles: [...(member.roles || []), ""]
+                                      };
+                                    }
+                                    return member;
+                                  })
+                                };
+                              }
+                              return day;
+                            });
                           });
                         }}
+
                         className="text-xs w-5 sf leading-none hover:bg-slate-400"
                       >
                         +
@@ -418,15 +466,26 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                         type="button"
                         onClick={() => {
                           setDays(prevDays => {
-                            const newDays = [...prevDays];
-                            const updatedCrew = [...newDays[dayIndex].crew];
-                            if (updatedCrew[index].roles?.length > 0) {
-                              updatedCrew[index].roles.pop();
-                              newDays[dayIndex].crew = updatedCrew;
-                            }
-                            return newDays;
+                            return prevDays.map((day, dIndex) => {
+                              if (dIndex === dayIndex) {
+                                return {
+                                  ...day,
+                                  crew: day.crew.map((member, mIndex) => {
+                                    if (mIndex === index) {
+                                      return {
+                                        ...member,
+                                        roles: member.roles.slice(0, -1) // Creates a new array with the last element removed
+                                      };
+                                    }
+                                    return member;
+                                  })
+                                };
+                              }
+                              return day;
+                            });
                           });
                         }}
+
                         className="text-xs w-5 sf leading-none hover:bg-slate-400"
                       >
                         -
@@ -553,6 +612,19 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             );
                           }}
                         />
+                        <input
+                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          type="text"
+                          placeholder="Note"
+                          value={expense.note || ""}
+                          onChange={(e) => handleExpenseChange(
+                            dayIndex,
+                            "rent",
+                            index,
+                            "note",
+                            e.target.value
+                          )}
+                        />
                         <button
                           type="button"
                           className="sf text-xs font-thin ml-5"
@@ -645,6 +717,19 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             );
                           }}
                         />
+                        <input
+                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          type="text"
+                          placeholder="Note"
+                          value={expense.note || ""}
+                          onChange={(e) => handleExpenseChange(
+                            dayIndex,
+                            "operational",
+                            index,
+                            "note",
+                            e.target.value
+                          )}
+                        />
                         <select
                           value={expense.category}
                           onChange={(e) => {
@@ -692,6 +777,87 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() =>
                         handleAddExpense(dayIndex, "operational")
                       }
+                      className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+                    >
+                      Add
+                    </button>
+                    <p className="font-medium ">Backup</p>
+                    {day.backup?.map((backupItem, backupIndex) => (
+                      <div key={backupIndex} className="flex items-center w-full gap-1">
+                        <input
+                          className="border border-gray-400 p-px outline-none my-1 sf text-xs font-thin"
+                          type="text"
+                          required
+                          placeholder="Backup Source"
+                          value={backupItem.source || ''}
+                          onChange={(e) => {
+                            setDays(prevDays =>
+                              prevDays.map((d, idx) => {
+                                if (idx === dayIndex) {
+                                  const updatedBackup = [...(d.backup || [])];
+                                  updatedBackup[backupIndex] = { ...updatedBackup[backupIndex], source: e.target.value };
+                                  return { ...d, backup: updatedBackup };
+                                }
+                                return d;
+                              })
+                            );
+                          }}
+                        />
+                        <p className="sf text-xs font-thin">to</p>
+                        <input
+                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          type="text"
+                          required
+                          placeholder="Backup Target"
+                          value={backupItem.target || ''}
+                          onChange={(e) => {
+                            setDays(prevDays =>
+                              prevDays.map((d, idx) => {
+                                if (idx === dayIndex) {
+                                  const updatedBackup = [...(d.backup || [])];
+                                  updatedBackup[backupIndex] = { ...updatedBackup[backupIndex], target: e.target.value };
+                                  return { ...d, backup: updatedBackup };
+                                }
+                                return d;
+                              })
+                            );
+                          }}
+                        />
+                        <div className="flex flex-col">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDays(prevDays =>
+                                prevDays.map((d, idx) => {
+                                  if (idx === dayIndex) {
+                                    const updatedBackup = [...(d.backup || [])];
+                                    updatedBackup.splice(backupIndex, 1);
+                                    return { ...d, backup: updatedBackup };
+                                  }
+                                  return d;
+                                })
+                              );
+                            }}
+                            className="text-xs w-5 sf leading-none hover:bg-slate-400 rounded-b"
+                          >
+                            -
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDays(prevDays =>
+                          prevDays.map((d, idx) => {
+                            if (idx === dayIndex) {
+                              const updatedBackup = [...(d.backup || []), { source: '', target: '' }];
+                              return { ...d, backup: updatedBackup };
+                            }
+                            return d;
+                          })
+                        );
+                      }}
                       className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
                     >
                       Add
@@ -744,6 +910,19 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             });
                           }}
                         />
+                        <input
+                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          type="text"
+                          placeholder="Note"
+                          value={order.note || ""}
+                          onChange={(e) => handleExpenseChange(
+                            dayIndex,
+                            "orderlist",
+                            index,
+                            "note",
+                            e.target.value
+                          )}
+                        />
                         <button
                           type="button"
                           className="sf text-xs font-thin ml-5"
@@ -781,6 +960,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           type="text"
                           required
                           placeholder="Item Name"
+
                           value={expense.name}
                           onChange={(e) => {
                             const updatedExpenses = [
@@ -836,6 +1016,19 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             );
                           }}
                         />
+                        <input
+                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          type="text"
+                          placeholder="Note"
+                          value={expense.note || ""}
+                          onChange={(e) => handleExpenseChange(
+                            dayIndex,
+                            "operational",
+                            index,
+                            "note",
+                            e.target.value
+                          )}
+                        />
                         <select
                           value={expense.category}
                           onChange={(e) => {
@@ -858,6 +1051,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           <option value="Snack">Snack</option>
                           <option value="Other">Other</option>
                         </select>
+
                         <button
                           type="button"
                           className="sf text-xs font-thin ml-5"
@@ -890,41 +1084,43 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   </div>
                 )}
                 {/* Note & Total */}
-                <div className="w-full flex items-center gap-1">
-                  <textarea
-                    placeholder="Note"
-                    value={day.note}
-                    onChange={(e) => {
-                      setDays(prevDays => prevDays.map((d, idx) =>
-                        idx === dayIndex ? { ...d, note: e.target.value } : d
-                      ));
-                    }}
-                    className="h-full w-2/3 border border-gray-400 outline-none p-2"
-                  />
-                  <div className="w-1/3 h-full">
-                    <p className="bg-dark text-light sf text-xs font-thin tracking-widest pl-1">
-                      Expenses
-                    </p>
-
-                    <NumericFormat
-                      displayType="input"
-                      readOnly
-                      thousandSeparator
-                      prefix={"Rp. "}
-                      value={
-                        day.expense.rent.reduce(
-                          (acc, exp) => acc + (exp.price * exp.qty || 0),
-                          0
-                        ) +
-                        day.expense.operational.reduce(
-                          (acc, exp) => acc + (exp.price * exp.qty || 0),
-                          0
-                        )
-                      }
-                      className="outline-none pt-2 select-none"
+                <main className="w-full">
+                  <section className="flex items-center gap-1">
+                    <textarea
+                      placeholder="Note"
+                      value={day.note}
+                      onChange={(e) => {
+                        setDays(prevDays => prevDays.map((d, idx) =>
+                          idx === dayIndex ? { ...d, note: e.target.value } : d
+                        ));
+                      }}
+                      className="h-full w-2/3 border border-gray-400 outline-none p-2"
                     />
-                  </div>
-                </div>
+                    <div className="w-1/3 h-full">
+                      <p className="bg-dark text-light sf text-xs font-thin tracking-widest pl-1">
+                        Expenses
+                      </p>
+
+                      <NumericFormat
+                        displayType="input"
+                        readOnly
+                        thousandSeparator
+                        prefix={"Rp. "}
+                        value={
+                          day.expense.rent.reduce(
+                            (acc, exp) => acc + (exp.price * exp.qty || 0),
+                            0
+                          ) +
+                          day.expense.operational.reduce(
+                            (acc, exp) => acc + (exp.price * exp.qty || 0),
+                            0
+                          )
+                        }
+                        className="outline-none pt-2 select-none"
+                      />
+                    </div>
+                  </section>
+                </main>
               </section>
             </div>
           </main>
