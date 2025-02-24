@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Loader, Navbar, CreateModal } from "./components";
+import { Loader, Navbar, CreateModal, Toast } from "./components";
 import { MainTable } from "./pages";
 import axios from "axios";
 import Login from "./pages/Login";
+import { ToastProvider } from './components/ToastContext';
 
 const App = () => {
   const [tableData, setTableData] = useState([]);
@@ -15,6 +16,13 @@ const App = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const showToast = (msg) => {
+    setMessage(msg);
+    setToastVisible(true);
+  };
 
   useEffect(() => {
     fetchProjects();
@@ -117,7 +125,7 @@ const App = () => {
   };
 
   return (
-    <>
+    <ToastProvider>
       {!isLoggedIn ? (
         <Login onLoginSuccess={handleLoginSuccess} />
       ) : (
@@ -126,6 +134,7 @@ const App = () => {
             <Loader />
           ) : (
             <div className="bg-dark">
+              <Toast message={message} show={toastVisible} onClose={() => setToastVisible(false)} />
               <button
                 onClick={() => setShowCreateModal(!showCreateModal)}
                 className="fixed z-20 hover:rotate-90 right-3 bottom-0 md:bottom-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
@@ -176,6 +185,7 @@ const App = () => {
                 updateData={updateData}
                 deleteData={deleteData}
                 showHidden={showHidden}
+                showToast={showToast}
                 onSubmit={handleFormSubmit}
               />
             </div>
@@ -203,7 +213,7 @@ const App = () => {
           </p>
         </div>
       </div> */}
-    </>
+    </ToastProvider>
   );
 };
 

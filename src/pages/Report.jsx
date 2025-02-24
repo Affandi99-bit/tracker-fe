@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { NumericFormat } from "react-number-format";
 import { roleProduction, roleGraphic } from "../constant/constant";
+import { useToast } from '../components/ToastContext';
 
 const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
-  const [pro, setPro] = useState(initialPro);
+  const { showToast } = useToast();
+  const [pro, setPro] = useState(initialPro || {});
   const [loading, setLoading] = useState(false)
   const [days, setDays] = useState(
     initialPro?.day?.map(day => ({
@@ -55,7 +57,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         note: '',
         totalExpenses: 0,
         template: false,
-        date: '',
+        date: days.length > 0 ? days[days.length - 1].date : '',
         backup: [],
       },
     ]);
@@ -131,39 +133,35 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
+
     try {
       const updatedPro = {
         ...pro,
+        total: days.reduce((acc, day) => acc + day.totalExpenses, 0),
         day: days.map(day => ({
           ...day,
           expense: {
-            rent: day.expense.rent.map(expense => ({
-              ...expense,
-              price: expense.price.replace(/[^0-9]/g, ""),
-            })),
-            operational: day.expense.operational.map(expense => ({
-              ...expense,
-              price: expense.price.replace(/[^0-9]/g, ""),
-            })),
+            rent: day.expense.rent,
+            operational: day.expense.operational,
             orderlist: day.expense.orderlist,
           },
         })),
       };
-      setLoading(true);
-      updateData(updatedPro)
-        .then(response => {
-          console.log("Update Response:", response);
-        })
-        .catch(error => {
-          console.error("Update Error:", error);
-        })
-        .finally(() => { setLoading(false); alert("Project Saved") });
+
+      await updateData(updatedPro);
+      showToast("Project Report saved successfully");
+      setShowReportGenerator(false);
     } catch (error) {
       console.error('Save error:', error);
+      showToast("Failed to save report");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <main className="fixed top-0 z-40 bg-light w-full h-screen flex flex-col items-start">
       {/* Navbar */}
@@ -191,13 +189,13 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           </svg>
           Back
         </button>
-        <p>{pro.title}</p>
+        <p>{pro?.title || ''}</p>
         <main className="flex items-center gap-1">
           <div className="flex items-center gap-1">
             <p>Start :</p>
             <input
               type="date"
-              value={pro.start}
+              value={pro?.start}
               onChange={(e) => handleInputChange('start', e.target.value)}
               className="border border-gray-400 p-px outline-none m-1 sf text-light text-xs font-thin"
             />
@@ -206,7 +204,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <p>Deadline :</p>
             <input
               type="date"
-              value={pro.deadline}
+              value={pro?.deadline}
               readOnly
               className="border border-gray-400 p-px outline-none m-1 sf text-xs text-light font-thin"
             />
@@ -220,7 +218,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <label className="font-medium">PM</label>
             <input
               type="text"
-              value={pro.pm}
+              value={pro?.pm || ''}
               className="border border-gray-400 p-2 w-full mt-1 outline-none"
               disabled
             />
@@ -229,7 +227,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <label className="font-medium">Client</label>
             <input
               type="text"
-              value={pro.client}
+              value={pro?.client || ''}
               className="border border-gray-400 p-2 w-full mt-1 outline-none"
               disabled
             />
@@ -238,7 +236,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <label className="font-medium">PIC Client</label>
             <input
               type="text"
-              value={pro.pic}
+              value={pro?.pic || ''}
               className="border border-gray-400 p-2 w-full mt-1 outline-none"
               disabled
             />
@@ -248,7 +246,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           <label className="font-medium">Invoice</label>
           <input
             type="date"
-            value={pro.invoice}
+            value={pro?.invoice || ''}
             onChange={(e) => handleInputChange('invoice', e.target.value)}
             className="border border-gray-400 p-2 w-full mt-1 outline-none"
           />
@@ -257,7 +255,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           <label className="font-medium">DP</label>
           <input
             type="date"
-            value={pro.dp}
+            value={pro?.dp || ''}
             onChange={(e) => handleInputChange('dp', e.target.value)}
             className="border border-gray-400 p-2 w-full mt-1 outline-none"
           />
@@ -266,19 +264,18 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           <label className="font-medium">Paid Off</label>
           <input
             type="date"
-            value={pro.lunas}
+            value={pro?.lunas || ''}
             onChange={(e) => handleInputChange('lunas', e.target.value)}
             className="border border-gray-400 p-2 w-full mt-1 outline-none"
           />
         </div>
-
         <div className="mt-2 px-5">
           <label className="font-medium">Total Expenses</label>
           <NumericFormat
             displayType="input"
             thousandSeparator
             prefix={"Rp. "}
-            value={days.reduce((acc, day) => acc + day.totalExpenses, 0)}
+            value={days.reduce((acc, day) => acc + day.totalExpenses, 0) || pro?.total}
             placeholder="Rp. 0"
             className="border border-gray-400 p-2 w-full mt-1 outline-none"
             disabled
@@ -288,7 +285,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           <label className="font-medium">Final Link</label>
           <input
             type="url"
-            value={pro.final_file}
+            value={pro?.final_file || ''}
             className="border border-gray-400 p-2 w-full mt-1 outline-none"
             disabled
           />
@@ -297,7 +294,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           <label className="font-medium">Note</label>
           <textarea
             placeholder="Note"
-            value={pro.note}
+            value={pro?.note || ''}
             className="border border-gray-400 p-2 w-full mt-1 outline-none"
           />
         </div>
@@ -474,7 +471,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                                     if (mIndex === index) {
                                       return {
                                         ...member,
-                                        roles: member.roles.slice(0, -1) // Creates a new array with the last element removed
+                                        roles: member.roles.slice(0, -1)
                                       };
                                     }
                                     return member;
@@ -781,6 +778,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     >
                       Add
                     </button>
+                    {/* Backup */}
                     <p className="font-medium ">Backup</p>
                     {day.backup?.map((backupItem, backupIndex) => (
                       <div key={backupIndex} className="flex items-center w-full gap-1">
@@ -838,7 +836,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                                 })
                               );
                             }}
-                            className="text-xs w-5 sf leading-none hover:bg-slate-400 rounded-b"
+                            className="text-xs w-5 sf"
                           >
                             -
                           </button>
@@ -901,13 +899,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                               "qty",
                               e.target.value
                             );
-                            const updatedExpenses = [...day.expense.orderlist];
-                            updatedExpenses[index].qty = e.target.value;
-                            setDays((prevDays) => {
-                              const newDays = [...prevDays];
-                              newDays[dayIndex].expense.orderlist = updatedExpenses;
-                              return newDays;
-                            });
                           }}
                         />
                         <input

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { tags, crew } from "../constant/constant";
+import { useToast } from './ToastContext';
 
 const CreateModal = ({
   showModal,
@@ -11,6 +12,8 @@ const CreateModal = ({
   initialData,
   setTableModal,
 }) => {
+  const { showToast } = useToast();
+
   const initialFormData = {
     title: "",
     pm: "",
@@ -161,22 +164,38 @@ const CreateModal = ({
       }],
     };
     console.log("Form Data Submitted:", finalData);
-    if (isEditing) {
-      await updateData(finalData);
-      setTableModal(false);
-    } else {
-      await addNewData(finalData);
+    try {
+      if (isEditing) {
+        await updateData(finalData);
+        setTableModal(false);
+        showToast("Project updated successfully");
+      } else {
+        await addNewData(finalData);
+        showToast("Project created successfully");
+      }
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      showToast("Operation failed");
+    } finally {
+      setIsLoading(false);
     }
-    setShowModal(false);
-    setIsLoading(false);
   };
 
   const handleDelete = async () => {
     if (isEditing && formData._id) {
       setIsLoadingDelete(true);
-      await deleteData(formData._id);
-      setShowModal(false);
-      setTableModal(false);
+      try {
+        await deleteData(formData._id);
+        showToast("Project deleted successfully");
+        setShowModal(false);
+        setTableModal(false);
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        showToast("Deletion failed");
+      } finally {
+        setIsLoadingDelete(false);
+      }
     }
   };
 
