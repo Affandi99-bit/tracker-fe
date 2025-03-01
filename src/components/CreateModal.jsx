@@ -168,15 +168,15 @@ const CreateModal = ({
       if (isEditing) {
         await updateData(finalData);
         setTableModal(false);
-        showToast("Project updated successfully");
+        showToast("Project updated successfully", 'success');
       } else {
         await addNewData(finalData);
-        showToast("Project created successfully");
+        showToast("Project created successfully", 'success');
       }
       setShowModal(false);
     } catch (error) {
       console.error("Error submitting form:", error);
-      showToast("Operation failed");
+      showToast("Operation failed", 'error');
     } finally {
       setIsLoading(false);
     }
@@ -187,11 +187,11 @@ const CreateModal = ({
       setIsLoadingDelete(true);
       try {
         await deleteData(formData._id);
-        showToast("Project deleted successfully");
+        showToast("Project deleted successfully", 'success');
         setShowModal(false);
         setTableModal(false);
       } catch (error) {
-        console.error("Error deleting project:", error);
+        console.error("Error deleting project:", 'error', error);
         showToast("Deletion failed");
       } finally {
         setIsLoadingDelete(false);

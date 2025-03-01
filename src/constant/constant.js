@@ -151,6 +151,11 @@ export const tags = {
       value: "Retouch Foto",
       color: "#132a4b",
     },
+    {
+      title: "Photoshoot",
+      value: "Photoshoot",
+      color: "#132a4b",
+    },
   ],
 };
 export const roleProduction = [

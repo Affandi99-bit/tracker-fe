@@ -13,23 +13,22 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
       {tableData.map((row, index) => (
         <tr
           onClick={() => handleRowClick(row)}
-          className={`h-20 w-screen sf tracking-widest text-xs ${
-            index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-          } hover:brightness-75`}
+          className={`h-20 w-screen sf tracking-widest text-xs ${index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
+            } hover:brightness-75`}
           key={row._id}
         >
-          <td className="w-10 border-x border-gray-400">
+          <td className="">
             <div className="font-semibold px-3 flex items-center justify-center ">
               {index + 1}
             </div>
           </td>
-          <td className="w-20 border-x border-gray-400">{row.title}</td>
-          <td className="w-20 border-x border-gray-400">{row.client}</td>
-          <td className="w-20 border-x border-gray-400">{row.pic}</td>
-          <td className="w-32 border-x border-gray-400">
+          <td className="border-x border-gray-300 border-opacity-75">{row.title}</td>
+          <td className=" border-x border-gray-300 border-opacity-75">{row.client}</td>
+          <td className=" border-x border-gray-300 border-opacity-75">{row.pic}</td>
+          <td className=" border-x border-gray-300 border-opacity-75">
             {new Date(row.deadline).toLocaleDateString("en-GB")}
           </td>
-          <td className="w-20 border-x border-gray-400">
+          <td className=" border-x border-gray-300 border-opacity-75">
             <div className="flex flex-wrap gap-1 justify-center items-center">
               {row.status.map((chip, i) => (
                 <p
@@ -44,7 +43,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
               ))}
             </div>
           </td>
-          <td className="w-20 border-x border-gray-400">
+          <td className=" border-x border-gray-300 border-opacity-75">
             <div className="flex flex-wrap gap-1 justify-center items-center">
               {row.type.map((chip, i) => (
                 <p
@@ -52,7 +51,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
                   style={{
                     backgroundColor: findTagColor(chip),
                   }}
-                  className="rounded-md w-[3.6rem] py-[0.15rem]"
+                  className="rounded-md border w-[3.6rem] py-[0.15rem]"
                 >
                   <span className="text-white text-xs font-extralight">
                     {chip}
@@ -61,7 +60,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
               ))}
             </div>
           </td>
-          <td className="w-28 border-x border-gray-400">
+          <td className=" border-x border-gray-300 border-opacity-75">
             <div className="flex flex-wrap gap-1 justify-center items-center">
               {row.categories.map((chip, i) => (
                 <p
@@ -79,30 +78,30 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
             </div>
           </td>
 
-          <td className="w-32 border-x border-gray-400">{row.pm}</td>
-          <td className="w-32 border-x border-gray-400">
+          <td className=" border-x border-gray-300 border-opacity-75">{row.pm}</td>
+          <td className=" border-x border-gray-300 border-opacity-75">
             {row.final_file ? (
               <a
                 target="_blank"
                 className="truncate w-32 text-blue-500 hover:underline"
                 href={`${row.final_file}`}
               >
-                Go to File
+                Final File
               </a>
             ) : null}
           </td>
-          <td className="w-32 border-x border-gray-400">
+          <td className=" border-x border-gray-300 border-opacity-75">
             {row.final_report_file ? (
               <a
                 target="_blank"
                 className="truncate w-32 text-blue-500 hover:underline"
                 href={`${row.final_report_file}`}
               >
-                Go to Report File
+                Report File
               </a>
             ) : null}
           </td>
-          <td className=" w-48 border-x border-gray-400 overflow-hidden whitespace-nowrap text-ellipsis">
+          <td className="overflow-hidden whitespace-nowrap text-ellipsis">
             {row.note}
           </td>
         </tr>
@@ -200,12 +199,12 @@ const MainTable = ({
         <table className="border-collapse  mt-[6rem] select-none relative w-full table-fixed">
           <thead className="sf tracking-widest">
             <tr>
-              <th className="w-10 sticky top-0 border-none bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-10 sticky top-0 border-none bg-light text-dark shadow text-sm z-10 h-10">
                 ID
               </th>
               <th
                 onClick={handleTitle}
-                className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10"
+                className="w-40 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10"
               >
                 <div className=" flex items-center justify-center cursor-pointer">
                   Project Title
@@ -225,15 +224,15 @@ const MainTable = ({
                   </svg>
                 </div>
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 Client
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 PIC
               </th>
               <th
                 onClick={handleDate}
-                className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10"
+                className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10"
               >
                 <div className=" flex items-center justify-center cursor-pointer">
                   Due Date
@@ -253,25 +252,25 @@ const MainTable = ({
                   </svg>
                 </div>
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 Progress
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 Status
               </th>
-              <th className="w-28 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-28 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 Type
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-14 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 PM
               </th>
-              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 Final File
               </th>
-              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 Documents
               </th>
-              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-md z-10 h-10">
+              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
                 Note
               </th>
             </tr>
@@ -294,7 +293,6 @@ const MainTable = ({
           />
         )}
       </section>
-      {/* <Produksi selectedProject={selectedRowData} /> */}
     </main>
   );
 };
