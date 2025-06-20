@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { NumericFormat } from "react-number-format";
 import { roleProduction, roleGraphic } from "../constant/constant";
 import { useToast } from '../components/ToastContext';
-import { exportReportToXLSX } from '../utils/export';
 
 const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const { showToast } = useToast();
@@ -172,14 +171,11 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       setLoading(false);
     }
   };
-  const handleExport = () => {
-    exportReportToXLSX({ days, ...pro }, pro?.title || 'Untitled Report');
-    showToast("Report exported successfully", 'success');
-  };
+
   return (
-    <main className="fixed top-0 z-40 bg-light w-full h-screen flex flex-col items-start">
+    <main className="fixed top-0 left-0 z-40 bg-light w-full h-screen flex flex-col items-start">
       {/* Navbar */}
-      <nav className="fixed flex justify-between px-10 text-light sf text-sm tracking-wider items-center top-0 w-[75%] h-10 bg-dark">
+      <nav className="fixed flex justify-between px-10 text-light font-body text-sm tracking-wider items-center top-0 w-[75%] h-10 bg-dark">
         <button
           type="button"
           className="flex gap-1 items-center"
@@ -211,7 +207,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
               type="date"
               value={pro?.start}
               onChange={(e) => handleInputChange('start', e.target.value)}
-              className="border border-gray-400 p-px outline-none m-1 sf text-light text-xs font-thin"
+              className="border border-gray-400 p-px outline-none m-1 font-body text-light text-xs font-thin"
             />
           </div>
           <div className="flex items-center gap-1">
@@ -220,13 +216,13 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
               type="date"
               value={pro?.deadline}
               readOnly
-              className="border border-gray-400 p-px outline-none m-1 sf text-xs text-light font-thin"
+              className="border border-gray-400 p-px outline-none m-1 font-body text-xs text-light font-thin"
             />
           </div>
         </main>
       </nav>
       {/* Aside */}
-      <aside className="absolute top-0 right-0 w-1/4 h-full sf font-thin text-sm tracking-wider">
+      <aside className="absolute top-0 right-0 w-1/4 h-full font-body font-thin text-sm tracking-wider">
         <div className="flex w-full items-center px-5 gap-1">
           <div className="mt-2">
             <label className="font-medium">PM</label>
@@ -313,30 +309,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           />
         </div>
         <div className="text-right mt-5 px-5 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={handleExport}
-            className="border-dashed border border-gray-400 px-4 py-2"
-          >
-            Export{loading ? <span className="animate-spin">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 24 24"
-                className="size-5 animate-spin"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z"
-                  stroke="#f8f8f8"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span> : null}
-          </button>
+
           <button type="submit" onClick={handleSubmit} className="border flex gap-2 items-center bg-dark text-light px-4 py-2">
             Save {loading ? <span className="animate-spin">
               <svg
@@ -358,7 +331,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             </span> : null}
           </button>
         </div>
-        <p className="text-dark px-5 pt-3 sf italic font-thin text-xs">
+        <p className="text-dark px-5 pt-3 font-body italic font-thin text-xs">
           *Note: Please save before export
         </p>
       </aside>
@@ -369,7 +342,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">
             <div className="flex h-full w-full gap-1">
               {/* Crew section */}
-              <section className="p-2 border h-full border-gray-400 flex flex-col gap-1 sf text-xs font-thin w-1/3">
+              <section className="p-2 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-1/3">
                 <div className="flex items-center justify-between">
                   <p contentEditable className="outline-none">{`Day ${dayIndex + 1
                     }`}</p>
@@ -383,11 +356,11 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           idx === dayIndex ? { ...d, date: e.target.value } : d
                         ))
                       }}
-                      className=" p-px outline-none m-1 sf text-xs font-thin"
+                      className=" p-px outline-none m-1 font-body text-xs font-thin"
                     />
                   </div>
                 </div>
-                <p className="sf text-xs font-thin tracking-widest pl-4">
+                <p className="font-body text-xs font-thin tracking-widest pl-4">
                   Crew
                 </p>
                 {day.crew.map((item, index) => (
@@ -400,7 +373,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       placeholder="Name"
                       value={item.name}
                       readOnly
-                      className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                      className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                     />
                     <p>as</p>
                     {(item.roles || []).map((role, roleIndex) => (
@@ -487,7 +460,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           });
                         }}
 
-                        className="text-xs w-5 sf leading-none hover:bg-slate-400"
+                        className="text-xs w-5 font-body leading-none hover:bg-slate-400"
                       >
                         +
                       </button>
@@ -515,7 +488,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           });
                         }}
 
-                        className="text-xs w-5 sf leading-none hover:bg-slate-400"
+                        className="text-xs w-5 font-body leading-none hover:bg-slate-400"
                       >
                         -
                       </button>
@@ -524,9 +497,9 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                 ))}
               </section>
               {/* Expenses section */}
-              <section className="relative p-2 border h-full border-gray-400 flex flex-col gap-1 sf text-xs font-thin w-2/3">
+              <section className="relative p-2 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-2/3">
                 <div className="absolute right-1 top-0 flex items-center gap-2">
-                  <p className="sf text-xs font-thin tracking-widest">
+                  <p className="font-body text-xs font-thin tracking-widest">
                     {day.template
                       ? "Production | Documentation"
                       : "Design |  Motion"}
@@ -579,13 +552,13 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                 {day.template ? (
                   <div>
                     {/* Rent */}
-                    <p className="sf text-xs font-thin tracking-widest">
+                    <p className="font-body text-xs font-thin tracking-widest">
                       Rent Expenses
                     </p>
                     {day.expense.rent.map((expense, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           required
                           placeholder="Item Name"
@@ -606,7 +579,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           required
                           allowNegative={false}
                           prefix={"Rp. "}
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           placeholder="Prices"
                           value={expense.price || ""}
                           onValueChange={(values) => {
@@ -621,7 +594,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           }}
                         />
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="number"
                           required
                           placeholder="Qty"
@@ -642,7 +615,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           }}
                         />
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           placeholder="Note"
                           value={expense.note || ""}
@@ -656,7 +629,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                         />
                         <button
                           type="button"
-                          className="sf text-xs font-thin ml-5"
+                          className="font-body text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [...day.expense.rent];
                             updatedExpenses.splice(index, 1);
@@ -676,18 +649,18 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() => {
                         handleAddExpense(dayIndex, "rent");
                       }}
-                      className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+                      className="text-light bg-dark p-px outline-none m-1 font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
                     {/* Operational */}
-                    <p className="sf text-xs font-thin tracking-widest">
+                    <p className="font-body text-xs font-thin tracking-widest">
                       Operational Expenses
                     </p>
                     {day.expense.operational.map((expense, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           required
                           placeholder="Item Name"
@@ -710,7 +683,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           thousandSeparator
                           required
                           prefix={"Rp. "}
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           placeholder="Prices"
                           value={expense.price || ""}
                           allowNegative={false}
@@ -726,7 +699,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           }}
                         />
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="number"
                           placeholder="Qty"
                           required
@@ -747,7 +720,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           }}
                         />
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           placeholder="Note"
                           value={expense.note || ""}
@@ -783,7 +756,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                         </select>
                         <button
                           type="button"
-                          className="sf text-xs font-thin ml-5"
+                          className="font-body text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [
                               ...day.expense.operational,
@@ -806,7 +779,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() =>
                         handleAddExpense(dayIndex, "operational")
                       }
-                      className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+                      className="text-light bg-dark p-px outline-none m-1 font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
@@ -815,7 +788,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     {day.backup?.map((backupItem, backupIndex) => (
                       <div key={backupIndex} className="flex items-center w-full gap-1">
                         <input
-                          className="border border-gray-400 p-px outline-none my-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none my-1 font-body text-xs font-thin"
                           type="text"
                           required
                           placeholder="Backup Source"
@@ -833,9 +806,9 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             );
                           }}
                         />
-                        <p className="sf text-xs font-thin">to</p>
+                        <p className="font-body text-xs font-thin">to</p>
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           required
                           placeholder="Backup Target"
@@ -868,7 +841,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                                 })
                               );
                             }}
-                            className="text-xs w-5 sf"
+                            className="text-xs w-5 font-body"
                           >
                             -
                           </button>
@@ -888,7 +861,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           })
                         );
                       }}
-                      className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+                      className="text-light bg-dark p-px outline-none m-1 font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
@@ -900,7 +873,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     {(day.expense?.orderlist || []).map((order, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           required
                           placeholder="Item Name"
@@ -917,7 +890,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                         />
 
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="number"
                           placeholder="Qty"
                           required
@@ -934,7 +907,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           }}
                         />
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           placeholder="Note"
                           value={order.note || ""}
@@ -948,7 +921,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                         />
                         <button
                           type="button"
-                          className="sf text-xs font-thin ml-5"
+                          className="font-body text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [...day.expense.orderlist];
                             updatedExpenses.splice(index, 1);
@@ -968,18 +941,18 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() => {
                         handleAddExpense(dayIndex, "orderlist");
                       }}
-                      className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+                      className="text-light bg-dark p-px outline-none m-1 font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
                     {/*Design Expense */}
-                    <p className="sf text-xs font-thin tracking-widest">
+                    <p className="font-body text-xs font-thin tracking-widest">
                       Operational Expenses
                     </p>
                     {day.expense.operational.map((expense, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           required
                           placeholder="Item Name"
@@ -1003,7 +976,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           thousandSeparator
                           required
                           prefix={"Rp. "}
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           placeholder="Prices"
                           value={expense.price || ""}
                           allowNegative={false}
@@ -1019,7 +992,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           }}
                         />
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="number"
                           placeholder="Qty"
                           required
@@ -1040,7 +1013,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           }}
                         />
                         <input
-                          className="border border-gray-400 p-px outline-none m-1 sf text-xs font-thin"
+                          className="border border-gray-400 p-px outline-none m-1 font-body text-xs font-thin"
                           type="text"
                           placeholder="Note"
                           value={expense.note || ""}
@@ -1077,7 +1050,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
 
                         <button
                           type="button"
-                          className="sf text-xs font-thin ml-5"
+                          className="font-body text-xs font-thin ml-5"
                           onClick={() => {
                             const updatedExpenses = [
                               ...day.expense.operational,
@@ -1100,7 +1073,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() =>
                         handleAddExpense(dayIndex, "operational")
                       }
-                      className="text-light bg-dark p-px outline-none m-1 sf text-xs font-thin w-20"
+                      className="text-light bg-dark p-px outline-none m-1 font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
@@ -1120,7 +1093,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       className="h-full w-2/3 border border-gray-400 outline-none p-2"
                     />
                     <div className="w-1/3 h-full">
-                      <p className="bg-dark text-light sf text-xs font-thin tracking-widest pl-1">
+                      <p className="bg-dark text-light font-body text-xs font-thin tracking-widest pl-1">
                         Expenses
                       </p>
 
@@ -1150,7 +1123,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         ))}
         <button
           type="button"
-          className="w-20 m-1 text-light bg-dark flex justify-center sf text-xs font-thin"
+          className="w-20 m-1 text-light bg-dark flex justify-center font-body text-xs font-thin"
           onClick={addDay}
         >
           Add Day

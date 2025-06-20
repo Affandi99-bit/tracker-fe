@@ -188,6 +188,89 @@ export const roleGraphic = [
   { id: 7, name: "Freelance" },
   { id: 8, name: "Voice Over" },
 ];
+export const praprod = [
+  {
+    title: "Terima dan klarifikasi brief dari client",
+    pic: "Produser / Project Manager",
+  },
+  {
+    title: "Membuat script, storyboard, timeline, director board",
+    pic: "Creative / Sutradara",
+  },
+  {
+    title: "Survey lokasi produksi",
+    pic: "Project Manager / Sutradara / Videographer / Art",
+  },
+  { title: "Tentukan crew produksi", pic: "Produser / Project Manager" },
+  { title: "Pra Produksi Meeting", pic: "Semua Tim yang dipilih" },
+  { title: "Cek dan siapkan peralatan", pic: "Unit / Penjaga Alat" },
+];
+export const prod = [
+  {
+    title: "Proses Syuting",
+    pic: "Produser / Project Manager",
+  },
+  {
+    title: "Transfer footage dari kamera ke storage",
+    pic: "Videographer",
+  },
+  {
+    title: "Backup footage dan mengorganisir file",
+    pic: "Videographer",
+  },
+  {
+    title: "Pengembalian alat",
+    pic: "Unit / Penjaga Alat",
+  },
+  {
+    title: "Administrasi Berita Acara Produksi",
+    pic: "Project Manager",
+  },
+];
+export const postprod = [
+  {
+    title: "Editing offline",
+    pic: "Editor",
+  },
+  {
+    title: "Pict Lock",
+    pic: "Sutradara",
+  },
+  {
+    title: "Editing Online & QC",
+    pic: "Editor / Sutradara",
+  },
+  {
+    title: "Preview Client",
+    pic: "Produser / Project Manager",
+  },
+  {
+    title: "Revisi 1,2,3",
+    pic: "Editor",
+  },
+  {
+    title: "Buat versi final & versi sosmed",
+    pic: "Editor",
+  },
+  {
+    title: "Upload ke sosial media & arsip",
+    pic: "Project Manager / Editor / Sosmed",
+  },
+];
+export const manafile = [
+  {
+    title: "Arsip file produksi",
+    pic: "Project Manager",
+  },
+  {
+    title: "Backup file final",
+    pic: "Editor",
+  },
+  {
+    title: "Dokumentasi project",
+    pic: "Project Manager",
+  },
+];
 export const user = [
   {
     user: "blackfamz",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { user } from "../constant/constant";
 import { Background } from '../components';
 
@@ -7,6 +7,7 @@ const Login = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // <-- Add this line
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -31,6 +32,7 @@ const Login = ({ onLoginSuccess }) => {
         localStorage.removeItem("password");
       }
       onLoginSuccess();
+      setRememberMe(true)
     } else {
       setError("Invalid username or password.");
     }
@@ -57,24 +59,45 @@ const Login = ({ onLoginSuccess }) => {
           />
           <header className="flex items-center gap-3 mb-4">
             <img src="/logo.webp" className="size-9" alt="Logo" />
-            <p className="text-2xl text-gray-300 sf tracking-widest font-black">
+            <p className="text-2xl text-gray-300 font-body tracking-widest font-black">
               Project Manager
             </p>
           </header>
           <form className="flex flex-col gap-2" onSubmit={handleLogin}>
             <input
-              className="sf tracking-widest text-light glass w-full rounded-lg border border-gray-300 px-4 py-3 outline-none"
+              className="font-body tracking-widest text-light glass w-full rounded-lg border border-gray-300 px-4 py-3 outline-none"
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
-            <input
-              className="sf tracking-widest text-light glass w-full rounded-lg border border-gray-300 px-4 py-3 outline-none"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                className="font-body tracking-widest text-light glass w-full rounded-lg border border-gray-300 px-4 py-3 outline-none pr-12"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                tabIndex={-1}
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  // Eye open icon
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12s3.75-7.5 9.75-7.5 9.75 7.5 9.75 7.5-3.75 7.5-9.75 7.5S2.25 12 2.25 12z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                ) : (
+                  // Eye closed icon (your original SVG)
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                )}
+              </button>
+            </div>
             {error && <p className="text-red-500">{error}</p>}
             <button
               type="submit"
@@ -82,36 +105,6 @@ const Login = ({ onLoginSuccess }) => {
             >
               Log In
             </button>
-            <label
-              htmlFor="hr"
-              className="flex flex-row items-center gap-2.5 text-light sf tracking-widest"
-            >
-              <input
-                id="hr"
-                type="checkbox"
-                className="peer hidden"
-                onChange={(e) => setRememberMe(e.target.checked)}
-              />
-              <div
-                htmlFor="hr"
-                className="h-5 w-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-[#8e8e8e] transition"
-              >
-                <svg
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5 stroke-dark"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 12.6111L8.92308 17.5L20 6.5"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>
-                </svg>
-              </div>
-              Remember Me
-            </label>
           </form>
         </section>
       </div>

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { tags, crew } from "../constant/constant";
 import { useToast } from './ToastContext';
-
+import { roleProduction } from "../constant/constant";
 const CreateModal = ({
   showModal,
   setShowModal,
@@ -202,7 +202,7 @@ const CreateModal = ({
   return (
     showModal && (
       <div>
-        <main className="fixed overflow-y-auto z-50 top-0 text-dark h-screen">
+        <main className="fixed overflow-y-auto z-40 top-0 left-0 text-dark h-screen">
           <section className="relative overflow-auto w-screen h-full no-scrollbar bg-zinc-100 ">
             <section className="hidden fixed -right-40 -bottom-56 select-none md:flex gap-1 z-0">
               <img
@@ -214,7 +214,7 @@ const CreateModal = ({
             <div className="flex justify-between items-center p-2 mb-5">
               <button
                 onClick={() => setShowModal(false)}
-                className="z-10 sf flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
+                className="z-10 font-body flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
               >
                 <span>
                   <svg
@@ -234,7 +234,7 @@ const CreateModal = ({
                 </span>
                 Back
               </button>
-              <p className="sf tracking-widest font-bold text-2xl ">
+              <p className="font-body tracking-widest font-bold text-2xl ">
                 {isEditing ? "EDIT TASK" : "CREATE NEW TASK"}
               </p>
             </div>
@@ -242,12 +242,12 @@ const CreateModal = ({
             {/* Form */}
             <form
               onSubmit={handleSubmit}
-              className="flex flex-col gap-1 p-2 w-full "
+              className="flex flex-col md:flex-row gap-1 p-2 w-full "
             >
               <section className="flex select-none flex-col w-full md:w-1/2 z-10">
                 <div className="flex flex-col gap-1 w-full">
                   {/* Title */}
-                  <label className="sf font-semibold tracking-widest flex flex-col">
+                  <label className="font-body font-semibold tracking-widest flex flex-col">
                     Title
                     <input
                       required
@@ -256,12 +256,12 @@ const CreateModal = ({
                       name="title"
                       value={formData.title}
                       onChange={inputHandle}
-                      className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none"
+                      className="glass border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none"
                     />
                   </label>
                   <div className="flex flex-col md:flex-row gap-1">
                     {/* Client */}
-                    <label className="sf font-semibold tracking-widest flex flex-col">
+                    <label className="font-body font-semibold tracking-widest flex flex-col">
                       Client
                       <input
                         required
@@ -270,11 +270,11 @@ const CreateModal = ({
                         name="client"
                         value={formData.client}
                         onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none mb-1 lg:mb-0"
+                        className="glass border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none mb-1 lg:mb-0"
                       />
                     </label>
                     {/* PIC */}
-                    <label className="sf font-semibold tracking-widest flex flex-col">
+                    <label className="font-body font-semibold tracking-widest flex flex-col">
                       Client PIC
                       <input
                         required
@@ -283,11 +283,11 @@ const CreateModal = ({
                         name="pic"
                         value={formData.pic}
                         onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none mb-1 lg:mb-0"
+                        className="glass border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none mb-1 lg:mb-0"
                       />
                     </label>
                     {/* Deadline */}
-                    <label className="sf font-semibold tracking-widest flex flex-col">
+                    <label className="font-body font-semibold tracking-widest flex flex-col">
                       Event Date:
                       <input
                         type="date"
@@ -295,13 +295,13 @@ const CreateModal = ({
                         value={formData.deadline}
                         required
                         onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none mb-1 lg:mb-0"
+                        className="glass border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none mb-1 lg:mb-0"
                       />
                     </label>
                   </div>
                   <section className="flex gap-1 items-center w-full">
                     {/* Final File */}
-                    <label className="sf font-semibold tracking-widest">
+                    <label className="font-body font-semibold tracking-widest">
                       Final File Link
                       <input
                         placeholder="Final File Link"
@@ -309,11 +309,11 @@ const CreateModal = ({
                         name="final_file"
                         value={formData.final_file}
                         onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 h-full w-full sf tracking-widest outline-none mb-1 lg:mb-0"
+                        className="glass border border-gray-400 font-light rounded p-2 h-full w-full font-body tracking-widest outline-none mb-1 lg:mb-0"
                       />
                     </label>
                     {/* Document */}
-                    <label className="sf font-semibold tracking-widest">
+                    <label className="font-body font-semibold tracking-widest">
                       Document Links
                       <input
                         placeholder="Document Links"
@@ -321,18 +321,18 @@ const CreateModal = ({
                         name="final_report_file"
                         value={formData.final_report_file}
                         onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 h-full w-full sf tracking-widest outline-none mb-1 lg:mb-0"
+                        className="glass border border-gray-400 font-light rounded p-2 h-full w-full font-body tracking-widest outline-none mb-1 lg:mb-0"
                       />
                     </label>
                     {/* PM */}
-                    <label className="sf font-semibold tracking-widest flex flex-col">
+                    <label className="font-body font-semibold tracking-widest flex flex-col">
                       Select PM
                       <select
                         required
                         name="pm"
                         value={formData.pm}
                         onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 sf tracking-widest outline-none mb-1 lg:mb-0 "
+                        className="glass border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none mb-1 lg:mb-0 "
                       >
                         <option className="bg-dark text-light" value="">
                           N/A
@@ -340,7 +340,7 @@ const CreateModal = ({
                         {crew.map((option) => (
                           <option
                             className="bg-dark text-light"
-                            key={option.index}
+                            key={option.name}
                             value={option.name}
                           >
                             {option.name}
@@ -352,12 +352,12 @@ const CreateModal = ({
                   <section className="flex gap-1 w-full">
                     {/* Progress */}
                     <div className="glass border border-gray-400 font-light rounded p-2 ">
-                      <p className="sf tracking-widest font-medium">Progress</p>
+                      <p className="font-body tracking-widest font-medium">Progress</p>
                       {tags.progress.map((option) => (
                         <label
                           htmlFor={`hr-${option.value}`}
                           key={option.value}
-                          className={`flex flex-row items-center gap-2 sf tracking-widest cursor-pointer  `}
+                          className={`flex flex-row items-center gap-2 font-body tracking-widest cursor-pointer  `}
                         >
                           <input
                             id={`hr-${option.value}`}
@@ -400,7 +400,7 @@ const CreateModal = ({
                     </div>
                     {/* Type */}
                     <div className="glass border border-gray-400 font-light rounded p-2 ">
-                      <p className="sf tracking-widest font-medium">
+                      <p className="font-body tracking-widest font-medium">
                         Project Type
                       </p>
                       <div className="">
@@ -408,7 +408,7 @@ const CreateModal = ({
                           <label
                             htmlFor={`hr-${option.value}`}
                             key={option.value}
-                            className={`flex flex-row w-32 items-center gap-1 sf tracking-widest cursor-pointer `}
+                            className={`flex flex-row w-32 items-center gap-1 font-body tracking-widest cursor-pointer `}
                           >
                             <input
                               id={`hr-${option.value}`}
@@ -452,7 +452,7 @@ const CreateModal = ({
                     </div>
                     {/* Categories */}
                     <div className="glass border border-gray-400 font-light rounded p-2 w-full">
-                      <p className="sf hidden md:block tracking-widest font-medium">
+                      <p className="font-body hidden md:block tracking-widest font-medium">
                         Categories :
                       </p>
                       <div className="flex justify-between flex-wrap">
@@ -460,7 +460,7 @@ const CreateModal = ({
                           <label
                             htmlFor={`hr-${option.value}`}
                             key={option.value}
-                            className={`flex flex-row w-1/2 items-center gap-2 sf tracking-widest cursor-pointer `}
+                            className={`flex flex-row w-1/2 items-center gap-2 font-body tracking-widest cursor-pointer `}
                           >
                             <input
                               id={`hr-${option.value}`}
@@ -507,12 +507,12 @@ const CreateModal = ({
                   </section>
                   {/* Crew */}
                   <div className="glass border border-gray-400 font-light rounded p-2 ">
-                    <p className="sf tracking-widest font-medium">Crew</p>
+                    <p className="font-body tracking-widest font-medium">Crew</p>
                     <div className="flex flex-wrap overflow-x-hidden">
                       {crew.map((option, index) => (
                         <label
                           key={index}
-                          className={`flex flex-row items-center w-1/2 gap-2 sf tracking-widest cursor-pointer `}
+                          className={`flex flex-row items-center w-1/2 gap-2 font-body tracking-widest cursor-pointer `}
                         >
                           <input
                             type="checkbox"
@@ -587,7 +587,7 @@ const CreateModal = ({
                     name="note"
                     value={formData.note}
                     onChange={inputHandle}
-                    className="glass border border-gray-400 font-light rounded p-2 h-40 sf w-full tracking-widest outline-none"
+                    className="glass border border-gray-400 font-light rounded p-2 h-40 font-body w-full tracking-widest outline-none"
                   />
                   {/* Buttons */}
                   <div className="flex justify-between gap-1">
@@ -595,7 +595,7 @@ const CreateModal = ({
                       <button
                         type="button"
                         onClick={handleDelete}
-                        className=" flex border-dashed border border-gray-400 items-center justify-center gap-1 sf tracking-widest rounded py-2 w-56 font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95"
+                        className=" flex border-dashed border border-gray-400 items-center justify-center gap-1 font-body tracking-widest rounded py-2 w-56 font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95"
                       >
                         Delete
                         {isLoadingDelete && (
@@ -620,7 +620,7 @@ const CreateModal = ({
                     )}
                     <button
                       type="submit"
-                      className="border bg-dark text-light flex justify-center gap-1 items-center sf tracking-widest rounded  py-2 w-56 font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95"
+                      className="border bg-dark text-light flex justify-center gap-1 items-center font-body tracking-widest rounded  py-2 w-56 font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95"
                     >
                       {isEditing ? "Update" : "Add"}
                       {isLoading && (
@@ -643,6 +643,36 @@ const CreateModal = ({
                       )}
                     </button>
                   </div>
+                </div>
+              </section>
+              <section className="flex select-none flex-col w-full md:w-1/2 ">
+                {/* Crew Jobdesk Assignment */}
+                <div className="p-4 bg-light/70 backdrop-blur-md rounded-lg">
+                  {(formData.day[0]?.crew || []).map((member, idx) => (
+                    <div key={member.name} className="flex items-center w-full justify-between gap-2 mb-2 px-3 rounded-2xl z-10 border border-dark">
+                      <span className="font-body text-dark">{member.name}</span>
+                      <select
+                        value={member.roles?.[0] || ""}
+                        onChange={e => {
+                          setFormData(prev => {
+                            const updatedCrew = prev.day[0].crew.map((m, i) =>
+                              i === idx ? { ...m, roles: [e.target.value] } : m
+                            );
+                            return {
+                              ...prev,
+                              day: [{ ...prev.day[0], crew: updatedCrew }]
+                            };
+                          });
+                        }}
+                        className="font-body outline-none p-1 text-dark"
+                      >
+                        <option value="" className="">Select Jobdesk</option>
+                        {roleProduction.map(role => (
+                          <option key={role.id} value={role.name} className=" ">{role.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
                 </div>
               </section>
             </form>

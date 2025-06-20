@@ -13,7 +13,7 @@ const Toast = ({ message, show, onClose, type }) => {
 
     return (
         <div
-            className={`fixed border flex items-center gap-1 z-50 top-5 right-3 px-4 py-2 bg-dark text-light sf text-sm rounded-lg shadow-lg transition-opacity duration-300 ${show ? "opacity-100" : "opacity-0 pointer-events-none"
+            className={`fixed border flex items-center gap-1 z-50 top-5 right-3 px-4 py-2 bg-dark text-light font-body text-sm rounded-lg shadow-lg transition-opacity duration-300 ${show ? "opacity-100" : "opacity-0 pointer-events-none"
                 } ${type === 'success' ? 'border-green-500' :
                     type === 'error' ? 'border-red-500' : 'border-light'
                 }`}

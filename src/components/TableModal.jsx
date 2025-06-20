@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import CreateModal from "./CreateModal";
-import { Report } from "../pages";
+import { Report, Kanban } from "../pages";
 
 const TableModal = ({
   pro,
@@ -11,6 +11,7 @@ const TableModal = ({
 }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReportGenerator, setShowReportGenerator] = useState(false);
+  const [showKanban, setShowKanban] = useState(false);
   const handleBackdropClick = (e) => {
     if (e.target.classList.contains("backdrop")) {
       setShowModal(false);
@@ -21,17 +22,20 @@ const TableModal = ({
       {showReportGenerator && (
         <Report setShowReportGenerator={setShowReportGenerator} pro={pro} updateData={updateData} />
       )}
+      {showKanban && (
+        <Kanban setKanban={setShowKanban} project={pro} updateData={updateData} />
+      )}
       showModal && (
       <main
         onClick={handleBackdropClick}
-        className="backdrop z-30 h-screen backdrop-blur w-full fixed top-0"
+        className="backdrop z-30 h-screen backdrop-blur w-full fixed top-0 left-0"
       >
         <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-[95%] h-[35rem]">
           <section className="relative overflow-hidden h-full bg-light border border-dark rounded">
             <nav className="fixed w-full top-0 z-20 flex items-center justify-between p-3 gap-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="z-10 sf flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
+                className="z-10 font-body flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
               >
                 <span>
                   <svg
@@ -52,10 +56,10 @@ const TableModal = ({
                 Back
               </button>
               <div className="flex flex-col items-center justify-center">
-                <h1 className="sf text-dark tracking-widest font-bold text-2xl">
+                <h1 className="font-body text-dark tracking-widest font-bold text-2xl">
                   {pro.title}
                 </h1>
-                <div className="flex sf flex-wrap">
+                <div className="flex font-body flex-wrap">
                   {[...pro.status, ...pro.categories, ...pro.type].map(
                     (chip, i) => (
                       <>
@@ -71,42 +75,51 @@ const TableModal = ({
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => setShowEditModal(true)}
-                className=" bg-dark text-light sf tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
-              >
-                Edit
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => {
+                  setShowKanban(true);
+                }} className="size-10 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className=" bg-dark cursor-pointer text-light font-body tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
+                >
+                  Edit
+                </button>
+              </div>
             </nav>
 
             <main className="flex flex-col lg:flex-row w-full justify-start lg:items-start">
               <section className=" z-10 text-dark p-5 h-full w-full lg:w-1/2 mt-20">
-                <p className="sf tracking-widest font-bold text-xl">
+                <p className="font-body tracking-widest font-bold text-xl">
                   {pro.client} - {pro.pic}
                 </p>
-                <p className="sf tracking-widest font-bold text-md">
+                <p className="font-body tracking-widest font-bold text-md">
                   Due Date :
                   <span className="text-xs font-normal">
                     &nbsp;{new Date(pro.deadline).toLocaleDateString("en-GB")}
                   </span>{" "}
                 </p>
-                <p className="sf tracking-widest font-bold text-md">
+                <p className="font-body tracking-widest font-bold text-md">
                   Project Manager :
                   <span className="text-xs font-normal">&nbsp;{pro.pm}</span>
                 </p>
-                <p className="sf tracking-widest font-bold">Note :</p>
+                <p className="font-body tracking-widest font-bold">Note :</p>
                 <textarea
                   readOnly
-                  className="no-scrollbar outline-none sf tracking-widest h-32 w-96 pl-5 text-xs"
+                  className="no-scrollbar outline-none font-body tracking-widest h-32 w-96 pl-5 text-xs"
                   value={pro.note}
                 />
 
-                <div className="flex gap-3 items-center sf tracking-widest font-bold">
+                <div className="flex gap-3 items-center font-body tracking-widest font-bold">
                   {pro.final_file ? (
                     <a
                       href={pro.final_file}
                       target="_blank"
-                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-dark text-dark bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 rounded-lg"
+                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg"
                     >
                       Final File
                     </a>
@@ -115,7 +128,7 @@ const TableModal = ({
                     <a
                       href={pro.final_report_file}
                       target="_blank"
-                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-dark text-dark bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 rounded-lg"
+                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg"
                     >
                       Event Report
                     </a>
@@ -125,7 +138,7 @@ const TableModal = ({
                         onClick={() => {
                           setShowReportGenerator(true);
                         }}
-                        className="size-20 flex items-center justify-center p-2 backdrop-blur-[2px] bg-dark text-dark bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 rounded-lg"
+                        className="size-20 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -145,19 +158,19 @@ const TableModal = ({
                     </>
                   )}
                 </div>
-                <p className="absolute opacity-65 sf tracking-widest bottom-16 lg:bottom-2 left-2">
+                <p className="absolute opacity-65 font-body tracking-widest bottom-16 lg:bottom-2 left-2">
                   Created at{" "}
                   {new Date(pro.createdAt).toLocaleDateString("en-GB")}
                 </p>
               </section>
               <section className="relative z-10 text-dark p-5 h-full w-1/2 flex flex-col items-start mt-20 gradient">
-                <p className="sf tracking-widest font-bold">Crew :</p>
+                <p className="font-body tracking-widest font-bold">Crew :</p>
                 <div className="flex flex-col flex-wrap h-40 overflow-y-auto">
                   {
                     pro.day?.[0]?.crew?.map((member, i) => (
                       <p
                         key={i}
-                        className="pl-5 flex justify-start items-center sf tracking-widest"
+                        className="pl-5 flex justify-start items-center font-body tracking-widest"
                       >
                         <span className="text-xs font-normal">
                           {member.name}
@@ -166,6 +179,7 @@ const TableModal = ({
                     )) || <p className="text-xs pl-5">No crew members listed</p>
                   }
                 </div>
+
               </section>
               <img
                 src="/logo.webp"

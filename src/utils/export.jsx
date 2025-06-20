@@ -1,3 +1,4 @@
+import React from 'react';
 import { utils, writeFile } from 'xlsx';
 
 export const exportReportToXLSX = (projectData, fileName = 'Project_Report') => {

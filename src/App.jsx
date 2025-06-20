@@ -1,11 +1,22 @@
-import { useState, useEffect } from "react";
-import { Loader, Navbar, CreateModal, Toast } from "./components";
-import { MainTable } from "./pages";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
+import { Loader, Navbar, CreateModal, Toast, Dashboard, } from "./components";
+import { MainTable, Readonly, Login } from "./pages";
 import axios from "axios";
-import Login from "./pages/Login";
 import { ToastProvider } from './components/ToastContext';
 
-const App = () => {
+const ReadonlyWrapper = ({ data }) => {
+  const { id } = useParams();
+  const found = data.filter(d => d._id === id);
+  if (!found.length) return <div className='flex flex-col items-center justify-center h-screen '>
+    <div class="absolute top-0 -z-10 h-full w-full bg-white"><div class="absolute bottom-auto left-auto right-0 top-0 h-[500px] w-[500px] -translate-x-[30%] translate-y-[20%] rounded-full bg-[rgba(173,109,244,0.5)] opacity-50 blur-[80px] animate-bounce"></div></div>
+    <p className='text-9xl font-bold text-dark'>404</p>
+    <p className='text-md font-bold text-dark'>Oops, pages not found !!</p>
+  </div>;
+  return <Readonly data={found} />;
+};
+
+const MainApp = () => {
   const [tableData, setTableData] = useState([]);
   const [sortedData, setSortedData] = useState([]);
   const [showHidden, setShowHidden] = useState(false);
@@ -123,7 +134,6 @@ const App = () => {
     localStorage.removeItem("username");
     localStorage.removeItem("password");
   };
-
   return (
     <ToastProvider>
       {!isLoggedIn ? (
@@ -133,88 +143,64 @@ const App = () => {
           {isLoading ? (
             <Loader />
           ) : (
-            <div className="bg-dark">
-              <Toast message={message} show={toastVisible} onClose={() => setToastVisible(false)} />
-              <button
-                onClick={() => setShowCreateModal(!showCreateModal)}
-                className="fixed z-20 hover:rotate-90 right-3 bottom-0 md:bottom-3 size-[3rem] flex items-center justify-center bg-dark rounded-md transition ease-in-out hover:scale-105 duration-300 active:scale-95"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="white"
-                  className={`size-8 transition-all duration-300 ${showCreateModal ? "rotate-45" : "rotate-180"
-                    }`}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-              </button>
-              <Navbar
-                onSearch={(query) => {
-                  setSearchQuery(query);
-                }}
-                selectedTags={selectedTags}
-                setSelectedTags={setSelectedTags}
-                onSort={handleSortToggle}
-                onArchive={handleArchiveToggle}
-                showHidden={showHidden}
-                onLogout={handleLogout}
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <div className={`w-full bg-dark`}>
+                    <Toast message={message} show={toastVisible} onClose={() => setToastVisible(false)} />
+                    <Navbar
+                      onSearch={(query) => {
+                        setSearchQuery(query);
+                      }}
+                      selectedTags={selectedTags}
+                      setSelectedTags={setSelectedTags}
+                      onSort={handleSortToggle}
+                      onArchive={handleArchiveToggle}
+                      showHidden={showHidden}
+                      onLogout={handleLogout}
+                      showCreateModal={showCreateModal}
+                      setShowCreateModal={setShowCreateModal}
+                    />
+                    <Dashboard preview={tableData} />
+                    <MainTable
+                      tableData={tableData}
+                      searchQuery={searchQuery}
+                      selectedTags={selectedTags}
+                      isSortedDesc={isSortedDesc}
+                      setSortedData={setSortedData}
+                      showHidden={showHidden}
+                      updateData={updateData}
+                      deleteData={deleteData}
+                    />
+                    <CreateModal
+                      showModal={showCreateModal}
+                      setShowModal={setShowCreateModal}
+                      isEditing={!!editingData}
+                      initialData={editingData}
+                      addNewData={addNewData}
+                      updateData={updateData}
+                      deleteData={deleteData}
+                      showHidden={showHidden}
+                      showToast={showToast}
+                      onSubmit={handleFormSubmit}
+                    />
+                  </div>
+                }
               />
-              <MainTable
-                tableData={tableData}
-                searchQuery={searchQuery}
-                selectedTags={selectedTags}
-                isSortedDesc={isSortedDesc}
-                setSortedData={setSortedData}
-                showHidden={showHidden}
-                updateData={updateData}
-                deleteData={deleteData}
-              />
-              <CreateModal
-                showModal={showCreateModal}
-                setShowModal={setShowCreateModal}
-                isEditing={!!editingData}
-                initialData={editingData}
-                addNewData={addNewData}
-                updateData={updateData}
-                deleteData={deleteData}
-                showHidden={showHidden}
-                showToast={showToast}
-                onSubmit={handleFormSubmit}
-              />
-            </div>
+              <Route path="/readonly/:id" element={<ReadonlyWrapper data={tableData} />} />
+            </Routes>
           )}
         </>
       )}
-      {/* <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen bg-light">
-        <div className="flex flex-col items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="#222222"
-            className="size-xl"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-            />
-          </svg>
-          <p className="tracking-widest text-center sf text-dark text-xs font-thin">
-            Project Manager dalam Maintenance
-          </p>
-        </div>
-      </div> */}
     </ToastProvider>
   );
 };
 
-export default App;
+export default function App() {
+  return (
+    <Router>
+      <MainApp />
+    </Router>
+  );
+}

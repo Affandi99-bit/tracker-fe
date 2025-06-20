@@ -1,111 +1,192 @@
 import React, { Suspense, useState, useEffect } from "react";
-import { TableModal, Loader } from "../components";
+import { TableModal, Loader, ReadonlyModal } from "../components";
+import Readonly from "./Readonly";
 import { findTagColor } from "../utils/utils";
+import Kanban from "./Kanban";
 
-const DataTable = ({ tableData, setSelectedRowData, setShowModal }) => {
+const getKanbanProgress = (kanban) => {
+  if (!kanban) return 0;
+  const sections = ['praprod', 'prod', 'postprod', 'manafile'];
+  let total = 0;
+  let count = 0;
+  sections.forEach(section => {
+    const items = kanban[section] || [];
+    if (items.length === 0) {
+      total += 100;
+      count++;
+      return;
+    }
+    const checked = items.filter(i => i.status === 'checked').length;
+    total += (checked / items.length) * 100;
+    count++;
+  });
+  return Math.round(total / count);
+};
+
+const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, updateData }) => {
   const handleRowClick = (rowData) => {
     setSelectedRowData(rowData);
     setShowModal(true);
   };
+  const [kanban, setKanban] = useState(false);
+  const [selectedKanbanProject, setSelectedKanbanProject] = useState(null);
+  const [showReadonlyModal, setShowReadonlyModal] = useState(false);
+  const [readonlyRow, setReadonlyRow] = useState(null);
 
   return (
-    <tbody className="text-center ">
-      {tableData.map((row, index) => (
-        <tr
-          onClick={() => handleRowClick(row)}
-          className={`h-20 w-screen sf tracking-widest text-xs ${index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-            } hover:brightness-75`}
-          key={row._id}
-        >
-          <td className="">
-            <div className="font-semibold px-3 flex items-center justify-center ">
-              {index + 1}
-            </div>
-          </td>
-          <td className="border-x border-gray-300 border-opacity-75">{row.title}</td>
-          <td className=" border-x border-gray-300 border-opacity-75">{row.client}</td>
-          <td className=" border-x border-gray-300 border-opacity-75">{row.pic}</td>
-          <td className=" border-x border-gray-300 border-opacity-75">
-            {new Date(row.deadline).toLocaleDateString("en-GB")}
-          </td>
-          <td className=" border-x border-gray-300 border-opacity-75">
-            <div className="flex flex-wrap gap-1 justify-center items-center">
-              {row.status.map((chip, i) => (
-                <p
-                  key={i}
-                  style={{
-                    backgroundColor: findTagColor(chip),
-                  }}
-                  className="rounded-md w-[3.6rem] py-[0.15rem]"
+    <tbody className="text-center mx-10 ">
+      {tableData.map((row, index) => {
+        const progress = getKanbanProgress(row.kanban);
+        return (
+          <tr
+            onClick={() => handleRowClick(row)}
+            className={`h-20 w-screen font-body tracking-widest  ${index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
+              } hover:brightness-90`}
+            key={row._id}
+          >
+            {/* <td className="">
+              <div className="font-semibold px-3 flex items-center justify-center ">
+                {index + 1}
+              </div>
+            </td> */}
+            <td className="text-xs font-bold tracker-wider text-zinc-700 text-start pl-7">{row.title}</td>
+            <td className="text-xs font-semibold text-zinc-600 text-start pl-2">{row.client}</td>
+            <td className="text-xs font-semibold text-zinc-600 text-start pl-2">{row.pic}</td>
+            <td className="text-xs font-bold text-start pl-2 text-red-500">
+              {new Date(row.deadline).toLocaleDateString("en-GB")}
+            </td>
+            {/* <td className="text-xs text-start pl-2">
+              <div className="flex flex-wrap gap-1 justify-center items-center">
+                {row.status.map((chip, i) => (
+                  <p
+                    key={i}
+                    style={{
+                      backgroundColor: findTagColor(chip),
+                    }}
+                    className="rounded-md w-[3.6rem] py-[0.15rem]"
+                  >
+                    <span className="text-light text-xs text-start pl-2 font-thin">{chip}</span>
+                  </p>
+                  ))}
+                  </div>
+                  </td>
+                  <td className="text-xs text-start pl-2">
+                  <div className="flex flex-wrap gap-1 justify-center items-center">
+                  {row.type.map((chip, i) => (
+                    <p
+                    key={i}
+                    style={{
+                      backgroundColor: findTagColor(chip),
+                      }}
+                      className="rounded-md border w-[3.6rem] py-[0.15rem]"
+                      >
+                      <span className="text-white text-xs text-start pl-2 font-extralight">
+                      {chip}
+                      </span>
+                      </p>
+                      ))}
+                      </div>
+                      </td> */}
+            <td className="text-xs pl-2">
+              <div className="flex flex-wrap gap-1 justify-start items-center">
+                {row.categories.map((chip, i) => (
+                  <p
+                    key={i}
+                    style={{
+                      backgroundColor: findTagColor(chip),
+                    }}
+                    className="rounded-xl w-16 h-5 text-light text-[0.60rem] font-semibold tracking-widest flex items-center justify-center"
+                  >{chip}</p>
+                ))}
+              </div>
+            </td>
+            {/* <td className="text-xs text-start pl-2">{row.pm}</td> */}
+            {/* <td className="text-xs text-start pl-2">
+              {row.final_file ? (
+                <a
+                  target="_blank"
+                  className="truncate w-32 text-blue-500 hover:underline"
+                  href={`${row.final_file}`}
                 >
-                  <span className="text-light text-xs font-thin">{chip}</span>
-                </p>
-              ))}
-            </div>
-          </td>
-          <td className=" border-x border-gray-300 border-opacity-75">
-            <div className="flex flex-wrap gap-1 justify-center items-center">
-              {row.type.map((chip, i) => (
-                <p
-                  key={i}
-                  style={{
-                    backgroundColor: findTagColor(chip),
-                  }}
-                  className="rounded-md border w-[3.6rem] py-[0.15rem]"
+                  Final File
+                  </a>
+                  ) : null}
+            </td>
+            <td className="text-xs text-start pl-2">
+              {row.final_report_file ? (
+                <a
+                  target="_blank"
+                  className="truncate w-32 text-blue-500 hover:underline"
+                  href={`${row.final_report_file}`}
                 >
-                  <span className="text-white text-xs font-extralight">
-                    {chip}
-                  </span>
-                </p>
-              ))}
-            </div>
-          </td>
-          <td className=" border-x border-gray-300 border-opacity-75">
-            <div className="flex flex-wrap gap-1 justify-center items-center">
-              {row.categories.map((chip, i) => (
-                <p
-                  key={i}
-                  style={{
-                    backgroundColor: findTagColor(chip),
+                  Report File
+                </a>
+              ) : null}
+            </td>
+            <td className="overflow-hidden whitespace-nowrap text-ellipsis">
+              {row.note}
+            </td> */}
+            <td className="text-xs text-start pl-2">
+              <div className="flex flex-col gap-1 justify-start items-center">
+                <div className="w-28 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                  <div
+                    className="bg-[#132a4b] h-2.5 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-gray-400 text-xs">{progress}%</p>
+              </div>
+            </td>
+            <td className=" text-xs">
+              <div className="flex px-2 gap-3 justify-start items-center">
+                {/* Track */}
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    setSelectedKanbanProject(row);
+                    setKanban(true);
                   }}
-                  className="rounded-md w-[3.6rem] py-[0.15rem]"
+                  className="rounded-md px-1 w-16 h-6 text-xs font-semibold flex items-center justify-center border border-dark text-dark hover:bg-dark hover:text-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer"
                 >
-                  <span className="text-white text-xs font-extralight">
-                    {chip}
-                  </span>
-                </p>
-              ))}
-            </div>
-          </td>
-
-          <td className=" border-x border-gray-300 border-opacity-75">{row.pm}</td>
-          <td className=" border-x border-gray-300 border-opacity-75">
-            {row.final_file ? (
-              <a
-                target="_blank"
-                className="truncate w-32 text-blue-500 hover:underline"
-                href={`${row.final_file}`}
-              >
-                Final File
-              </a>
-            ) : null}
-          </td>
-          <td className=" border-x border-gray-300 border-opacity-75">
-            {row.final_report_file ? (
-              <a
-                target="_blank"
-                className="truncate w-32 text-blue-500 hover:underline"
-                href={`${row.final_report_file}`}
-              >
-                Report File
-              </a>
-            ) : null}
-          </td>
-          <td className="overflow-hidden whitespace-nowrap text-ellipsis">
-            {row.note}
-          </td>
-        </tr>
-      ))}
+                  Track
+                </button>
+                {/* Share */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setReadonlyRow(row);
+                    setShowReadonlyModal(true);
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="size-4 hover:size-5 hover:scale-105 duration-300 active:scale-95 cursor-pointer">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                  </svg>
+                </button>
+                {/* Delete */}
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    deleteData(row._id);
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="#222222" className="size-4 hover:size-5 hover:scale-105 duration-300 active:scale-95 cursor-pointer">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        );
+      })}
+      {kanban && selectedKanbanProject && (
+        <Kanban setKanban={setKanban} updateData={updateData} project={selectedKanbanProject} />
+      )}
+      {showReadonlyModal && (
+        <ReadonlyModal
+          link={`${window.location.origin}/readonly/${readonlyRow._id}`}
+          onClose={() => setShowReadonlyModal(false)}
+        />
+      )}
     </tbody>
   );
 };
@@ -194,17 +275,17 @@ const MainTable = ({
   }
 
   return (
-    <main className="flex flex-col h-screen">
-      <section className="flex-grow overflow-x-scroll lg:overflow-x-hidden">
-        <table className="border-collapse  mt-[6rem] select-none relative w-full table-fixed">
-          <thead className="sf tracking-widest">
-            <tr>
-              <th className="w-10 sticky top-0 border-none bg-light text-dark shadow text-sm z-10 h-10">
+    <main className="flex flex-col h-screen z-40">
+      <section className="flex-grow mt-20 mb-3 md:mx-12 rounded-2xl overflow-x-scroll no-scrollbar">
+        <table className="border-collapse mt-[35rem] select-none relative w-full table-fixed">
+          <thead className="font-body tracking-widest ">
+            <tr className="">
+              {/* <th className="w-10 sticky top-0 border-none  shadow text-sm z-10 h-10">
                 ID
-              </th>
+              </th> */}
               <th
                 onClick={handleTitle}
-                className="w-40 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10"
+                className="w-40 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light rounded-tl-2xl"
               >
                 <div className=" flex items-center justify-center cursor-pointer">
                   Project Title
@@ -224,15 +305,15 @@ const MainTable = ({
                   </svg>
                 </div>
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
+              <th className="w-20 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
                 Client
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
-                PIC
+              <th className="w-20 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
+                PIC Client
               </th>
               <th
                 onClick={handleDate}
-                className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10"
+                className="w-20 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light"
               >
                 <div className=" flex items-center justify-center cursor-pointer">
                   Due Date
@@ -252,27 +333,33 @@ const MainTable = ({
                   </svg>
                 </div>
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
+              {/* <th className="w-20 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
                 Progress
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
+              <th className="w-20 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
                 Status
-              </th>
-              <th className="w-28 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
+              </th> */}
+              <th className="w-32 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
                 Type
               </th>
-              <th className="w-14 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
-                PM
+              <th className="w-28 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light ">
+                Progress
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
+              <th className="w-16 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light rounded-tr-2xl">
+                Action
+              </th>
+              {/* <th className="w-14 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
+                PM
+              </th> 
+              <th className="w-20 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
                 Final File
               </th>
-              <th className="w-20 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
+              <th className="w-20 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
                 Documents
               </th>
-              <th className="w-32 sticky top-0 border-none  bg-light text-dark shadow text-sm z-10 h-10">
+              <th className="w-32 sticky top-0 border-none text-sm z-10 h-10 glass-dark text-light">
                 Note
-              </th>
+              </th> */}
             </tr>
           </thead>
           <Suspense fallback={<Loader />}>
@@ -280,18 +367,21 @@ const MainTable = ({
               tableData={isSorted ? sortedData : sortedData}
               setSelectedRowData={setSelectedRowData}
               setShowModal={setShowModal}
+              deleteData={deleteData}
+              updateData={updateData}
             />
           </Suspense>
+          {showModal && (
+            <TableModal
+              pro={selectedRowData}
+              showModal={showModal}
+              setShowModal={setShowModal}
+              updateData={updateData}
+              deleteData={deleteData}
+            />
+          )}
+
         </table>
-        {showModal && (
-          <TableModal
-            pro={selectedRowData}
-            showModal={showModal}
-            setShowModal={setShowModal}
-            updateData={updateData}
-            deleteData={deleteData}
-          />
-        )}
       </section>
     </main>
   );

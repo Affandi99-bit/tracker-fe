@@ -1,18 +1,18 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+/* @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"); */
 
 @font-face {
-  font-family: "SF UI Display Light";
-  src: url("/font/SFUIDisplay-Light.ttf") format("truetype");
+  font-family: "SF UI Display ";
+  src: url("./assets/font/SFUIDisplay-Light.ttf");
 }
-.sf {
-  font-family: "SF UI Display Light", sans-serif;
+
+@theme {
+  --color-dark: #222222;
+  --color-light: #e8e8e8;
+  --font-body: "SF UI Display ", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
 }
-.montserrat {
-  font-family: "Montserrat", sans-serif;
-}
+
 ::-webkit-scrollbar {
   width: 5px;
 }
@@ -21,11 +21,13 @@
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 ::-webkit-scrollbar-thumb {
   background-color: #f8f8f8;
+  border: 1px solid rgba(34, 34, 34, 0.7);
+  border-radius: 10px;
 }
 
 body {
@@ -33,10 +35,10 @@ body {
 }
 
 .glass {
-  background: rgba(211, 211, 211, 0.15);
-  backdrop-filter: blur(10.5px);
-  -webkit-backdrop-filter: blur(10.5px);
-  border-radius: 10px;
+  @apply bg-gray-400/10 bg-clip-padding backdrop-filter backdrop-blur-sm;
+}
+.glass-dark {
+  @apply bg-gray-700/75 bg-clip-padding backdrop-filter backdrop-blur-sm;
 }
 input,
 textarea,
