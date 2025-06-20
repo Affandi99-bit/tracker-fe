@@ -2,14 +2,14 @@
 /* @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"); */
 
 @font-face {
-  font-family: "SF UI Display ";
-  src: url("./assets/font/SFUIDisplay-Light.ttf");
+  font-family: "SF UI Display";
+  src: url("/SFUIDisplay-Light.ttf");
 }
 
 @theme {
   --color-dark: #222222;
   --color-light: #e8e8e8;
-  --font-body: "SF UI Display ", sans-serif;
+  --font-body: "SF UI Display", sans-serif;
   --font-montserrat: "Montserrat", sans-serif;
 }
 
