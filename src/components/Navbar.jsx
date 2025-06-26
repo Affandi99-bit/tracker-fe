@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { tags } from "../constant/constant";
 import { due, filter, arsip, asc, add, edit, del, ba } from "../assets";
 
@@ -12,7 +12,7 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
   };
   return (
     <>
-      <section className="w-[25rem] bg-dark rounded-md fixed bottom-14 left-1/2 transform -translate-x-1/2 z-20">
+      <section className="w-[25rem] bg-dark rounded-md fixed top-16 right-5 z-20">
         <h1 className="text-2xl text-center text-light font-body tracking-widest font-bold p-2">
           Filters
         </h1>
@@ -353,7 +353,7 @@ const Navbar = ({
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="#222222"
-                className={`size-6 transition-all duration-300 ${showCreateModal ? "rotate-45" : "rotate-180"
+                className={`size-5 transition-all duration-300 ${showCreateModal ? "rotate-45" : "rotate-180"
                   }`}
               >
                 <path

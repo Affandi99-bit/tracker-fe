@@ -4,28 +4,36 @@ export const crew = [
     value: "andika",
   },
   {
-    name: "Dhona",
-    value: "dhona",
-  },
-  {
-    name: "Nova",
-    value: "nova",
-  },
-  {
-    name: "Rully",
-    value: "rully",
+    name: "Adri",
+    value: "adri",
   },
   {
     name: "Audrey",
     value: "audrey",
   },
   {
+    name: "Anin",
+    value: "anin",
+  },
+  {
+    name: "Delia",
+    value: "delia",
+  },
+  {
+    name: "Dhona",
+    value: "dhona",
+  },
+  {
+    name: "Imam",
+    value: "imam",
+  },
+  {
     name: "Kevin",
     value: "kevin",
   },
   {
-    name: "Adri",
-    value: "adri",
+    name: "Nova",
+    value: "nova",
   },
   {
     name: "Okta",
@@ -36,16 +44,8 @@ export const crew = [
     value: "rafli",
   },
   {
-    name: "Imam",
-    value: "imam",
-  },
-  {
-    name: "Delia",
-    value: "delia",
-  },
-  {
-    name: "Anin",
-    value: "anin",
+    name: "Rully",
+    value: "rully",
   },
 ];
 export const tags = {
@@ -159,8 +159,8 @@ export const tags = {
   ],
 };
 export const roleProduction = [
-  { id: 1, name: "Photo" },
-  { id: 2, name: "Video" },
+  { id: 1, name: "Photographer" },
+  { id: 2, name: "Videographer" },
   { id: 3, name: "Editor" },
   { id: 4, name: "Drone" },
   { id: 5, name: "Helper" },
@@ -177,6 +177,12 @@ export const roleProduction = [
   { id: 16, name: "Tal Co" },
   { id: 17, name: "Ass Cam" },
   { id: 18, name: "DOP" },
+  { id: 19, name: "Producer" },
+  { id: 20, name: "Creative" },
+  { id: 21, name: "Unit" },
+  { id: 22, name: "Crew" },
+  { id: 23, name: "Project Manager" },
+  { id: 24, name: "Social Media" },
 ];
 export const roleGraphic = [
   { id: 1, name: "Motion" },

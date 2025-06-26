@@ -224,7 +224,7 @@ const Background = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full ${className}`}
+      className={` w-full h-full ${className}`}
     />
   );
 };

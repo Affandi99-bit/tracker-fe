@@ -202,8 +202,8 @@ const CreateModal = ({
   return (
     showModal && (
       <div>
-        <main className="fixed overflow-y-auto z-40 top-0 left-0 text-dark h-screen">
-          <section className="relative overflow-auto w-screen h-full no-scrollbar bg-zinc-100 ">
+        <main className="fixed overflow-y-auto z-40 top-0 left-0 text-light h-screen">
+          <section className="relative overflow-auto w-screen h-full no-scrollbar bg-dark">
             <section className="hidden fixed -right-40 -bottom-56 select-none md:flex gap-1 z-0">
               <img
                 src="/camera.webp"
@@ -214,7 +214,7 @@ const CreateModal = ({
             <div className="flex justify-between items-center p-2 mb-5">
               <button
                 onClick={() => setShowModal(false)}
-                className="z-10 font-body flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
+                className="z-10 font-body text-xs flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
               >
                 <span>
                   <svg
@@ -223,7 +223,7 @@ const CreateModal = ({
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="size-6"
+                    className="size-4"
                   >
                     <path
                       strokeLinecap="round"
@@ -244,7 +244,7 @@ const CreateModal = ({
               onSubmit={handleSubmit}
               className="flex flex-col md:flex-row gap-1 p-2 w-full "
             >
-              <section className="flex select-none flex-col w-full md:w-1/2 z-10">
+              <section className="flex select-none border glass rounded-2xl p-3 flex-col w-full md:w-1/2 z-10">
                 <div className="flex flex-col gap-1 w-full">
                   {/* Title */}
                   <label className="font-body font-semibold tracking-widest flex flex-col">
@@ -259,7 +259,7 @@ const CreateModal = ({
                       className="glass border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none"
                     />
                   </label>
-                  <div className="flex flex-col md:flex-row gap-1">
+                  <div className="flex flex-col md:flex-row gap-1 justify-between">
                     {/* Client */}
                     <label className="font-body font-semibold tracking-widest flex flex-col">
                       Client
@@ -301,7 +301,7 @@ const CreateModal = ({
                   </div>
                   <section className="flex gap-1 items-center w-full">
                     {/* Final File */}
-                    <label className="font-body font-semibold tracking-widest">
+                    {/* <label className="font-body font-semibold tracking-widest">
                       Final File Link
                       <input
                         placeholder="Final File Link"
@@ -311,9 +311,9 @@ const CreateModal = ({
                         onChange={inputHandle}
                         className="glass border border-gray-400 font-light rounded p-2 h-full w-full font-body tracking-widest outline-none mb-1 lg:mb-0"
                       />
-                    </label>
+                    </label> */}
                     {/* Document */}
-                    <label className="font-body font-semibold tracking-widest">
+                    {/* <label className="font-body font-semibold tracking-widest">
                       Document Links
                       <input
                         placeholder="Document Links"
@@ -323,9 +323,9 @@ const CreateModal = ({
                         onChange={inputHandle}
                         className="glass border border-gray-400 font-light rounded p-2 h-full w-full font-body tracking-widest outline-none mb-1 lg:mb-0"
                       />
-                    </label>
+                    </label> */}
                     {/* PM */}
-                    <label className="font-body font-semibold tracking-widest flex flex-col">
+                    {/* <label className="font-body font-semibold tracking-widest flex flex-col">
                       Select PM
                       <select
                         required
@@ -347,12 +347,12 @@ const CreateModal = ({
                           </option>
                         ))}
                       </select>
-                    </label>
+                    </label> */}
                   </section>
                   <section className="flex gap-1 w-full">
                     {/* Progress */}
-                    <div className="glass border border-gray-400 font-light rounded p-2 ">
-                      <p className="font-body tracking-widest font-medium">Progress</p>
+                    {/*  <div className="glass border border-gray-400 font-light rounded p-2 ">
+                       <p className="font-body tracking-widest font-medium">Progress</p>
                       {tags.progress.map((option) => (
                         <label
                           htmlFor={`hr-${option.value}`}
@@ -378,12 +378,12 @@ const CreateModal = ({
                           />
                           <div
                             htmlFor={`hr-${option.value}`}
-                            className="size-5 flex rounded border-dark border border-gray-400-[#a2a1a833] bg-dark peer-checked:bg-light transition"
+                            className="size-5 flex rounded  bg-dark  transition"
                           >
                             <svg
                               fill="none"
                               viewBox="0 0 24 24"
-                              className="size-5 stroke-dark"
+                              className="size-5 stroke-light"
                               xmlns="http://www.w3.org/2000/svg"
                             >
                               <path
@@ -397,7 +397,7 @@ const CreateModal = ({
                           {option.title}
                         </label>
                       ))}
-                    </div>
+                    </div> */}
                     {/* Type */}
                     <div className="glass border border-gray-400 font-light rounded p-2 ">
                       <p className="font-body tracking-widest font-medium">
@@ -429,12 +429,12 @@ const CreateModal = ({
                             />
                             <div
                               htmlFor={`hr-${option.value}`}
-                              className="size-5 flex rounded border-dark border border-gray-400-[#a2a1a833] bg-dark peer-checked:bg-light transition"
+                              className="size-5 flex rounded bg-dark peer-checked:bg-light"
                             >
                               <svg
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                className="size-5 stroke-dark"
+                                className="size-5 stroke-dark peer-checked:stroke-dark"
                                 xmlns="http://www.w3.org/2000/svg"
                               >
                                 <path
@@ -483,12 +483,12 @@ const CreateModal = ({
                             />
                             <div
                               htmlFor={`hr-${option.value}`}
-                              className="size-5 flex border-dark rounded border border-gray-400-[#a2a1a833] bg-dark peer-checked:bg-light transition"
+                              className="size-5 flex rounded bg-dark peer-checked:bg-light"
                             >
                               <svg
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                className="size-5 stroke-dark"
+                                className="size-5 stroke-dark peer-checked:stroke-dark"
                                 xmlns="http://www.w3.org/2000/svg"
                               >
                                 <path
@@ -524,11 +524,11 @@ const CreateModal = ({
                             onChange={inputHandle}
                             className="peer hidden"
                           />
-                          <div className="size-5 flex rounded border border-gray-400 border-dark-[#a2a1a833] bg-dark peer-checked:bg-light transition">
+                          <div className="size-5 flex rounded bg-dark peer-checked:bg-light">
                             <svg
                               fill="none"
                               viewBox="0 0 24 24"
-                              className="size-5 stroke-dark"
+                              className="size-5 stroke-dark peer-checked:stroke-dark"
                               xmlns="http://www.w3.org/2000/svg"
                             >
                               <path
@@ -558,7 +558,7 @@ const CreateModal = ({
                                   e.target.value
                                 )
                               }
-                              className=" border border-gray-400-gray-400 outline-none p-1 w-[80%]"
+                              className="border-b border-light outline-none p-1 w-[80%] text-light"
                             />
                             <button
                               type="button"
@@ -587,7 +587,7 @@ const CreateModal = ({
                     name="note"
                     value={formData.note}
                     onChange={inputHandle}
-                    className="glass border border-gray-400 font-light rounded p-2 h-40 font-body w-full tracking-widest outline-none"
+                    className="glass border border-gray-400 font-light rounded p-2 h-40 font-body w-full tracking-widest outline-none bg-dark text-light"
                   />
                   {/* Buttons */}
                   <div className="flex justify-between gap-1">
@@ -609,7 +609,7 @@ const CreateModal = ({
                           >
                             <path
                               d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z"
-                              stroke="#222222"
+                              stroke="#f8f8f8"
                               strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -620,7 +620,7 @@ const CreateModal = ({
                     )}
                     <button
                       type="submit"
-                      className="border bg-dark text-light flex justify-center gap-1 items-center font-body tracking-widest rounded  py-2 w-56 font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95"
+                      className="border bg-light text-dark flex justify-center gap-1 items-center font-body tracking-widest rounded  py-2 w-56 font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95"
                     >
                       {isEditing ? "Update" : "Add"}
                       {isLoading && (
@@ -634,7 +634,7 @@ const CreateModal = ({
                         >
                           <path
                             d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z"
-                            stroke="#f8f8f8"
+                            stroke="#222222"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -645,12 +645,16 @@ const CreateModal = ({
                   </div>
                 </div>
               </section>
-              <section className="flex select-none flex-col w-full md:w-1/2 ">
+              <section className="flex min-h-10 select-none border glass rounded-2xl p-3 flex-col w-full md:w-1/2 z-10"
+                style={{
+                  display: (formData.day[0]?.crew || []).length === 0 ? "none" : undefined
+                }}
+              >
                 {/* Crew Jobdesk Assignment */}
-                <div className="p-4 bg-light/70 backdrop-blur-md rounded-lg">
+                <div className="">
                   {(formData.day[0]?.crew || []).map((member, idx) => (
-                    <div key={member.name} className="flex items-center w-full justify-between gap-2 mb-2 px-3 rounded-2xl z-10 border border-dark">
-                      <span className="font-body text-dark">{member.name}</span>
+                    <div key={member.name} className="flex items-center w-full justify-between gap-2 mb-2 px-3 rounded-2xl z-10 glass border border-gray-400">
+                      <span className="font-body text-light">{member.name}</span>
                       <select
                         value={member.roles?.[0] || ""}
                         onChange={e => {
@@ -664,11 +668,11 @@ const CreateModal = ({
                             };
                           });
                         }}
-                        className="font-body outline-none p-1 text-dark"
+                        className="font-body outline-none p-1"
                       >
-                        <option value="" className="">Select Jobdesk</option>
+                        <option value="" className="text-dark bg-light">Select Jobdesk</option>
                         {roleProduction.map(role => (
-                          <option key={role.id} value={role.name} className=" ">{role.name}</option>
+                          <option key={role.id} value={role.name} className="text-dark bg-light">{role.name}</option>
                         ))}
                       </select>
                     </div>

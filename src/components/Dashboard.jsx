@@ -1,4 +1,5 @@
 import React from 'react'
+import Background from './Background';
 
 const Dashboard = ({ preview }) => {
     const monthlyCount = Array(12).fill(0);
@@ -52,13 +53,13 @@ const Dashboard = ({ preview }) => {
                         <div key={index} className="relative h-full flex flex-col items-center mx-1 flex-1">
                             {/* Bar */}
                             <div
-                                className="w-full text-light font-body bg-light rounded"
+                                className="w-full text-light font-body bg-zinc-700 rounded"
                                 style={{ height: `${(count / max) * 100}%` }}
                             />
                             <p className="text-sm mt-2 text-light font-body">{monthLabels[index]}  <span className="px-3 rounded-2xl py-1 text-xs text-light bg-gray-400/25">
                                 {count}
                             </span></p>
-                            {/* Label */}
+
                         </div>
                     ))}
                 </div>

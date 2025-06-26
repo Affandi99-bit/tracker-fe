@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { praprod, prod, postprod, manafile } from '../constant/constant';
-
+import { useToast } from '../components/ToastContext';
 const AddBox = ({ onSave, onClose }) => {
     const [title, setTitle] = useState('');
     const [pic, setPic] = useState('');
@@ -15,7 +15,7 @@ const AddBox = ({ onSave, onClose }) => {
     };
 
     return (
-        <div className='fixed glass-dark text-light z-50 bottom-0 left-0 rounded-lg shadow-lg p-4 flex flex-col justify-start items-start gap-2'>
+        <div className='fixed glass text-light z-50 bottom-20 right-2 rounded-lg -lg p-4 flex flex-col justify-start items-start gap-2'>
             <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full">
                 <label className="font-body font-semibold tracking-widest flex flex-col items-start justify-start">
                     Title
@@ -41,19 +41,19 @@ const AddBox = ({ onSave, onClose }) => {
                         className=" border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none"
                     />
                 </label>
-                <div className="flex gap-2">
-                    <button
-                        type="submit"
-                        className='bg-green-500 text-white font-body tracking-widest font-semibold rounded-lg p-2 transition ease-in-out hover:scale-105 duration-300 active:scale-95'
-                    >
-                        Add
-                    </button>
+                <div className="flex items-center justify-between">
                     <button
                         type="button"
                         onClick={onClose}
-                        className='bg-gray-400 text-white font-body tracking-widest font-semibold rounded-lg p-2 transition ease-in-out hover:scale-105 duration-300 active:scale-95'
+                        className='border-gray-400 border border-dashed text-white font-body tracking-widest font-semibold rounded-lg p-2 transition ease-in-out hover:scale-105 duration-300 active:scale-95'
                     >
                         Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className='bg-light text-dark font-body tracking-widest font-semibold rounded-lg p-2 transition ease-in-out hover:scale-105 duration-300 active:scale-95'
+                    >
+                        Add
                     </button>
                 </div>
             </form>
@@ -70,6 +70,8 @@ const Kanban = ({ updateData, setKanban, project }) => {
     const [showAddBox, setShowAddBox] = useState(false);
     const [addBoxSection, setAddBoxSection] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+
+    const { showToast } = useToast();
 
     useEffect(() => {
         setPraprodData(project?.kanban?.praprod || praprod);
@@ -92,13 +94,13 @@ const Kanban = ({ updateData, setKanban, project }) => {
         const checkedCount = data.filter(item => item.status === 'checked').length;
 
         return (
-            <section className='z-10 p-2 w-1/4 flex flex-col items-center justify-center text-start'>
+            <section className='z-10 p-2 flex flex-col items-center justify-center text-start'>
                 <p className='p-2 font-bold tracking-widest text-lg'>{title}</p>
                 {/* Persentase */}
                 <main className='flex items-center gap-1'>
                     <div className="w-48 m-2 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
                         <div
-                            className="bg-[#132a4b] h-2.5 rounded-full transition-all duration-300"
+                            className="bg-[#f8f8f8] h-2.5 rounded-full transition-all duration-300"
                             style={{ width: `${(checkedCount / data.length) * 100}%` }}
                         />
                     </div>
@@ -115,7 +117,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     updated[index].status = isChecked ? '' : 'checked';
                                     setData(updated);
                                 }}
-                                className={`bg-white relative overflow-hidden flex flex-col justify-between items-start p-4 size-56 rounded shadow mb-2 hover:opacity-65 cursor-pointer transition-colors duration-200 ${isChecked ? 'ring-2 ring-[#1e3e3b]' : ''}`}
+                                className={`bg-[#262626] relative overflow-hidden flex flex-col justify-between items-start p-4 w-56 rounded  mb-2 hover:opacity-65 cursor-pointer transition-colors duration-200 ${isChecked ? 'ring-2 ring-[#F8F8F8]' : ''}`}
                             >
                                 <button
                                     className='absolute top-1 right-1 z-10 opacity-45 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
@@ -124,18 +126,18 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                         handleDelete(index);
                                     }}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="red" className="size-6">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#F8F8F8" className="size-4">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                     </svg>
                                 </button>
-                                <span className='absolute -top-1 blur-xs -right-1 z-10 opacity-45'>
+                                <span className='absolute -bottom-1 -left-1 z-10 opacity-10'>
                                     {isChecked && (
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#1e3e3b" className="size-20">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#F8F8F8" className="size-20">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
                                     )}
                                 </span>
-                                <div className='flex flex-col gap-1 mt-2 border-b border-b-dark w-full'>
+                                <div className='flex flex-col gap-1 my-3 border-b border-b-light/10 w-full'>
                                     <input
                                         type="text"
                                         value={item.title}
@@ -144,26 +146,30 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                             updated[index].title = e.target.value;
                                             setData(updated);
                                         }}
-                                        className="font-semibold text-sm tracking-wider  outline-none"
+                                        className="text-sm tracking-wider outline-none"
                                         placeholder="Title"
                                     />
-                                    <input
+                                    {/* <input
                                         type="text"
-                                        value={item.pic}
+                                        value={project.day[0].crew[0].name || ''}
                                         onChange={e => {
                                             const updated = [...data];
                                             updated[index].pic = e.target.value;
                                             setData(updated);
                                         }}
-                                        className="text-gray-400 text-xs py-1 border-b border-gray-200 outline-none"
+                                        className="text-gray-400 text-xs py-1 border-b-[.5px] border-gray-200 outline-none"
                                         placeholder="PIC"
-                                    />
-                                    {/* <div className='flex w-full items-center justify-between'>
-                                        <p>Name</p>
-                                        <select name="" id="">
-                                            <option value="ame.role"></option>
-                                        </select>
-                                    </div> */}
+                                    /> */}
+                                    <div className='flex w-full items-center justify-between'>
+                                        {(() => {
+                                            const firstRole = item.pic?.split('/')[0]?.trim();
+                                            const crew = getCrewByRole(firstRole);
+                                            if (crew) {
+                                                return <p className='text-xs text-gray-400'>{crew.name} as {firstRole}</p>;
+                                            }
+                                            return <p className='text-xs text-gray-400'>{firstRole}</p>;
+                                        })()}
+                                    </div>
                                 </div>
                                 {/* Links Section */}
                                 <div className="flex flex-col gap-1 w-full mt-2">
@@ -200,7 +206,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                                 updated[index].newLink = e.target.value;
                                                 setData(updated);
                                             }}
-                                            className='rounded-xl border border-dark/20 text-xs px-2 outline-none'
+                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none'
                                             placeholder="Add new link"
                                             onClick={e => e.stopPropagation()}
                                         />
@@ -220,7 +226,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                             className='outline-none transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
                                             title="Add link"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                                             </svg>
                                         </button>
@@ -229,10 +235,10 @@ const Kanban = ({ updateData, setKanban, project }) => {
                             </div>
                         )
                     })}
+                    {/* Add Box Button */}
                     <div
-                        className='w-full min-w-48 h-10 border border-dark/50 rounded-lg mt-2 flex items-center justify-center transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
+                        className='w-full min-w-48 h-10 border border-light/50 rounded-lg mt-2 flex items-center justify-center transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
                         onClick={() => {
-                            // Pass the correct section key
                             if (title === 'Pra Produksi') setAddBoxSection('praprod');
                             else if (title === 'Produksi') setAddBoxSection('prod');
                             else if (title === 'Post Produksi') setAddBoxSection('postprod');
@@ -240,7 +246,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                             setShowAddBox(true);
                         }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={.5} stroke="#222222" className="size-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={.5} stroke="#f8f8f8" className="size-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
                     </div>
@@ -264,65 +270,93 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 title: item.title || '',
                 pic: item.pic || '',
                 status: item.status || '',
-                link: Array.isArray(item.link) ? item.link : [item.link || ''],
+                link: Array.isArray(item.link)
+                    ? item.link.filter(l => l && l.trim() !== '')
+                    : item.link && item.link.trim() !== '' ? [item.link] : [],
             })),
             prod: prodData.map(item => ({
                 title: item.title || '',
                 pic: item.pic || '',
                 status: item.status || '',
-                link: Array.isArray(item.link) ? item.link : [item.link || ''],
+                link: Array.isArray(item.link)
+                    ? item.link.filter(l => l && l.trim() !== '')
+                    : item.link && item.link.trim() !== '' ? [item.link] : [],
             })),
             postprod: postprodData.map(item => ({
                 title: item.title || '',
                 pic: item.pic || '',
                 status: item.status || '',
-                link: Array.isArray(item.link) ? item.link : [item.link || ''],
+                link: Array.isArray(item.link)
+                    ? item.link.filter(l => l && l.trim() !== '')
+                    : item.link && item.link.trim() !== '' ? [item.link] : [],
             })),
             manafile: manafileData.map(item => ({
                 title: item.title || '',
                 pic: item.pic || '',
                 status: item.status || '',
-                link: Array.isArray(item.link) ? item.link : [item.link || ''],
+                link: Array.isArray(item.link)
+                    ? item.link.filter(l => l && l.trim() !== '')
+                    : item.link && item.link.trim() !== '' ? [item.link] : [],
             })),
         };
+
+        const sections = [praprodData, prodData, postprodData, manafileData];
+        const allDone = sections.every(
+            section => section.length > 0 && section.every(item => item.status === 'checked')
+        );
+
+        let updatedStatus = project.status || [];
+        if (allDone && !updatedStatus.includes("Done")) {
+            updatedStatus = [...updatedStatus, "Done"];
+        }
+
         const updatedProject = {
             ...project,
-            kanban
+            kanban,
+            status: updatedStatus,
+            archived: allDone ? true : project.archived
         };
+
         console.log("Updating project:", updatedProject);
         try {
             await updateData(updatedProject);
-            // showToast("Kanban updated!");
+            showToast("Kanban Updated", 'success');
         } catch (err) {
-            // showToast("Failed to update Kanban!");
+            showToast("Kanban Failed to Update", 'error');
         } finally {
             setIsSaving(false);
         }
     };
 
+    function getCrewByRole(role) {
+        if (!project.day || !project.day[0] || !project.day[0].crew) return null;
+        const crewList = project.day[0].crew;
+        return crewList.find(c =>
+            c.roles.some(r => r.toLowerCase() === role.toLowerCase())
+        );
+    }
+
     return (
-        <main className='bg-light font-body text-dark w-full h-screen overflow-y-auto fixed top-0 left-0 z-50'>
-            <img src="/logo.webp" alt="" className='z-0 opacity-10 fixed invert -rotate-12 right-0 top-0 size-[50rem] pointer-events-none object-contain' />
-            <section className='flex items-center justify-between'>
-                <div className='w-40'>
-                    <button onClick={() => { setKanban(false) }} className='transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 p-3 m-2 glass rounded-2xl'>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                        </svg>
-                        Go Back
-                    </button>
-                </div>
+        <main className='bg-dark font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-50'>
+            <img src="/logo.webp" alt="" className='z-0 opacity-5 fixed -rotate-12 right-0 top-0 size-[50rem] pointer-events-none object-contain' />
+            <section className='flex items-start justify-between gap-5 p-5'>
+                <button onClick={() => { setKanban(false) }} className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    Go Back
+                </button>
                 <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
                     <div className="w-full m-1 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
                         <div
-                            className="bg-[#1e3e3b] h-2.5 rounded-full transition-all duration-300"
+                            className="bg-[#F8F8F8] h-2.5 rounded-full transition-all duration-300"
                             style={{ width: `${overallProgress}%` }}
                         />
                     </div>
                     <p className="text-gray-500 text-xs">{Math.round(overallProgress)}%</p>
                 </div>
             </section>
-            <div className='flex items-start justify-center gap-5 w-full'>
+            <div className='flex items-start justify-center gap-5 pl-5 w-full'>
                 {renderSection('Pra Produksi', praprodData, setPraprodData)}
                 {renderSection('Produksi', prodData, setProdData)}
                 {renderSection('Post Produksi', postprodData, setPostprodData)}
@@ -338,12 +372,12 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className='fixed z-20 bottom-5 right-5 cursor-pointer bg-dark text-light font-body tracking-widest font-semibold rounded-lg p-2 transition ease-in-out hover:scale-105 duration-300 active:scale-95 disabled:opacity-50'
+                className='fixed z-20 bottom-5 right-5 cursor-pointer bg-light text-dark font-body tracking-widest font-semibold rounded-lg p-2 transition ease-in-out hover:scale-105 duration-300 active:scale-95 disabled:opacity-50'
             >
                 {isSaving ? (
                     <span className="flex items-center gap-2">
                         <svg className="animate-spin size-5" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="4" fill="none" />
+                            <circle cx="12" cy="12" r="10" stroke="#222222" strokeWidth="4" fill="none" />
                         </svg>
                         Saving...
                     </span>
@@ -357,9 +391,12 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     setPostprodData(postprod);
                     setManafileData(manafile);
                 }}
-                className="glass text-dark border border-dark rounded-lg p-2 m-2 fixed z-20 bottom-5 left-5 cursor-pointer font-body tracking-widest font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95 disabled:opacity-50"
+                className="glass text-light border border-light rounded-lg p-2 m-2 fixed z-20 bottom-20 right-5 cursor-pointer font-body tracking-widest font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95 "
             >
-                Reset Value
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#ffffff" className="size-6 hover:animate-spin">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+
             </button>
         </main>
     );
