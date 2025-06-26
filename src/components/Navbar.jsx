@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { tags } from "../constant/constant";
-import { due, filter, arsip, asc, add, edit, del, ba } from "../assets";
-
+import { useToast } from "./ToastContext";
 const Dropdown = ({ selectedTags, setSelectedTags }) => {
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
@@ -132,52 +131,6 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
   );
 };
 
-const Guide = () => {
-  return (
-    <section className="w-[60%] h-[85%] bg-dark rounded-md fixed top-20 left-1/2 transform -translate-x-1/2 z-30">
-      <h1 className="text-2xl text-center text-light font-body tracking-widest font-bold p-2">
-        Guide
-      </h1>
-      <ul className="list-decimal px-10 h-[27rem] overflow-y-auto">
-        <li className="text-sm font-thin text-light font-body tracking-wider">
-          <p>Klik DUE DATE untuk mengurutkan dari deadline paling lama</p>
-          <img src={due} alt="" />
-        </li>
-        <li className="text-sm font-thin text-light font-body tracking-wider">
-          <p>Klik Filter untuk filter item berdasarkan kategori</p>
-          <img src={filter} alt="" />
-        </li>
-        <li className="text-sm font-thin text-light font-body tracking-wider">
-          <p>
-            Klik Arsip untuk menyimpan item dangan kategori DONE. Jika sudah
-            membuat project data dan tidak ditampilkan di layar. Mungkin ada
-            dalam arsip
-          </p>
-          <img src={arsip} alt="" />
-        </li>
-        <li className="text-sm font-thin text-light font-body tracking-wider">
-          <p>Klik Urutkan untuk mengatur urutan item</p>
-          <img src={asc} alt="" />
-        </li>
-        <li className="text-sm font-thin text-light font-body tracking-wider">
-          <p>
-            Untuk additional crew, klik tombol Additional Crew untuk menampilkan
-            text input untuk diisi crew tambahan
-          </p>
-          <img src={add} alt="" />
-        </li>
-        <li className="text-sm font-thin text-light font-body tracking-wider">
-          <p>Klik Edit untuk mengubah detail item yang ada</p>
-          <img src={edit} alt="" />
-        </li>
-        <li className="text-sm font-thin text-light font-body tracking-wider">
-          <p>Klik Hapus untuk menghapus item yang tidak diperlukan</p>
-          <img src={del} alt="" />
-        </li>
-      </ul>
-    </section>
-  );
-};
 
 const Navbar = ({
   onSearch,
@@ -190,12 +143,15 @@ const Navbar = ({
   showCreateModal,
   setShowCreateModal,
 }) => {
+  const { showToast } = useToast();
   const [showSearch, setShowSearch] = useState(false);
   // const [showArrow, setShowArrow] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showLastMonth, setShowLastMonth] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
+  const [darkMode, setDarkmode] = useState(
+    localStorage.getItem("darkMode") === "enabled" || false
+  );
 
   const handleInput = (e) => {
     onSearch(e.target.value);
@@ -214,7 +170,6 @@ const Navbar = ({
 
   return (
     <>
-      {showGuide ? <Guide /> : null}
       {showFilter ? (
         <Dropdown
           selectedTags={selectedTags}
@@ -296,6 +251,22 @@ const Navbar = ({
                 </svg>
               )}
             </button>
+            {/* Mode */}
+            <button className="flex items-center justify-center transition ease-in-out hover:scale-110 duration-300 active:scale-90"
+              onClick={() => {
+                setDarkmode((prev) => !prev);
+                showToast(`Under Development!`, 'error');
+                const darkMode = document.documentElement.classList.toggle("dark");
+                localStorage.setItem("darkMode", darkMode ? "enabled" : "disabled");
+              }}>
+              {darkMode ? <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#f8f8f8" className="size-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+              </svg> : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#f8f8f8" className="size-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+              </svg>
+
+              }
+            </button>
             {/* Filter */}
             <button
               onClick={() => {
@@ -319,29 +290,6 @@ const Navbar = ({
                 />
               </svg>
             </button>
-            {/* Guide */}
-            <button
-              onClick={() => {
-                setShowGuide(!showGuide);
-              }}
-              className="hover:brightness-75 animate-[wiggle_1s_ease-in-out_infinite] cursor-pointer  transition ease-in-out hover:scale-110  duration-300 active:scale-90"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="#f8f8f8"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
-                />
-              </svg>
-            </button>
-
             {/* Create */}
             <button
               onClick={() => setShowCreateModal(!showCreateModal)}
@@ -386,7 +334,7 @@ const Navbar = ({
             </button>
           </div>
         </div>
-      </section>
+      </section >
 
     </>
   );

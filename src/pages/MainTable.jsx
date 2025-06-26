@@ -1,6 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { TableModal, Loader, ReadonlyModal } from "../components";
-import Readonly from "./Readonly";
 import { findTagColor } from "../utils/utils";
 import Kanban from "./Kanban";
 

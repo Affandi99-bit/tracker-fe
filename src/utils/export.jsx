@@ -2,25 +2,19 @@ import React from 'react';
 import { utils, writeFile } from 'xlsx';
 
 export const exportReportToXLSX = (projectData, fileName = 'Project_Report') => {
-    // Create a new workbook
     const wb = utils.book_new();
 
-    // Convert project data to worksheet
     const ws = utils.json_to_sheet(formatProjectData(projectData));
 
-    // Add worksheet to workbook
     utils.book_append_sheet(wb, ws, 'Report');
 
-    // Write file
     writeFile(wb, `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
 };
 
-// Format project data into a flat structure for Excel
 const formatProjectData = (project) => {
     const rows = [];
 
     project.day.forEach((day, dayIndex) => {
-        // Add day header
         rows.push({
             Type: 'Day Header',
             Day: dayIndex + 1,
@@ -29,7 +23,6 @@ const formatProjectData = (project) => {
             Note: day.note
         });
 
-        // Add crew details
         day.crew.forEach((member) => {
             rows.push({
                 Type: 'Crew',
@@ -39,7 +32,6 @@ const formatProjectData = (project) => {
             });
         });
 
-        // Add expenses
         ['rent', 'operational', 'orderlist'].forEach((expenseType) => {
             if (day.expense[expenseType]) {
                 day.expense[expenseType].forEach((expense) => {
@@ -57,7 +49,6 @@ const formatProjectData = (project) => {
             }
         });
 
-        // Add backup records
         day.backup.forEach((backup) => {
             rows.push({
                 Type: 'Backup',

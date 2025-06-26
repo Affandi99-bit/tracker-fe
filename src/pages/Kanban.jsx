@@ -306,8 +306,8 @@ const Kanban = ({ updateData, setKanban, project }) => {
         );
 
         let updatedStatus = project.status || [];
-        if (allDone && !updatedStatus.includes("Done")) {
-            updatedStatus = [...updatedStatus, "Done"];
+        if (allDone) {
+            updatedStatus = ["Done"];
         }
 
         const updatedProject = {

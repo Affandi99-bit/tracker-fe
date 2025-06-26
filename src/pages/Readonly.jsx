@@ -45,7 +45,7 @@ const Readonly = ({ data }) => {
                                 {[...pro.status, ...pro.categories, ...pro.type].map(
                                     (chip, i) => (
                                         <p key={i} className="text-xs tracking-widest">
-                                            {chip}&nbsp;&nbsp;
+                                            {chip},&nbsp;&nbsp;
                                         </p>
                                     )
                                 )}

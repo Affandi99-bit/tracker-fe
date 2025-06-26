@@ -52,7 +52,7 @@ const Login = ({ onLoginSuccess }) => {
         className={`relative`}
       />
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <section className="w-96 overflow-hidden rounded-2xl bg-dark relative flex flex-col p-8 z-10">
+        <section className="w-96 overflow-hidden rounded-2xl bg-dark border border-light relative flex flex-col p-8 z-10">
           <img
             src="/PM.webp"
             className="absolute left-0 top-16 opacity-30"

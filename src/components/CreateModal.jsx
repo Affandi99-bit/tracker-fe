@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { tags, crew } from "../constant/constant";
 import { useToast } from './ToastContext';
 import { roleProduction } from "../constant/constant";
@@ -60,6 +60,30 @@ const CreateModal = ({
         }))
       : []
   );
+
+  useEffect(() => {
+    setFormData(prevFormData => {
+      // Get current crew from checkboxes
+      const baseCrew = (prevFormData.day[0]?.crew || []).filter(
+        member => !member.id // Only keep base crew (from checkbox)
+      );
+      // Add additional crew from input fields
+      const additional = additionalCrewMembers
+        .filter(member => member.value.trim() !== "")
+        .map(member => ({
+          id: member.id,
+          name: member.value,
+          roles: []
+        }));
+      return {
+        ...prevFormData,
+        day: [{
+          ...prevFormData.day[0],
+          crew: [...baseCrew, ...additional]
+        }]
+      };
+    });
+  }, [additionalCrewMembers]);
 
   const inputHandle = (e) => {
     const { name, value, checked, type } = e.target;
