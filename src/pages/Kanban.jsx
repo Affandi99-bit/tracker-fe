@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { praprod, prod, postprod, manafile } from '../constant/constant';
 import { useToast } from '../components/ToastContext';
+
 const AddBox = ({ onSave, onClose }) => {
     const [title, setTitle] = useState('');
     const [pic, setPic] = useState('');
@@ -98,7 +99,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 <p className='p-2 font-bold tracking-widest text-lg'>{title}</p>
                 {/* Persentase */}
                 <main className='flex items-center gap-1'>
-                    <div className="w-48 m-2 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                    <div className="w-48 m-2  rounded-full h-2.5 bg-gray-700/25">
                         <div
                             className="bg-[#f8f8f8] h-2.5 rounded-full transition-all duration-300"
                             style={{ width: `${(checkedCount / data.length) * 100}%` }}
@@ -137,29 +138,9 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                         </svg>
                                     )}
                                 </span>
+                                {/* Title & PIC */}
                                 <div className='flex flex-col gap-1 my-3 border-b border-b-light/10 w-full'>
-                                    <input
-                                        type="text"
-                                        value={item.title}
-                                        onChange={e => {
-                                            const updated = [...data];
-                                            updated[index].title = e.target.value;
-                                            setData(updated);
-                                        }}
-                                        className="text-sm tracking-wider outline-none"
-                                        placeholder="Title"
-                                    />
-                                    {/* <input
-                                        type="text"
-                                        value={project.day[0].crew[0].name || ''}
-                                        onChange={e => {
-                                            const updated = [...data];
-                                            updated[index].pic = e.target.value;
-                                            setData(updated);
-                                        }}
-                                        className="text-gray-400 text-xs py-1 border-b-[.5px] border-gray-200 outline-none"
-                                        placeholder="PIC"
-                                    /> */}
+                                    <p className='text-md '>{item.title}</p>
                                     <div className='flex w-full items-center justify-between'>
                                         {(() => {
                                             const firstRole = item.pic?.split('/')[0]?.trim();
@@ -232,6 +213,20 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                         </button>
                                     </div>
                                 </div>
+                                {/* Note section */}
+                                <div className="flex items-end gap-2 mt-1">
+                                    <textarea
+                                        value={item.note || ''}
+                                        onChange={e => {
+                                            const updated = [...data];
+                                            updated[index].note = e.target.value;
+                                            setData(updated);
+                                        }}
+                                        className='rounded-xl border border-light/50 min-h-20 no-scrollbar text-xs p-2 outline-none'
+                                        placeholder="Add note"
+                                        onClick={e => e.stopPropagation()}
+                                    />
+                                </div>
                             </div>
                         )
                     })}
@@ -273,6 +268,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 link: Array.isArray(item.link)
                     ? item.link.filter(l => l && l.trim() !== '')
                     : item.link && item.link.trim() !== '' ? [item.link] : [],
+                note: item.note || '',
             })),
             prod: prodData.map(item => ({
                 title: item.title || '',
@@ -281,6 +277,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 link: Array.isArray(item.link)
                     ? item.link.filter(l => l && l.trim() !== '')
                     : item.link && item.link.trim() !== '' ? [item.link] : [],
+                note: item.note || '',
             })),
             postprod: postprodData.map(item => ({
                 title: item.title || '',
@@ -289,6 +286,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 link: Array.isArray(item.link)
                     ? item.link.filter(l => l && l.trim() !== '')
                     : item.link && item.link.trim() !== '' ? [item.link] : [],
+                note: item.note || '',
             })),
             manafile: manafileData.map(item => ({
                 title: item.title || '',
@@ -297,6 +295,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 link: Array.isArray(item.link)
                     ? item.link.filter(l => l && l.trim() !== '')
                     : item.link && item.link.trim() !== '' ? [item.link] : [],
+                note: item.note || '',
             })),
         };
 
@@ -305,9 +304,9 @@ const Kanban = ({ updateData, setKanban, project }) => {
             section => section.length > 0 && section.every(item => item.status === 'checked')
         );
 
-        let updatedStatus = project.status || [];
+        let updatedStatus = project.status || "";
         if (allDone) {
-            updatedStatus = ["Done"];
+            updatedStatus = "Done";
         }
 
         const updatedProject = {
@@ -322,7 +321,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
             await updateData(updatedProject);
             showToast("Kanban Updated", 'success');
         } catch (err) {
-            showToast("Kanban Failed to Update", 'error');
+            showToast("Kanban Failed to Update", 'error', err);
         } finally {
             setIsSaving(false);
         }
@@ -337,17 +336,17 @@ const Kanban = ({ updateData, setKanban, project }) => {
     }
 
     return (
-        <main className='bg-dark font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-50'>
+        <div role='main' className='bg-dark font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-50'>
             <img src="/logo.webp" alt="" className='z-0 opacity-5 fixed -rotate-12 right-0 top-0 size-[50rem] pointer-events-none object-contain' />
             <section className='flex items-start justify-between gap-5 p-5'>
-                <button onClick={() => { setKanban(false) }} className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'>
+                <button id='back' onClick={() => { setKanban(false) }} className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                     </svg>
                     Go Back
                 </button>
                 <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
-                    <div className="w-full m-1 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                    <div className="w-full m-1 rounded-full h-2.5 bg-gray-700/25">
                         <div
                             className="bg-[#F8F8F8] h-2.5 rounded-full transition-all duration-300"
                             style={{ width: `${overallProgress}%` }}
@@ -398,7 +397,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 </svg>
 
             </button>
-        </main>
+        </div>
     );
 };
 

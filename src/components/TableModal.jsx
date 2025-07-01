@@ -58,17 +58,15 @@ const TableModal = ({
                   {pro.title}
                 </h1>
                 <div className="flex font-body flex-wrap">
-                  {[...pro.status, ...pro.categories, ...pro.type].map(
+                  {[...(pro.categories || []), ...(pro.type || [])].map(
                     (chip, i) => (
-                      <>
-                        <p key={i} className="text-light text-center">
-                          &nbsp;
-                          <span className=" tracking-widest text-[0.60rem] leading-[0.5rem] font-thin">
-                            {chip}
-                          </span>
-                          &nbsp; |
-                        </p>
-                      </>
+                      <p key={i} className="text-light text-center">
+                        &nbsp;
+                        <span className=" tracking-widest text-[0.60rem] leading-[0.5rem] font-thin">
+                          {chip}
+                        </span>
+                        &nbsp; |
+                      </p>
                     )
                   )}
                 </div>

@@ -18,7 +18,6 @@ const CreateModal = ({
     title: "",
     pm: "",
     deadline: new Date().toISOString().split('T')[0],
-    status: [],
     client: "",
     pic: "",
     final_file: "",
@@ -38,10 +37,12 @@ const CreateModal = ({
         totalExpenses: 0,
       },
     ],
+    status: "ongoing",
   };
   const [formData, setFormData] = useState(isEditing ? {
     ...initialData,
-    deadline: initialData.deadline ? initialData.deadline.split('T')[0] : ''
+    deadline: initialData.deadline ? initialData.deadline.split('T')[0] : '',
+    status: initialData.status || "ongoing", // ensure status is set
   } : initialFormData);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
@@ -63,11 +64,9 @@ const CreateModal = ({
 
   useEffect(() => {
     setFormData(prevFormData => {
-      // Get current crew from checkboxes
       const baseCrew = (prevFormData.day[0]?.crew || []).filter(
-        member => !member.id // Only keep base crew (from checkbox)
+        member => !member.id
       );
-      // Add additional crew from input fields
       const additional = additionalCrewMembers
         .filter(member => member.value.trim() !== "")
         .map(member => ({
@@ -102,13 +101,6 @@ const CreateModal = ({
           },
         ],
       });
-    } else if (name === "status" && type === "checkbox") {
-      setFormData(prev => ({
-        ...prev,
-        status: checked
-          ? [...prev.status, value]
-          : prev.status.filter(item => item !== value)
-      }));
     } else if (name === "type" && type === "checkbox") {
       setFormData(prev => ({
         ...prev,
@@ -182,6 +174,7 @@ const CreateModal = ({
 
     const finalData = {
       ...formData,
+      status: "ongoing", // always push as ongoing
       day: [{
         ...formData.day[0],
         crew: allCrew,
@@ -323,105 +316,8 @@ const CreateModal = ({
                       />
                     </label>
                   </div>
-                  <section className="flex gap-1 items-center w-full">
-                    {/* Final File */}
-                    {/* <label className="font-body font-semibold tracking-widest">
-                      Final File Link
-                      <input
-                        placeholder="Final File Link"
-                        type="text"
-                        name="final_file"
-                        value={formData.final_file}
-                        onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 h-full w-full font-body tracking-widest outline-none mb-1 lg:mb-0"
-                      />
-                    </label> */}
-                    {/* Document */}
-                    {/* <label className="font-body font-semibold tracking-widest">
-                      Document Links
-                      <input
-                        placeholder="Document Links"
-                        type="text"
-                        name="final_report_file"
-                        value={formData.final_report_file}
-                        onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 h-full w-full font-body tracking-widest outline-none mb-1 lg:mb-0"
-                      />
-                    </label> */}
-                    {/* PM */}
-                    {/* <label className="font-body font-semibold tracking-widest flex flex-col">
-                      Select PM
-                      <select
-                        required
-                        name="pm"
-                        value={formData.pm}
-                        onChange={inputHandle}
-                        className="glass border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none mb-1 lg:mb-0 "
-                      >
-                        <option className="bg-dark text-light" value="">
-                          N/A
-                        </option>
-                        {crew.map((option) => (
-                          <option
-                            className="bg-dark text-light"
-                            key={option.name}
-                            value={option.name}
-                          >
-                            {option.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label> */}
-                  </section>
+
                   <section className="flex gap-1 w-full">
-                    {/* Progress */}
-                    {/*  <div className="glass border border-gray-400 font-light rounded p-2 ">
-                       <p className="font-body tracking-widest font-medium">Progress</p>
-                      {tags.progress.map((option) => (
-                        <label
-                          htmlFor={`hr-${option.value}`}
-                          key={option.value}
-                          className={`flex flex-row items-center gap-2 font-body tracking-widest cursor-pointer  `}
-                        >
-                          <input
-                            id={`hr-${option.value}`}
-                            type="checkbox"
-                            name="progress"
-                            value={option.value}
-                            checked={formData.status.includes(option.value)}
-                            onChange={(e) => {
-                              const { checked, value } = e.target;
-                              setFormData(prev => ({
-                                ...prev,
-                                status: checked
-                                  ? [...prev.status, value]
-                                  : prev.status.filter(item => item !== value)
-                              }));
-                            }}
-                            className="peer hidden"
-                          />
-                          <div
-                            htmlFor={`hr-${option.value}`}
-                            className="size-5 flex rounded  bg-dark  transition"
-                          >
-                            <svg
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              className="size-5 stroke-light"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M4 12.6111L8.92308 17.5L20 6.5"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              ></path>
-                            </svg>
-                          </div>
-                          {option.title}
-                        </label>
-                      ))}
-                    </div> */}
                     {/* Type */}
                     <div className="glass border border-gray-400 font-light rounded p-2 ">
                       <p className="font-body tracking-widest font-medium">

@@ -44,49 +44,13 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
               } hover:brightness-90`}
             key={row._id}
           >
-            {/* <td className="">
-              <div className="font-semibold px-3 flex items-center justify-center ">
-                {index + 1}
-              </div>
-            </td> */}
             <td className="text-xs font-bold tracker-wider text-light text-start pl-7">{row.title}</td>
             <td className="text-xs font-semibold text-light text-start pl-2">{row.client}</td>
             <td className="text-xs font-semibold text-light text-start pl-2">{row.pic}</td>
             <td className="text-xs font-bold text-start pl-2 text-sky-400">
               {new Date(row.deadline).toLocaleDateString("en-GB")}
             </td>
-            {/* <td className="text-xs text-start pl-2">
-              <div className="flex flex-wrap gap-1 justify-center items-center">
-                {row.status.map((chip, i) => (
-                  <p
-                    key={i}
-                    style={{
-                      backgroundColor: findTagColor(chip),
-                    }}
-                    className="rounded-md w-[3.6rem] py-[0.15rem]"
-                  >
-                    <span className="text-light text-xs text-start pl-2 font-thin">{chip}</span>
-                  </p>
-                  ))}
-                  </div>
-                  </td>
-                  <td className="text-xs text-start pl-2">
-                  <div className="flex flex-wrap gap-1 justify-center items-center">
-                  {row.type.map((chip, i) => (
-                    <p
-                    key={i}
-                    style={{
-                      backgroundColor: findTagColor(chip),
-                      }}
-                      className="rounded-md border w-[3.6rem] py-[0.15rem]"
-                      >
-                      <span className="text-white text-xs text-start pl-2 font-extralight">
-                      {chip}
-                      </span>
-                      </p>
-                      ))}
-                      </div>
-                      </td> */}
+
             <td className="text-xs pl-2">
               <div className="flex flex-wrap gap-1 justify-start items-center">
                 {row.categories.map((chip, i) => (
@@ -100,35 +64,10 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
                 ))}
               </div>
             </td>
-            {/* <td className="text-xs text-start pl-2">{row.pm}</td> */}
-            {/* <td className="text-xs text-start pl-2">
-              {row.final_file ? (
-                <a
-                  target="_blank"
-                  className="truncate w-32 text-blue-500 hover:underline"
-                  href={`${row.final_file}`}
-                >
-                  Final File
-                  </a>
-                  ) : null}
-            </td>
-            <td className="text-xs text-start pl-2">
-              {row.final_report_file ? (
-                <a
-                  target="_blank"
-                  className="truncate w-32 text-blue-500 hover:underline"
-                  href={`${row.final_report_file}`}
-                >
-                  Report File
-                </a>
-              ) : null}
-            </td>
-            <td className="overflow-hidden whitespace-nowrap text-ellipsis">
-              {row.note}
-            </td> */}
+
             <td className="text-xs text-start pl-2">
               <div className="flex flex-col gap-1 justify-start items-start">
-                <div className="w-28 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                <div className="w-28 rounded-full h-2.5 bg-gray-700/25">
                   <div
                     className="bg-light h-2.5 rounded-full transition-all duration-300"
                     style={{ width: `${progress}%` }}
@@ -140,7 +79,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
             <td className=" text-xs">
               <div className="flex px-2 gap-3 justify-start items-center">
                 {/* Track */}
-                <button
+                <button id="track-button"
                   onClick={e => {
                     e.stopPropagation();
                     setSelectedKanbanProject(row);
@@ -151,7 +90,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
                   Track
                 </button>
                 {/* Share */}
-                <button
+                <button id="share-button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setReadonlyRow(row);
@@ -163,7 +102,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
                   </svg>
                 </button>
                 {/* Delete */}
-                <button
+                <button id="delete-button"
                   onClick={async e => {
                     e.stopPropagation();
                     setLoadingId(row._id);
@@ -234,31 +173,26 @@ const MainTable = ({
     if (!tableData) return;
 
     const filteredTableData = tableData.filter((item) => {
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
       const matchesSearch =
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.pic.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.pm.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const isWithinMonth = new Date(item.createdAt) >= oneMonthAgo;
-      const isNotDone = !item.status.includes("Done") && !item.archived;
-      const isOngoing = item.status.includes("Ongoing");
       const matchesTags =
         selectedTags.length === 0 ||
         selectedTags.every(
           (tag) =>
-            item.status.includes(tag) ||
+            (typeof item.status === "string" && item.status.includes(tag)) ||
             item.type?.includes(tag) ||
             item.categories?.includes(tag)
         );
+      const isNotDone = item.status != "Done" && !item.archived;
+      const isOngoing = item.status == "Ongoing";
 
       return (
         matchesSearch &&
         matchesTags &&
-        (showHidden || (isWithinMonth && isNotDone) || isOngoing)
+        (showHidden || isNotDone || isOngoing)
       );
     });
 
@@ -304,9 +238,6 @@ const MainTable = ({
         <table className="border-collapse mt-[35rem] select-none relative w-full table-fixed">
           <thead className="font-body tracking-widest ">
             <tr className="text-start">
-              {/* <th className="w-10 sticky top-0 border-none  shadow text-sm z-10 h-10">
-                ID
-              </th> */}
               <th
                 onClick={handleTitle}
                 className="w-40 sticky top-0 border-none text-sm z-10 h-10 glass text-light rounded-tl-2xl"
@@ -357,12 +288,6 @@ const MainTable = ({
                   </svg>
                 </div>
               </th>
-              {/* <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 glass text-light">
-                Progress
-              </th>
-              <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 glass text-light">
-                Status
-              </th> */}
               <th className="text-start px-2 w-32 sticky top-0 border-none text-sm z-10 h-10 glass text-light">
                 Type
               </th>
@@ -372,18 +297,6 @@ const MainTable = ({
               <th className="text-start px-2 w-16 sticky top-0 border-none text-sm z-10 h-10 glass text-light rounded-tr-2xl">
                 Action
               </th>
-              {/* <th className="w-14 sticky top-0 border-none text-sm z-10 h-10 glass text-light">
-                PM
-              </th> 
-              <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 glass text-light">
-                Final File
-              </th>
-              <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 glass text-light">
-                Documents
-              </th>
-              <th className="w-32 sticky top-0 border-none text-sm z-10 h-10 glass text-light">
-                Note
-              </th> */}
             </tr>
           </thead>
           <Suspense fallback={<Loader />}>

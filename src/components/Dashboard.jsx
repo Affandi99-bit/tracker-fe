@@ -1,5 +1,4 @@
 import React from 'react'
-import Background from './Background';
 
 const Dashboard = ({ preview }) => {
     const monthlyCount = Array(12).fill(0);

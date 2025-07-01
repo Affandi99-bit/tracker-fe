@@ -9,11 +9,6 @@ const ReadonlyWrapper = ({ data }) => {
   const { id } = useParams();
   const found = data.filter(d => d._id === id);
   if (!found.length) return <Loader />
-  // <div className='flex flex-col items-center justify-center h-screen '>
-  //   <div class="absolute top-0 -z-10 h-full w-full bg-white"><div class="absolute bottom-auto left-auto right-0 top-0 h-[500px] w-[500px] -translate-x-[30%] translate-y-[20%] rounded-full bg-[rgba(173,109,244,0.5)] opacity-50 blur-[80px] animate-bounce"></div></div>
-  //   <p className='text-9xl font-bold text-dark'>404</p>
-  //   <p className='text-md font-bold text-dark'>Oops, pages not found !!</p>
-  // </div>;
   return <Readonly data={found} />;
 };
 
@@ -30,9 +25,6 @@ const MainApp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
   const [message, setMessage] = useState("");
-  const [theme, setTheme] = useState(
-    localStorage.getItem("theme") || "dark"
-  );
 
   const showToast = (msg) => {
     setMessage(msg);
@@ -61,7 +53,6 @@ const MainApp = () => {
       setIsLoading(true);
       const response = await axios.get(
         `https://tracker-be-omega.vercel.app/api/report/getallprojects`
-        // tracker-be-omega.vercel.app
       );
       setTableData(response.data);
       setIsLoading(false);
@@ -138,14 +129,10 @@ const MainApp = () => {
     localStorage.removeItem("username");
     localStorage.removeItem("password");
   };
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
+
   return (
     <ToastProvider>
-      <div className={theme === "dark" ? "bg-dark text-light min-h-screen" : "bg-light text-dark min-h-screen"}>
+      <div>
         <Routes>
           <Route
             path="/readonly/:id"
@@ -157,45 +144,47 @@ const MainApp = () => {
             <Route
               path="/"
               element={
-                <div>
-                  <Toast message={message} show={toastVisible} onClose={() => setToastVisible(false)} />
-                  <Navbar
-                    onSearch={(query) => {
-                      setSearchQuery(query);
-                    }}
-                    selectedTags={selectedTags}
-                    setSelectedTags={setSelectedTags}
-                    onSort={handleSortToggle}
-                    onArchive={handleArchiveToggle}
-                    showHidden={showHidden}
-                    onLogout={handleLogout}
-                    showCreateModal={showCreateModal}
-                    setShowCreateModal={setShowCreateModal}
-                  />
-                  <Dashboard preview={tableData} />
-                  <MainTable
-                    tableData={tableData}
-                    searchQuery={searchQuery}
-                    selectedTags={selectedTags}
-                    isSortedDesc={isSortedDesc}
-                    setSortedData={setSortedData}
-                    showHidden={showHidden}
-                    updateData={updateData}
-                    deleteData={deleteData}
-                  />
-                  <CreateModal
-                    showModal={showCreateModal}
-                    setShowModal={setShowCreateModal}
-                    isEditing={!!editingData}
-                    initialData={editingData}
-                    addNewData={addNewData}
-                    updateData={updateData}
-                    deleteData={deleteData}
-                    showHidden={showHidden}
-                    showToast={showToast}
-                    onSubmit={handleFormSubmit}
-                  />
-                </div>
+                isLoading ? <Loader /> : (
+                  <div>
+                    <Toast message={message} show={toastVisible} onClose={() => setToastVisible(false)} />
+                    <Navbar
+                      onSearch={(query) => {
+                        setSearchQuery(query);
+                      }}
+                      selectedTags={selectedTags}
+                      setSelectedTags={setSelectedTags}
+                      onSort={handleSortToggle}
+                      onArchive={handleArchiveToggle}
+                      showHidden={showHidden}
+                      onLogout={handleLogout}
+                      showCreateModal={showCreateModal}
+                      setShowCreateModal={setShowCreateModal}
+                    />
+                    <Dashboard preview={tableData} />
+                    <MainTable
+                      tableData={tableData}
+                      searchQuery={searchQuery}
+                      selectedTags={selectedTags}
+                      isSortedDesc={isSortedDesc}
+                      setSortedData={setSortedData}
+                      showHidden={showHidden}
+                      updateData={updateData}
+                      deleteData={deleteData}
+                    />
+                    <CreateModal
+                      showModal={showCreateModal}
+                      setShowModal={setShowCreateModal}
+                      isEditing={!!editingData}
+                      initialData={editingData}
+                      addNewData={addNewData}
+                      updateData={updateData}
+                      deleteData={deleteData}
+                      showHidden={showHidden}
+                      showToast={showToast}
+                      onSubmit={handleFormSubmit}
+                    />
+                  </div>
+                )
               }
             />
           )}

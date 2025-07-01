@@ -25,6 +25,14 @@ const Readonly = ({ data }) => {
     const [openPostprod, setOpenPostprod] = useState(false);
     const [openManafile, setOpenManafile] = useState(false);
 
+    function getCrewByRole(role) {
+        if (!data.day || !data.day[0] || !data.day[0].crew) return null;
+        const crewList = data.day[0].crew;
+        return crewList.find(c =>
+            c.roles.some(r => r.toLowerCase() === role.toLowerCase())
+        );
+    }
+
     return (
         <main className='overflow-y-scroll z-50 h-screen w-full p-5 bg-dark fixed top-0 left-0'>
             {data.map((pro, i) => {
@@ -37,81 +45,48 @@ const Readonly = ({ data }) => {
 
                 return (
                     <main className='font-body text-light flex flex-col lg:flex-row w-full justify-start lg:items-start relative' key={i}>
-                        <section className="flex flex-col p-2 w-1/2">
-                            <h1 className="tracking-widest text-xl font-bold">
-                                {pro.title}
-                            </h1>
-                            <div className="flex items-center justify-start">
-                                {[...pro.status, ...pro.categories, ...pro.type].map(
-                                    (chip, i) => (
-                                        <p key={i} className="text-xs tracking-widest">
-                                            {chip},&nbsp;&nbsp;
-                                        </p>
-                                    )
-                                )}
+                        <section className="flex flex-col gap-3 p-6 w-full lg:w-1/2 text-sm text-white glass rounded-xl shadow-md">
+                            <header>
+                                <h1 className="text-2xl font-bold tracking-wide uppercase">{pro.title}</h1>
+                                <p className="text-gray-400 italic text-xs">
+                                    {[...(pro.categories || []), ...(pro.type || [])].join(" · ")}
+                                </p>
+                            </header>
+                            <div className="space-y-1">
+                                <p><span className="text-gray-400">Client:</span> {pro.client} — {pro.pic}</p>
+                                <p><span className="text-gray-400">Due Date:</span> <span className="font-medium">{new Date(pro.deadline).toLocaleDateString("en-GB")}</span></p>
+                                <p><span className="text-gray-400">Project Manager:</span> <span className="font-medium">{pro.pm}</span></p>
                             </div>
-                            <p className="tracking-widest">
-                                {pro.client}  <span className=''>- {pro.pic}</span>
-                            </p>
-                            <p className="tracking-widest">
-                                Due Date :
-                                <span className="font-semibold">
-                                    &nbsp;{new Date(pro.deadline).toLocaleDateString("en-GB")}
-                                </span>{" "}
-                            </p>
-                            <p className="tracking-widest">
-                                Project Manager :
-                                <span className="font-semibold">&nbsp;{pro.pm}</span>
-                            </p>
-                            <div className='flex items-center justify-start gap-2'>
-                                <p className="tracking-widest">Final File:</p>
-                                <a
-                                    href={pro.final_file}
-                                    target="_blank"
-                                    className="cursor pointer truncate w-96 text-blue-500"
-                                >
-                                    {pro.final_file}
-                                </a>
+                            <div className="space-y-1">
+                                <p className="text-gray-400">Final File:</p>
+                                <a href={pro.final_file} target="_blank" className="block w-fit text-blue-400 hover:text-blue-600 hover:underline truncate max-w-xs">{pro.final_file}</a>
+                                <p className="text-gray-400">Report File:</p>
+                                <a href={pro.final_report_file} target="_blank" className="block w-fit text-blue-400 hover:text-blue-600 hover:underline truncate max-w-xs">{pro.final_report_file}</a>
                             </div>
-                            <div className='flex items-center justify-start gap-2'>
-                                <p className="tracking-widest">Report File:</p>
-                                <a
-                                    href={pro.final_report_file}
-                                    target="_blank"
-                                    className="cursor pointer truncate w-96 text-blue-500"
-                                >
-                                    {pro.final_report_file}
-                                </a>
+                            <div>
+                                <p className="text-gray-400">Crew:</p>
+                                <ul className="pl-4 space-y-1 max-h-32 overflow-y-auto text-sm">
+                                    {(pro.day[0]?.crew || []).map((member, i) => (
+                                        <li key={i} className="text-white">
+                                            {member.roles} – <span className="font-medium">{member.name}</span>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                            <p className="tracking-widest">Crew :</p>
-                            <div className="flex flex-col flex-wrap h-40 overflow-y-auto">
-                                {
-                                    pro.day[0].crew?.map((member, i) => (
-                                        <p
-                                            key={i}
-                                            className="pl-5 font-semibold text-sm flex justify-start items-center tracking-widest"
-                                        >
-                                            {member.roles} - {member.name}
-                                        </p>
-                                    )) || <p className="pl-5">No crew members listed</p>
-                                }
+                            <div>
+                                <p className="text-gray-400">Note:</p>
+                                <textarea readOnly className="bg-[#2a2a2a] w-full cursor-default outline-none rounded-md p-2 min-h-32 overflow-y-auto text-white" value={pro.note || "No notes available!"} />
                             </div>
-                            <p className="tracking-widest">Note :</p>
-                            <textarea
-                                readOnly
-                                className="no-scrollbar outline-none tracking-widest h-32 w-96 pl-5"
-                                value={pro.note}
-                            />
-
-                            <p className="fixed opacity-65 tracking-widest bottom-1 left-1">
-                                Created at{" "}
-                                {new Date(pro.createdAt).toLocaleDateString("en-GB")}
-                            </p>
+                            <footer className="text-xs text-gray-500">
+                                Created at {new Date(pro.createdAt).toLocaleDateString("en-GB")}
+                            </footer>
                         </section>
+
+                        {/* Progress Section */}
                         <section className="flex flex-col p-2 w-1/2">
                             <nav>
                                 <p className='font-semibold tracking-wider'>Overall Progress:</p>
-                                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                                <div className="w-full rounded-full h-2.5 bg-gray-700/25">
                                     <div
                                         className="bg-light  h-2.5 rounded-full transition-all duration-300"
                                         style={{ width: `${overallProgress}%` }}
@@ -126,7 +101,7 @@ const Readonly = ({ data }) => {
                                 >
                                     <p className='font-semibold tracking-wider'>Pra Produksi</p>
                                     <main className='flex items-center gap-5'>
-                                        <div className="w-28 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                                        <div className="w-28 rounded-full h-2.5 bg-gray-700/25">
                                             <div
                                                 className="bg-light h-2.5 rounded-full transition-all duration-300"
                                                 style={{ width: `${praprodProgress}%` }}
@@ -148,28 +123,44 @@ const Readonly = ({ data }) => {
                                     </main>
                                 </div>
                                 {openPraprod && kanban.praprod?.map((task, index) => (
-                                    <div key={index} className="p-2 mb-2 bg-[#303030] rounded-lg">
-                                        <h3 className="font-semibold text-sm tracking-wider">{task.title}</h3>
-                                        <p className="text-gray-300 text-xs">PIC: {task.pic}</p>
-                                        <p className="text-gray-300 text-xs">Status: <span className={`font-normal ${task.status ? 'text-green-500 ' : 'text-amber-500'}`}>{task.status ? 'Done' : 'Ongoing'}</span> </p>
-                                        {task.link && task.link.length > 0 && (
-                                            <div className="mt-1">
-                                                {task.link.map((link, linkIndex) => (
-                                                    link && (
-                                                        <a
-                                                            key={linkIndex}
-                                                            href={link}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-500 block text-xs"
-                                                        >
-                                                            {link}
-                                                        </a>
-                                                    )
-                                                ))}
+                                    <main key={index} className="p-2  mb-2 bg-[#303030] rounded-lg">
+                                        <h3 className="font-semibold text-sm tracking-wider mb-2">{task.title}</h3>
+                                        <section className='flex items-start justify-between'>
+                                            <div className='w-1/2'>
+                                                <p className="text-gray-300 text-xs">PIC:   {(() => {
+                                                    const firstRole = task.pic?.split('/')[0]?.trim();
+                                                    const crew = getCrewByRole(firstRole);
+                                                    if (crew) {
+                                                        return <span className='text-xs text-gray-400'>{crew.name} as {firstRole}</span>;
+                                                    }
+                                                    return <span className='text-xs text-gray-400'>{firstRole}</span>;
+                                                })()}</p>
+                                                <p className="text-gray-300 text-xs">Status: <span className={`font-normal ${task.status ? 'text-green-500 ' : 'text-amber-500'}`}>{task.status ? 'Done' : 'Ongoing'}</span> </p>
+                                                {task.link && task.link.length > 0 && (
+                                                    <div className="mt-1">
+                                                        <p className='mb-2 text-gray-300 text-xs'>Links:</p>
+                                                        {task.link.map((link, linkIndex) => (
+                                                            link && (
+                                                                <a
+                                                                    key={linkIndex}
+                                                                    href={link}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-500 hover:text-blue-700 hover:underline block text-xs mb-1"
+                                                                >
+                                                                    {link}
+                                                                </a>
+                                                            )
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
+                                            <div className='w-1/2 '>
+                                                <p className='text-gray-300 text-xs'>Note:</p>
+                                                <textarea className="bg-[#2a2a2a] rounded-md p-2 min-h-20 text-xs w-full outline-none cursor-default no-scrollbar overflow-y-auto text-white" readOnly value={task.note || "No notes available!"} />
+                                            </div>
+                                        </section>
+                                    </main>
                                 ))}
                             </section>
                             {/* Produksi Dropdown */}
@@ -179,13 +170,13 @@ const Readonly = ({ data }) => {
                                 >
                                     <p className='font-semibold tracking-wider'>Produksi</p>
                                     <main className='flex items-center gap-5'>
-                                        <div className="w-28 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                                        <div className="w-28 rounded-full h-2.5 bg-gray-700/25">
                                             <div
                                                 className="bg-light h-2.5 rounded-full transition-all duration-300"
                                                 style={{ width: `${prodProgress}%` }}
                                             ></div>
                                         </div>
-                                        <p className='text-gray-400 text-end'>{prodProgress}%</p>
+                                        <p className='text-gray-400 text-end text-xs'>{prodProgress}%</p>
                                         <p className='text-gray-400 text-end'>
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -201,28 +192,44 @@ const Readonly = ({ data }) => {
                                     </main>
                                 </div>
                                 {openProd && kanban.prod?.map((task, index) => (
-                                    <div key={index} className="p-2 mb-2 bg-[#303030] rounded-lg">
-                                        <h3 className="font-semibold text-sm tracking-wider">{task.title}</h3>
-                                        <p className="text-gray-300 text-xs">PIC: {task.pic}</p>
-                                        <p className="text-gray-300 text-xs">Status: <span className={`${task.status ? 'text-green-500 ' : 'text-amber-500'}`}>{task.status ? 'Done' : 'Ongoing'}</span> </p>
-                                        {task.link && task.link.length > 0 && (
-                                            <div className="mt-1">
-                                                {task.link.map((link, linkIndex) => (
-                                                    link && (
-                                                        <a
-                                                            key={linkIndex}
-                                                            href={link}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-500 block text-xs"
-                                                        >
-                                                            {link}
-                                                        </a>
-                                                    )
-                                                ))}
+                                    <main key={index} className="p-2 mb-2 bg-[#303030] rounded-lg">
+                                        <h3 className="font-semibold text-sm tracking-wider mb-2">{task.title}</h3>
+                                        <section className='flex items-start justify-between'>
+                                            <div className='w-1/2'>
+                                                <p className="text-gray-300 text-xs">PIC:   {(() => {
+                                                    const firstRole = task.pic?.split('/')[0]?.trim();
+                                                    const crew = getCrewByRole(firstRole);
+                                                    if (crew) {
+                                                        return <span className='text-xs text-gray-400'>{crew.name} as {firstRole}</span>;
+                                                    }
+                                                    return <span className='text-xs text-gray-400'>{firstRole}</span>;
+                                                })()}</p>
+                                                <p className="text-gray-300 text-xs">Status: <span className={`font-normal ${task.status ? 'text-green-500 ' : 'text-amber-500'}`}>{task.status ? 'Done' : 'Ongoing'}</span> </p>
+                                                {task.link && task.link.length > 0 && (
+                                                    <div className="mt-1">
+                                                        <p className='mb-2 text-gray-300 text-xs'>Links:</p>
+                                                        {task.link.map((link, linkIndex) => (
+                                                            link && (
+                                                                <a
+                                                                    key={linkIndex}
+                                                                    href={link}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-500 hover:text-blue-700 hover:underline block text-xs mb-1"
+                                                                >
+                                                                    {link}
+                                                                </a>
+                                                            )
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
+                                            <div className='w-1/2 '>
+                                                <p className='text-gray-300 text-xs'>Note:</p>
+                                                <textarea className="bg-[#2a2a2a] rounded-md p-2 min-h-20 text-xs w-full outline-none cursor-default no-scrollbar overflow-y-auto text-white" readOnly value={task.note || "No notes available!"} />
+                                            </div>
+                                        </section>
+                                    </main>
                                 ))}
                             </section>
                             {/* Post Produksi Dropdown */}
@@ -232,13 +239,13 @@ const Readonly = ({ data }) => {
                                 >
                                     <p className='font-semibold tracking-wider'>Post Produksi</p>
                                     <main className='flex items-center gap-5'>
-                                        <div className="w-28 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                                        <div className="w-28 rounded-full h-2.5 bg-gray-700/25">
                                             <div
                                                 className="bg-light h-2.5 rounded-full transition-all duration-300"
                                                 style={{ width: `${postprodProgress}%` }}
                                             ></div>
                                         </div>
-                                        <p className='text-gray-400 text-end'>{postprodProgress}%</p>
+                                        <p className='text-gray-400 text-end text-xs'>{postprodProgress}%</p>
                                         <p className='text-gray-400 text-end'>
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -254,28 +261,44 @@ const Readonly = ({ data }) => {
                                     </main>
                                 </div>
                                 {openPostprod && kanban.postprod?.map((task, index) => (
-                                    <div key={index} className="p-2 mb-2 bg-[#303030] rounded-lg">
-                                        <h3 className="font-semibold text-sm tracking-wider">{task.title}</h3>
-                                        <p className="text-gray-300 text-xs">PIC: {task.pic}</p>
-                                        <p className="text-gray-300 text-xs">Status: <span className={`${task.status ? 'text-green-500 ' : 'text-amber-500'}`}>{task.status ? 'Done' : 'Ongoing'}</span> </p>
-                                        {task.link && task.link.length > 0 && (
-                                            <div className="mt-1">
-                                                {task.link.map((link, linkIndex) => (
-                                                    link && (
-                                                        <a
-                                                            key={linkIndex}
-                                                            href={link}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-500 block text-xs"
-                                                        >
-                                                            {link}
-                                                        </a>
-                                                    )
-                                                ))}
+                                    <main key={index} className="p-2 mb-2 bg-[#303030] rounded-lg">
+                                        <h3 className="font-semibold text-sm tracking-wider mb-2">{task.title}</h3>
+                                        <section className='flex items-start justify-between'>
+                                            <div className='w-1/2'>
+                                                <p className="text-gray-300 text-xs">PIC:   {(() => {
+                                                    const firstRole = task.pic?.split('/')[0]?.trim();
+                                                    const crew = getCrewByRole(firstRole);
+                                                    if (crew) {
+                                                        return <span className='text-xs text-gray-400'>{crew.name} as {firstRole}</span>;
+                                                    }
+                                                    return <span className='text-xs text-gray-400'>{firstRole}</span>;
+                                                })()}</p>
+                                                <p className="text-gray-300 text-xs">Status: <span className={`font-normal ${task.status ? 'text-green-500 ' : 'text-amber-500'}`}>{task.status ? 'Done' : 'Ongoing'}</span> </p>
+                                                {task.link && task.link.length > 0 && (
+                                                    <div className="mt-1">
+                                                        <p className='mb-2 text-gray-300 text-xs'>Links:</p>
+                                                        {task.link.map((link, linkIndex) => (
+                                                            link && (
+                                                                <a
+                                                                    key={linkIndex}
+                                                                    href={link}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-500 hover:text-blue-700 hover:underline block text-xs mb-1"
+                                                                >
+                                                                    {link}
+                                                                </a>
+                                                            )
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
+                                            <div className='w-1/2 '>
+                                                <p className='text-gray-300 text-xs'>Note:</p>
+                                                <textarea className="bg-[#2a2a2a] rounded-md p-2 min-h-20 text-xs w-full outline-none cursor-default no-scrollbar overflow-y-auto text-white" readOnly value={task.note || "No notes available!"} />
+                                            </div>
+                                        </section>
+                                    </main>
                                 ))}
                             </section>
                             {/* Manajemen File Dropdown */}
@@ -283,15 +306,15 @@ const Readonly = ({ data }) => {
                                 <div className='flex items-center justify-between mb-2 cursor-pointer'
                                     onClick={() => setOpenManafile((prev) => !prev)}
                                 >
-                                    <p className='font-semibold tracking-wider'>Manajemen File</p>
+                                    <p className='font-semibold tracking-wider'>File Management</p>
                                     <main className='flex items-center gap-5'>
-                                        <div className="w-28 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700/25">
+                                        <div className="w-28 rounded-full h-2.5 bg-gray-700/25">
                                             <div
                                                 className="bg-light h-2.5 rounded-full transition-all duration-300"
                                                 style={{ width: `${manafileProgress}%` }}
                                             ></div>
                                         </div>
-                                        <p className='text-gray-400 text-end'>{manafileProgress}%</p>
+                                        <p className='text-gray-400 text-end text-xs'>{manafileProgress}%</p>
                                         <p className='text-gray-400 text-end'>
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -307,36 +330,51 @@ const Readonly = ({ data }) => {
                                     </main>
                                 </div>
                                 {openManafile && kanban.manafile?.map((task, index) => (
-                                    <div key={index} className="p-2 mb-2 bg-[#303030] rounded-lg">
-                                        <h3 className="font-semibold text-sm tracking-wider">{task.title}</h3>
-                                        <p className="text-gray-300 text-xs">PIC: {task.pic}</p>
-                                        <p className="text-gray-300 text-xs">Status: <span className={`${task.status ? 'text-green-500 ' : 'text-amber-500'}`}>{task.status ? 'Done' : 'Ongoing'}</span> </p>
-                                        {task.link && task.link.length > 0 && (
-                                            <div className="mt-1">
-                                                {task.link.map((link, linkIndex) => (
-                                                    link && (
-                                                        <a
-                                                            key={linkIndex}
-                                                            href={link}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-500 block text-xs"
-                                                        >
-                                                            {link}
-                                                        </a>
-                                                    )
-                                                ))}
+                                    <main key={index} className="p-2 mb-2 bg-[#303030] rounded-lg">
+                                        <h3 className="font-semibold text-sm tracking-wider mb-2">{task.title}</h3>
+                                        <section className='flex items-start justify-between'>
+                                            <div className='w-1/2'>
+                                                <p className="text-gray-300 text-xs">PIC:   {(() => {
+                                                    const firstRole = task.pic?.split('/')[0]?.trim();
+                                                    const crew = getCrewByRole(firstRole);
+                                                    if (crew) {
+                                                        return <span className='text-xs text-gray-400'>{crew.name} as {firstRole}</span>;
+                                                    }
+                                                    return <span className='text-xs text-gray-400'>{firstRole}</span>;
+                                                })()}</p>
+                                                <p className="text-gray-300 text-xs">Status: <span className={`font-normal ${task.status ? 'text-green-500 ' : 'text-amber-500'}`}>{task.status ? 'Done' : 'Ongoing'}</span> </p>
+                                                {task.link && task.link.length > 0 && (
+                                                    <div className="mt-1">
+                                                        <p className='mb-2 text-gray-300 text-xs'>Links:</p>
+                                                        {task.link.map((link, linkIndex) => (
+                                                            link && (
+                                                                <a
+                                                                    key={linkIndex}
+                                                                    href={link}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-500 hover:text-blue-700 hover:underline block text-xs mb-1"
+                                                                >
+                                                                    {link}
+                                                                </a>
+                                                            )
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
+                                            <div className='w-1/2 '>
+                                                <p className='text-gray-300 text-xs'>Note:</p>
+                                                <textarea className="bg-[#2a2a2a] rounded-md p-2 min-h-20 text-xs w-full outline-none cursor-default no-scrollbar overflow-y-auto text-white" readOnly value={task.note || "No notes available!"} />
+                                            </div>
+                                        </section>
+                                    </main>
                                 ))}
                             </section>
                         </section>
                     </main>
-                )
+                );
             })}
         </main>
     );
 };
-
 export default Readonly;

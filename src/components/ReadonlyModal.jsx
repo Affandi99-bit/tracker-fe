@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
-
+import { useToast } from './ToastContext';
 const ReadonlyModal = ({ link, onClose }) => {
     const modalRef = useRef(null);
     const [open, setOpen] = useState(true);
-
+    const { showToast } = useToast();
     useEffect(() => {
         function handleClickOutside(event) {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -21,6 +21,8 @@ const ReadonlyModal = ({ link, onClose }) => {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(link);
+        showToast("Link copied to clipboard!");
+        setOpen(false);
     };
 
     return (
