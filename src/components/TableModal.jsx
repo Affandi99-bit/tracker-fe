@@ -72,6 +72,15 @@ const TableModal = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {/* Report */}
+                <button onClick={() => {
+                  setShowReportGenerator(true);
+                }} className="size-10 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#f8f8f8" className="size-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                  </svg>
+                </button>
+                {/* Kanban */}
                 <button onClick={() => {
                   setShowKanban(true);
                 }} className="size-10 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg">
@@ -79,6 +88,7 @@ const TableModal = ({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
                   </svg>
                 </button>
+                {/* Edit */}
                 <button
                   onClick={() => setShowEditModal(true)}
                   className=" bg-light cursor-pointer text-dark font-body tracking-widest rounded-md py-2 px-3 font-semibold transition ease-in-out hover:scale-105  duration-300 active:scale-95"
@@ -103,57 +113,62 @@ const TableModal = ({
                   Project Manager :
                   <span className="text-xs font-normal">&nbsp;{pro.pm}</span>
                 </p>
+                <p className="font-body tracking-widest font-bold">Links:</p>
+                {(() => {
+                  const sections = ["praprod", "prod", "postprod", "manafile"];
+                  const firstSection = sections.find((section) =>
+                    Array.isArray(pro.kanban?.[section]) &&
+                    pro.kanban[section].some(
+                      (item) =>
+                        (Array.isArray(item.link) && item.link.length > 0 && item.link.some(l => l && l.trim() !== "")) ||
+                        (typeof item.link === "string" && item.link.trim() !== "")
+                    )
+                  );
+                  if (!firstSection) return null;
+                  return (
+                    <div className="font-body tracking-widest font-bold flex-wrap w-1/2 truncate">
+                      {pro.kanban[firstSection]
+                        .filter(
+                          (item) =>
+                            (Array.isArray(item.link) && item.link.length > 0 && item.link.some(l => l && l.trim() !== "")) ||
+                            (typeof item.link === "string" && item.link.trim() !== "")
+                        )
+                        .map((item, index) => (
+                          Array.isArray(item.link)
+                            ? item.link
+                              .filter(l => l && l.trim() !== "")
+                              .map((l, li) => (
+                                <a
+                                  key={index + "-" + li}
+                                  href={l}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-400 hover:text-blue-600 hover:underline "
+                                >
+                                  {item.link}
+                                </a>
+                              ))
+                            : (
+                              <a
+                                key={index}
+                                href={item.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-400 hover:text-blue-600 hover:underline "
+                              >
+                                {item.link}
+                              </a>
+                            )
+                        ))}
+                    </div>
+                  );
+                })()}
                 <p className="font-body tracking-widest font-bold">Note :</p>
                 <textarea
                   readOnly
                   className="no-scrollbar outline-none font-body tracking-widest h-32 w-96 pl-5 text-xs"
                   value={pro.note}
                 />
-
-                <div className="flex gap-3 items-center font-body tracking-widest font-bold">
-                  {pro.final_file ? (
-                    <a
-                      href={pro.final_file}
-                      target="_blank"
-                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg"
-                    >
-                      Final File
-                    </a>
-                  ) : null}
-                  {pro.final_report_file ? (
-                    <a
-                      href={pro.final_report_file}
-                      target="_blank"
-                      className="lg:w-56 lg:h-20 size-20 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg"
-                    >
-                      Event Report
-                    </a>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => {
-                          setShowReportGenerator(true);
-                        }}
-                        className="size-20 flex items-center justify-center p-2 glass transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-lg"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="#f8f8f8"
-                          className="size-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                          />
-                        </svg>
-                      </button>
-                    </>
-                  )}
-                </div>
                 <p className="absolute opacity-65 font-body tracking-widest bottom-16 lg:bottom-2 left-2">
                   Created at{" "}
                   {new Date(pro.createdAt).toLocaleDateString("en-GB")}
