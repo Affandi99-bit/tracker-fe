@@ -45,45 +45,49 @@ const Readonly = ({ data }) => {
 
                 return (
                     <main className='font-body text-light flex flex-col lg:flex-row w-full justify-start lg:items-start relative' key={i}>
-                        <section className="flex flex-col gap-3 p-6 w-full lg:w-1/2 text-sm text-white glass rounded-xl shadow-md">
-                            <header>
-                                <h1 className="text-2xl font-bold tracking-wide uppercase">{pro.title}</h1>
-                                <p className="text-gray-400 italic text-xs">
+                        <section className="flex flex-col gap-3 p-6 w-full lg:w-1/2 text-sm glass rounded-xl shadow-md">
+                            <header className='glass p-4 rounded-lg'>
+                                <h1 className="text-2xl font-black tracking-wider uppercase">{pro.title}</h1>
+                                <p className="text-gray-400 tracker-wider italic text-sm">
                                     {[...(pro.categories || []), ...(pro.type || [])].join(" · ")}
                                 </p>
                             </header>
-                            <div className="space-y-1">
-                                <p><span className="text-gray-400">Client:</span> {pro.client} — {pro.pic}</p>
-                                <p><span className="text-gray-400">Due Date:</span> <span className="font-medium">{new Date(pro.deadline).toLocaleDateString("en-GB")}</span></p>
-                                <p><span className="text-gray-400">Project Manager:</span> <span className="font-medium">{pro.pm}</span></p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-gray-400">Final File:</p>
-                                <a href={pro.final_file} target="_blank" className="block w-fit text-blue-400 hover:text-blue-600 hover:underline truncate max-w-xs">{pro.final_file}</a>
-                                <p className="text-gray-400">Report File:</p>
-                                <a href={pro.final_report_file} target="_blank" className="block w-fit text-blue-400 hover:text-blue-600 hover:underline truncate max-w-xs">{pro.final_report_file}</a>
-                            </div>
-                            <div>
-                                <p className="text-gray-400">Crew:</p>
+                            <section className="space-y-1 glass p-2 rounded-lg">
+                                <p className='w-full flex items-center justify-between border-b border-zinc-400 py-2 tracking-wider'><span className="text-gray-400 tracker-wider">Client:</span> {pro.client} — {pro.pic}</p>
+                                <p className='w-full flex items-center justify-between border-b border-zinc-400 py-2 tracking-wider'><span className="text-gray-400 tracker-wider">Due Date:</span> <span className="font-medium">{new Date(pro.deadline).toLocaleDateString("en-GB")}</span></p>
+                                <p className='w-full flex items-center justify-between py-2 tracking-wider'><span className="text-gray-400 tracker-wider">Project Manager:</span> <span className="font-medium">{pro.pm}</span></p>
+                            </section>
+                            <section className="space-y-1 glass p-2 rounded-lg">
+                                <div className='flex items-center justify-between border-b border-zinc-400 py-2'>
+                                    <p className="text-gray-400 tracker-wider">Final File:</p>
+                                    <a href={pro.final_file} target="_blank" className="block w-fit text-blue-400 hover:text-blue-600 hover:underline truncate max-w-xs">{pro.final_file}</a>
+                                </div>
+                                <div className='flex items-center justify-between py-2'>
+                                    <p className="text-gray-400 tracker-wider">Report File:</p>
+                                    <a href={pro.final_report_file} target="_blank" className="block w-fit text-blue-400 hover:text-blue-600 hover:underline truncate max-w-xs">{pro.final_report_file}</a>
+                                </div>
+                            </section>
+                            <div className='glass p-2 rounded-lg space-y-1 flex items-center justify-between'>
+                                <p className="text-gray-400 tracker-wider">Crew:</p>
                                 <ul className="pl-4 space-y-1 max-h-32 overflow-y-auto text-sm">
                                     {(pro.day[0]?.crew || []).map((member, i) => (
-                                        <li key={i} className="text-white">
+                                        <li key={i} className="text-white tracking-wider">
                                             {member.roles} – <span className="font-medium">{member.name}</span>
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                            <div>
-                                <p className="text-gray-400">Note:</p>
-                                <textarea readOnly className="bg-[#2a2a2a] w-full cursor-default outline-none rounded-md p-2 min-h-32 overflow-y-auto text-white" value={pro.note || "No notes available!"} />
+                            <div className='glass p-2 rounded-lg space-y-1'>
+                                <p className="text-gray-400 tracker-wider">Note:</p>
+                                <textarea readOnly className="bg-[#2a2a2a] w-full cursor-default outline-none rounded-md p-2 min-h-32 overflow-y-auto text-white tracking-wider" value={pro.note || "No notes available!"} />
                             </div>
-                            <footer className="text-xs text-gray-500">
+                            <footer className="text-xs text-gray-500 tracking-wider">
                                 Created at {new Date(pro.createdAt).toLocaleDateString("en-GB")}
                             </footer>
                         </section>
 
                         {/* Progress Section */}
-                        <section className="flex flex-col p-2 w-1/2">
+                        <section className="flex flex-col p-2 w-full lg:w-1/2">
                             <nav>
                                 <p className='font-semibold tracking-wider'>Overall Progress:</p>
                                 <div className="w-full rounded-full h-2.5 bg-gray-700/25">

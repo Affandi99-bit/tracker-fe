@@ -23,15 +23,16 @@ const getKanbanProgress = (kanban) => {
 };
 
 const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, updateData }) => {
-  const handleRowClick = (rowData) => {
-    setSelectedRowData(rowData);
-    setShowModal(true);
-  };
   const [kanban, setKanban] = useState(false);
   const [selectedKanbanProject, setSelectedKanbanProject] = useState(null);
   const [showReadonlyModal, setShowReadonlyModal] = useState(false);
   const [readonlyRow, setReadonlyRow] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
+
+  const handleRowClick = (rowData) => {
+    setSelectedRowData(rowData);
+    setShowModal(true);
+  };
 
   return (
     <tbody className="text-center mx-10 ">

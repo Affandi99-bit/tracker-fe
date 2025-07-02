@@ -158,6 +158,7 @@ export const tags = {
     },
   ],
 };
+
 export const roleProduction = [
   { id: 1, name: "Photographer" },
   { id: 2, name: "Videographer" },
@@ -194,27 +195,28 @@ export const roleGraphic = [
   { id: 7, name: "Freelance" },
   { id: 8, name: "Voice Over" },
 ];
+
 export const praprod = [
   {
     title: "Terima dan klarifikasi brief dari client",
-    pic: "Produser / Project Manager",
+    pic: "Project Manager",
   },
   {
     title: "Membuat script, storyboard, timeline, director board",
-    pic: "Creative / Sutradara",
+    pic: "Creative",
   },
   {
     title: "Survey lokasi produksi",
-    pic: "Project Manager / Sutradara / Videographer / Art",
+    pic: "Videographer / Art Prop",
   },
-  { title: "Tentukan crew produksi", pic: "Produser / Project Manager" },
-  { title: "Pra Produksi Meeting", pic: "Semua Tim yang dipilih" },
-  { title: "Cek dan siapkan peralatan", pic: "Unit / Penjaga Alat" },
+  { title: "Tentukan crew produksi", pic: "Project Manager" },
+  { title: "Pra Produksi Meeting", pic: "Crew" },
+  { title: "Cek dan siapkan peralatan", pic: "Unit" },
 ];
 export const prod = [
   {
     title: "Proses Syuting",
-    pic: "Produser / Project Manager",
+    pic: "Project Manager",
   },
   {
     title: "Transfer footage dari kamera ke storage",
@@ -226,7 +228,7 @@ export const prod = [
   },
   {
     title: "Pengembalian alat",
-    pic: "Unit / Penjaga Alat",
+    pic: "Unit",
   },
   {
     title: "Administrasi Berita Acara Produksi",
@@ -240,15 +242,19 @@ export const postprod = [
   },
   {
     title: "Pict Lock",
-    pic: "Sutradara",
+    pic: "Director",
   },
   {
-    title: "Editing Online & QC",
-    pic: "Editor / Sutradara",
+    title: "Editing Online",
+    pic: "Editor",
+  },
+  {
+    title: "QC",
+    pic: "Director",
   },
   {
     title: "Preview Client",
-    pic: "Produser / Project Manager",
+    pic: "Project Manager",
   },
   {
     title: "Revisi 1,2,3",
@@ -260,7 +266,7 @@ export const postprod = [
   },
   {
     title: "Upload ke sosial media & arsip",
-    pic: "Project Manager / Editor / Sosmed",
+    pic: "Sosmed",
   },
 ];
 export const manafile = [
@@ -277,6 +283,7 @@ export const manafile = [
     pic: "Project Manager",
   },
 ];
+
 export const user = [
   {
     user: "blackfamz",
