@@ -60,6 +60,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
           <tr
             onClick={() => handleRowClick(row)}
             tabIndex={0}
+            onFocus={(e) => e.target.scrollIntoView({ behavior: "smooth", block: "center" })}
             className={`h-20 w-screen font-body tracking-widest focus:outline-none focus:brightness-75 ${index % 2 === 0 ? "bg-[#262626]" : "bg-[#303030]"
               } hover:brightness-90`}
             key={row._id}
@@ -67,7 +68,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
             <td className="text-xs font-bold tracker-wider text-light text-start pl-7">{row.title}</td>
             <td className="text-xs font-semibold text-light text-start pl-2">{row.client}</td>
             <td className="text-xs font-semibold text-light text-start pl-2">{row.pic}</td>
-            <td className="text-xs font-bold text-start pl-2 text-sky-400">
+            <td className="text-xs font-bold text-start pl-2 text-[#269fc6]">
               {new Date(row.deadline).toLocaleDateString("en-GB")}
             </td>
 
@@ -93,7 +94,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
                     style={{ width: `${progress}%` }}
                   ></div>
                 </div>
-                <p className="text-sky-400 text-xs">{progress}%</p>
+                <p className="text-[#269fc6] text-xs">{progress}%</p>
               </div>
             </td>
             <td className=" text-xs">
