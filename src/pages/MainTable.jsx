@@ -33,7 +33,25 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
     setSelectedRowData(rowData);
     setShowModal(true);
   };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const focusable = Array.from(document.querySelectorAll("[tabindex='0']"));
+      const index = focusable.indexOf(document.activeElement);
 
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = focusable[index + 1] || focusable[0];
+        next?.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const prev = focusable[index - 1] || focusable[focusable.length - 1];
+        prev?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
   return (
     <tbody className="text-center mx-10 ">
       {tableData.map((row, index) => {
@@ -41,6 +59,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
         return (
           <tr
             onClick={() => handleRowClick(row)}
+            tabIndex={0}
             className={`h-20 w-screen font-body tracking-widest ${index % 2 === 0 ? "bg-[#262626]" : "bg-[#303030]"
               } hover:brightness-90`}
             key={row._id}

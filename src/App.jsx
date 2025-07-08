@@ -142,16 +142,16 @@ const MainApp = () => {
             path="/tv"
             element={
               <main className="bg-dark">
-                <img src='/PM.webp' alt="logo" className="z-50 fixed top-1 left-1 object-contain w-56" />
+                <img src='/PM.webp' alt="logo" className="z-30 fixed top-1 left-1 object-contain w-56" />
                 <MainTable
                   tableData={tableData}
-                  searchQuery={searchQuery}
-                  selectedTags={selectedTags}
-                  isSortedDesc={isSortedDesc}
                   setSortedData={setSortedData}
                   showHidden={showHidden}
-                  updateData={updateData}
-                  deleteData={deleteData}
+                  searchQuery=""
+                  selectedTags={[]}
+                  isSortedDesc={true}
+                  updateData={() => { }}
+                  deleteData={() => { }}
                 />
               </main>
             }
