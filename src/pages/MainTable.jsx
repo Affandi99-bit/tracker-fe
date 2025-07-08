@@ -60,7 +60,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
           <tr
             onClick={() => handleRowClick(row)}
             tabIndex={0}
-            className={`h-20 w-screen font-body tracking-widest ${index % 2 === 0 ? "bg-[#262626]" : "bg-[#303030]"
+            className={`h-20 w-screen font-body tracking-widest focus:outline-none focus:brightness-75 ${index % 2 === 0 ? "bg-[#262626]" : "bg-[#303030]"
               } hover:brightness-90`}
             key={row._id}
           >
