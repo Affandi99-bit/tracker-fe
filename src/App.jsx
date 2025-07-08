@@ -151,7 +151,6 @@ const MainApp = () => {
                 >
                   ▲
                 </button>
-
                 <button
                   onClick={() => {
                     document.getElementById("tv-scroll").scrollBy({ top: 100, behavior: "smooth" });
