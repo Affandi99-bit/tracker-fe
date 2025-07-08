@@ -138,6 +138,25 @@ const MainApp = () => {
             path="/readonly/:id"
             element={<ReadonlyWrapper data={tableData} />}
           />
+          <Route
+            path="/tv"
+            element={
+              <>
+                <img src='/PM.webp' alt="logo" className="z-50 fixed top-1 left-1 object-contain w-56" />
+                <Dashboard preview={tableData} />
+                <MainTable
+                  tableData={tableData}
+                  searchQuery={searchQuery}
+                  selectedTags={selectedTags}
+                  isSortedDesc={isSortedDesc}
+                  setSortedData={setSortedData}
+                  showHidden={showHidden}
+                  updateData={updateData}
+                  deleteData={deleteData}
+                />
+              </>
+            }
+          />
           {!isLoggedIn ? (
             <Route path="*" element={<Login onLoginSuccess={handleLoginSuccess} />} />
           ) : (
