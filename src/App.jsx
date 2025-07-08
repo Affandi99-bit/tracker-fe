@@ -141,18 +141,37 @@ const MainApp = () => {
           <Route
             path="/tv"
             element={
-              <main className="bg-dark">
+              <main>
                 <img src='/PM.webp' alt="logo" className="z-30 fixed top-1 left-1 object-contain w-56" />
-                <MainTable
-                  tableData={tableData}
-                  setSortedData={setSortedData}
-                  showHidden={showHidden}
-                  searchQuery=""
-                  selectedTags={[]}
-                  isSortedDesc={true}
-                  updateData={() => { }}
-                  deleteData={() => { }}
-                />
+                <button
+                  onClick={() => {
+                    document.getElementById("tv-scroll").scrollBy({ top: -100, behavior: "smooth" });
+                  }}
+                  className="fixed bottom-28 right-10 z-50 p-4 bg-dark/70 text-white rounded"
+                >
+                  ▲
+                </button>
+
+                <button
+                  onClick={() => {
+                    document.getElementById("tv-scroll").scrollBy({ top: 100, behavior: "smooth" });
+                  }}
+                  className="fixed bottom-10 right-10 z-50 p-4 bg-dark/70 text-white rounded"
+                >
+                  ▼
+                </button>
+                <div id="tv-scroll" className="bg-dark h-full overflow-y-scroll">
+                  <MainTable
+                    tableData={tableData}
+                    setSortedData={setSortedData}
+                    showHidden={showHidden}
+                    searchQuery=""
+                    selectedTags={[]}
+                    isSortedDesc={true}
+                    updateData={() => { }}
+                    deleteData={() => { }}
+                  />
+                </div>
               </main>
             }
           />
