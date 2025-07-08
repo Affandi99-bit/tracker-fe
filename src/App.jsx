@@ -141,9 +141,8 @@ const MainApp = () => {
           <Route
             path="/tv"
             element={
-              <>
+              <main className="bg-dark">
                 <img src='/PM.webp' alt="logo" className="z-50 fixed top-1 left-1 object-contain w-56" />
-                <Dashboard preview={tableData} />
                 <MainTable
                   tableData={tableData}
                   searchQuery={searchQuery}
@@ -154,7 +153,7 @@ const MainApp = () => {
                   updateData={updateData}
                   deleteData={deleteData}
                 />
-              </>
+              </main>
             }
           />
           {!isLoggedIn ? (

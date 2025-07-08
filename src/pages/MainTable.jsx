@@ -235,8 +235,8 @@ const MainTable = ({
 
   return (
     <main className="flex flex-col h-screen z-40">
-      <section className="flex-grow mt-20 mb-3 md:mx-12 rounded-2xl overflow-x-scroll no-scrollbar">
-        <table className="border-collapse mt-[35rem] select-none relative w-full table-fixed">
+      <section className="flex-grow mt-20  mb-3 md:mx-12 rounded-2xl overflow-x-scroll no-scrollbar">
+        <table className="border-collapse mt-[35rem] xl:mt-0 select-none relative w-full table-fixed">
           <thead className="font-body tracking-widest ">
             <tr className="text-start">
               <th
