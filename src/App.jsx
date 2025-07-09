@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
-import { Loader, Navbar, CreateModal, Toast, Dashboard, } from "./components";
+import { Loader, Navbar, CreateModal, Toast, Dashboard, FullscreenButton, } from "./components";
 import { MainTable, Readonly, Login } from "./pages";
 import axios from "axios";
 import { ToastProvider } from './components/ToastContext';
@@ -141,29 +141,18 @@ const MainApp = () => {
           <Route
             path="/tv"
             element={
-              <main>
-                <img src='/PM.webp' alt="logo" className="z-30 fixed top-1 left-1 object-contain w-56" />
-                <button
-                  onClick={() => {
-                    document.getElementById("tv-scroll").scrollBy({ top: -100, behavior: "smooth" });
-                  }}
-                  className="fixed bottom-28 right-10 z-50 p-4 bg-dark/70 text-white rounded"
-                >
-                  ▲
-                </button>
-                <button
-                  onClick={() => {
-                    document.getElementById("tv-scroll").scrollBy({ top: 100, behavior: "smooth" });
-                  }}
-                  className="fixed bottom-10 right-10 z-50 p-4 bg-dark/70 text-white rounded"
-                >
-                  ▼
-                </button>
+              <main className="bg-dark h-screen overflow-hidden">
+                <FullscreenButton />
+                <div className="fixed top-0 left-0 right-0 flex items-start justify-between w-full p-4">
+                  <img src='/PM.webp' alt="logo" className=" object-contain w-48" />
+                  <img src='/black.webp' alt="logo" className=" object-contain w-56 mr-10" />
+                </div>
+
                 <div id="tv-scroll" className="bg-dark h-full overflow-y-scroll">
                   <MainTable
                     tableData={tableData}
                     setSortedData={setSortedData}
-                    showHidden={showHidden}
+                    showHidden={[]}
                     searchQuery=""
                     selectedTags={[]}
                     isSortedDesc={true}

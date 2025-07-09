@@ -78,7 +78,7 @@ const DataTable = ({ tableData, setSelectedRowData, setShowModal, deleteData, up
               </div>
             </td>
             <td className=" text-xs">
-              <div className="flex px-2 gap-3 justify-start items-center">
+              <div className="w-full flex px-2 gap-3 justify-start items-center">
                 {/* Track */}
                 <button id="track-button"
                   onClick={e => {
@@ -295,7 +295,7 @@ const MainTable = ({
               <th className="text-start px-2 w-28 sticky top-0 border-none text-sm z-10 h-10 glass text-light ">
                 Progress
               </th>
-              <th className="text-start px-2 w-16 sticky top-0 border-none text-sm z-10 h-10 glass text-light rounded-tr-2xl">
+              <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 glass text-light rounded-tr-2xl">
                 Action
               </th>
             </tr>
