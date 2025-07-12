@@ -48,6 +48,17 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
         }
     };
 
+    useEffect(() => {
+        setTodos(
+            Array.isArray(draft.todo)
+                ? draft.todo.map(t => ({
+                    text: t.title || "",
+                    checked: !!t.done
+                }))
+                : []
+        );
+    }, [draft.todo]);
+
     return (
         <main
             onClick={onClose}
@@ -109,7 +120,7 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                 {todos.map((todo, idx) => (
                                     <div key={idx} className="flex items-center justify-between w-full">
                                         <div className="text-xs px-2 py-1 text-light">
-                                            <label className={`flex flex-row w-32 items-center gap-1 tracking-widest cursor-pointer`}>
+                                            <label className={`flex flex-row items-center gap-1 tracking-widest cursor-pointer`}>
                                                 <input type="checkbox" checked={todo.checked} onChange={() => toggleTodo(idx)} className="peer hidden" />
                                                 <div className="size-3 flex rounded border border-light bg-dark peer-checked:bg-light transition cursor-pointer">
                                                     <svg fill="none" viewBox="0 0 24 24" className="size-3 stroke-dark peer-checked:stroke-dark" xmlns="http://www.w3.org/2000/svg">

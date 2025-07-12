@@ -16,11 +16,6 @@ export const crew = [
 export const tags = {
   projectType: [
     {
-      title: "Paid",
-      value: "Paid",
-      color: "#004030",
-    },
-    {
       title: "Unpaid",
       value: "Unpaid",
       color: "#3B060A",
@@ -29,11 +24,6 @@ export const tags = {
       title: "Pitching",
       value: "Pitching",
       color: "#131D4F",
-    },
-    {
-      title: "Cancel",
-      value: "Cancel",
-      color: "#C5172E",
     },
   ],
 

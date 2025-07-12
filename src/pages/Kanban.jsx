@@ -122,7 +122,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     updated[index].done = !isChecked;
                                     setData(updated);
                                 }}
-                                className={`bg-[#262626] relative overflow-hidden flex flex-col justify-between items-start p-4 w-64 rounded  mb-2 hover:opacity-65 cursor-pointer transition-colors duration-200 ${isChecked ? 'ring-2 ring-[#F8F8F8]' : ''}`}
+                                className={`bg-[#262626] relative overflow-hidden flex flex-col justify-between items-start p-4 w-72 rounded mb-2 hover:opacity-65 cursor-pointer transition duration-200 ${isChecked ? 'ring-2 ring-[#F8F8F8]' : ''}`}
                             >
                                 <button
                                     className='absolute top-1 right-1 z-10 opacity-45 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
@@ -163,7 +163,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                             <li key={i} className="flex items-center gap-1 text-xs">
                                                 <label
                                                     key={index}
-                                                    className={`flex flex-row items-center w-1/2 gap-2 font-body tracking-widest cursor-pointer `}
+                                                    className={`flex flex-row items-center gap-2 font-body tracking-widest cursor-pointer `}
                                                 >
                                                     <input
                                                         type="checkbox"
@@ -207,14 +207,17 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                         ))
                                     ) : null}
                                 </ul>
-                                <ul className='my-2'>
+                                <ul className='my-2 w-full'>
                                     {/* Show links as clickable anchors */}
                                     {Array.isArray(item.link) && item.link.length > 0 ? (
                                         item.link.map((l, i) => (
-                                            <li key={i}>
-                                                <a href={l} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 underline">{l}<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                                </svg></a>
+                                            <li key={i} className='flex items-start justify-start'>
+                                                <a href={l} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
+                                                    {l}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                    </svg>
+                                                </a>
                                             </li>
                                         ))
                                     ) : (
@@ -311,11 +314,28 @@ const Kanban = ({ updateData, setKanban, project }) => {
         );
     }
 
+    const getStepLabel = (stepName) => {
+        if (selectedCategory === "Design") {
+            if (stepName === "prod" || stepName === "postprod") return "Design";
+        }
+        if (selectedCategory === "Motion") {
+            if (stepName === "prod" || stepName === "postprod") return "Motion";
+        }
+        // Default labels
+        switch (stepName) {
+            case "praprod": return "Pra Produksi";
+            case "prod": return "Produksi";
+            case "postprod": return "Post Produksi";
+            case "manafile": return "File Management";
+            default: return stepName;
+        }
+    };
+
     const stepList = [
-        { name: "praprod", label: "Pra Produksi", data: praprodData, setData: setPraprodData },
-        { name: "prod", label: "Produksi", data: prodData, setData: setProdData },
-        { name: "postprod", label: "Post Produksi", data: postprodData, setData: setPostprodData },
-        { name: "manafile", label: "File Management", data: manafileData, setData: setManafileData }
+        { name: "praprod", label: getStepLabel("praprod"), data: praprodData, setData: setPraprodData },
+        { name: "prod", label: getStepLabel("prod"), data: prodData, setData: setProdData },
+        { name: "postprod", label: getStepLabel("postprod"), data: postprodData, setData: setPostprodData },
+        { name: "manafile", label: getStepLabel("manafile"), data: manafileData, setData: setManafileData }
     ];
 
     return (
