@@ -7,8 +7,12 @@ import Toast from "./Toast.jsx";
 import Dashboard from "./Dashboard.jsx";
 import ReadonlyModal from "./ReadonlyModal.jsx";
 import FullscreenButton from "./FullscreenButton.jsx";
+import KanbanModal from "./KanbanModal.jsx";
+import Maintenance from "./Maintenance.jsx";
 export {
   Navbar,
+  Maintenance,
+  KanbanModal,
   FullscreenButton,
   ReadonlyModal,
   Dashboard,

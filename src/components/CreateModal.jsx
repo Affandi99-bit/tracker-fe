@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { tags, crew } from "../constant/constant";
+import { tags, crew as crewList } from "../constant/constant";
 import { useToast } from './ToastContext';
 import { roleProduction } from "../constant/constant";
+
 const CreateModal = ({
   showModal,
   setShowModal,
@@ -37,12 +38,12 @@ const CreateModal = ({
         totalExpenses: 0,
       },
     ],
-    status: "ongoing",
+    status: false,
   };
   const [formData, setFormData] = useState(isEditing ? {
     ...initialData,
     deadline: initialData.deadline ? initialData.deadline.split('T')[0] : '',
-    status: initialData.status || "ongoing", // ensure status is set
+    status: initialData.status || false, // ensure status is set
   } : initialFormData);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
@@ -51,7 +52,7 @@ const CreateModal = ({
       ? (initialData.day[0]?.crew || [])
         .filter(
           (member) =>
-            !crew.some(
+            !crewList.some(
               (constantMember) => constantMember.name === member.name
             )
         )
@@ -89,7 +90,7 @@ const CreateModal = ({
     if (name === "crew" && type === "checkbox") {
       const currentCrew = formData.day[0]?.crew || [];
       const updatedCrew = checked
-        ? [...currentCrew, { name: value }]
+        ? [...currentCrew, { name: value, roles: [] }]
         : currentCrew.filter((member) => member.name !== value);
 
       setFormData({
@@ -174,7 +175,7 @@ const CreateModal = ({
 
     const finalData = {
       ...formData,
-      status: "ongoing", // always push as ongoing
+      status: false, // always push as ongoing
       day: [{
         ...formData.day[0],
         crew: allCrew,
@@ -318,93 +319,134 @@ const CreateModal = ({
                   </div>
 
                   <section className="flex gap-1 w-full">
-                    {/* Type */}
+                    <div className="flex flex-col gap-1">
+                      {/* Type */}
+                      <div className="glass border border-gray-400 font-light rounded p-2 ">
+                        <p className="font-body tracking-widest font-medium">
+                          Project Type
+                        </p>
+                        <div className="">
+                          {tags.projectType.map((option) => (
+                            <label
+                              htmlFor={`hr-${option.value}`}
+                              key={option.value}
+                              className={`flex flex-row w-32 items-center gap-1 font-body tracking-widest cursor-pointer `}
+                            >
+                              <input
+                                id={`hr-${option.value}`}
+                                type="checkbox"
+                                name="type"
+                                value={option.value}
+                                checked={formData.type.includes(option.value)}
+                                onChange={(e) => {
+                                  const { checked, value } = e.target;
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    type: checked
+                                      ? [...prev.type, value]
+                                      : prev.type.filter(item => item !== value)
+                                  }));
+                                }}
+                                className="peer hidden"
+                              />
+                              <div
+                                htmlFor={`hr-${option.value}`}
+                                className="size-5 flex rounded bg-dark peer-checked:bg-light"
+                              >
+                                <svg
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  className="size-5 stroke-dark peer-checked:stroke-dark"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M4 12.6111L8.92308 17.5L20 6.5"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  ></path>
+                                </svg>
+                              </div>
+                              {option.title}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Categories */}
+                      <div className="glass border border-gray-400 font-light rounded p-2 w-full">
+                        <p className="font-body hidden md:block tracking-widest font-medium">
+                          Categories :
+                        </p>
+                        <div className="flex flex-col justify-between">
+                          {tags.projectCategories.map((option) => (
+                            <label
+                              htmlFor={`hr-${option.value}`}
+                              key={option.value}
+                              className={`flex flex-row w-1/2 items-center gap-2 font-body tracking-widest cursor-pointer `}
+                            >
+                              <input
+                                id={`hr-${option.value}`}
+                                type="checkbox"
+                                name="categories"
+                                value={option.value}
+                                checked={formData.categories.includes(
+                                  option.value
+                                )}
+                                onChange={(e) => {
+                                  const { checked, value } = e.target;
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    categories: checked
+                                      ? [...prev.categories, value]
+                                      : prev.categories.filter(item => item !== value)
+                                  }));
+                                }}
+                                className="peer hidden"
+                              />
+                              <div
+                                htmlFor={`hr-${option.value}`}
+                                className="size-5 flex rounded bg-dark peer-checked:bg-light"
+                              >
+                                <svg
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  className="size-5 stroke-dark peer-checked:stroke-dark"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M4 12.6111L8.92308 17.5L20 6.5"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  ></path>
+                                </svg>
+                              </div>
+                              {option.title}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Crew */}
                     <div className="glass border border-gray-400 font-light rounded p-2 ">
-                      <p className="font-body tracking-widest font-medium">
-                        Project Type
-                      </p>
-                      <div className="">
-                        {tags.projectType.map((option) => (
+                      <p className="font-body tracking-widest font-medium">Crew</p>
+                      <div className="flex flex-wrap overflow-x-hidden">
+                        {crewList.map((option, index) => (
                           <label
-                            htmlFor={`hr-${option.value}`}
-                            key={option.value}
-                            className={`flex flex-row w-32 items-center gap-1 font-body tracking-widest cursor-pointer `}
+                            key={index}
+                            className={`flex flex-row items-center w-1/2 gap-2 font-body tracking-widest cursor-pointer `}
                           >
                             <input
-                              id={`hr-${option.value}`}
                               type="checkbox"
-                              name="type"
-                              value={option.value}
-                              checked={formData.type.includes(option.value)}
-                              onChange={(e) => {
-                                const { checked, value } = e.target;
-                                setFormData(prev => ({
-                                  ...prev,
-                                  type: checked
-                                    ? [...prev.type, value]
-                                    : prev.type.filter(item => item !== value)
-                                }));
-                              }}
-                              className="peer hidden"
-                            />
-                            <div
-                              htmlFor={`hr-${option.value}`}
-                              className="size-5 flex rounded bg-dark peer-checked:bg-light"
-                            >
-                              <svg
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                className="size-5 stroke-dark peer-checked:stroke-dark"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M4 12.6111L8.92308 17.5L20 6.5"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                ></path>
-                              </svg>
-                            </div>
-                            {option.title}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Categories */}
-                    <div className="glass border border-gray-400 font-light rounded p-2 w-full">
-                      <p className="font-body hidden md:block tracking-widest font-medium">
-                        Categories :
-                      </p>
-                      <div className="flex justify-between flex-wrap">
-                        {tags.projectCategories.map((option) => (
-                          <label
-                            htmlFor={`hr-${option.value}`}
-                            key={option.value}
-                            className={`flex flex-row w-1/2 items-center gap-2 font-body tracking-widest cursor-pointer `}
-                          >
-                            <input
-                              id={`hr-${option.value}`}
-                              type="checkbox"
-                              name="categories"
-                              value={option.value}
-                              checked={formData.categories.includes(
-                                option.value
+                              name="crew"
+                              value={option.name}
+                              checked={(formData.day[0]?.crew || []).some(
+                                (member) => member.name === option.name
                               )}
-                              onChange={(e) => {
-                                const { checked, value } = e.target;
-                                setFormData(prev => ({
-                                  ...prev,
-                                  categories: checked
-                                    ? [...prev.categories, value]
-                                    : prev.categories.filter(item => item !== value)
-                                }));
-                              }}
+                              onChange={inputHandle}
                               className="peer hidden"
                             />
-                            <div
-                              htmlFor={`hr-${option.value}`}
-                              className="size-5 flex rounded bg-dark peer-checked:bg-light"
-                            >
+                            <div className="size-5 flex rounded bg-dark peer-checked:bg-light">
                               <svg
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -419,54 +461,16 @@ const CreateModal = ({
                                 ></path>
                               </svg>
                             </div>
-                            {option.title}
+                            {option.name}
                           </label>
                         ))}
                       </div>
-                    </div>
-                  </section>
-                  {/* Crew */}
-                  <div className="glass border border-gray-400 font-light rounded p-2 ">
-                    <p className="font-body tracking-widest font-medium">Crew</p>
-                    <div className="flex flex-wrap overflow-x-hidden">
-                      {crew.map((option, index) => (
-                        <label
-                          key={index}
-                          className={`flex flex-row items-center w-1/2 gap-2 font-body tracking-widest cursor-pointer `}
-                        >
-                          <input
-                            type="checkbox"
-                            name="crew"
-                            value={option.name}
-                            checked={(formData.day[0]?.crew || []).some(
-                              (member) => member.name === option.name
-                            )}
-                            onChange={inputHandle}
-                            className="peer hidden"
-                          />
-                          <div className="size-5 flex rounded bg-dark peer-checked:bg-light">
-                            <svg
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              className="size-5 stroke-dark peer-checked:stroke-dark"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M4 12.6111L8.92308 17.5L20 6.5"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              ></path>
-                            </svg>
-                          </div>
-                          {option.name}
-                        </label>
-                      ))}
-                      <section>
+                      {/* Add Member */}
+                      <section className="flex flex-wrap items-center justify-evenly">
                         {additionalCrewMembers.map((member) => (
                           <div
                             key={member.id}
-                            className="flex items-center gap-1 "
+                            className="flex items-center gap-1 w-1/4"
                           >
                             <input
                               type="text"
@@ -478,11 +482,11 @@ const CreateModal = ({
                                   e.target.value
                                 )
                               }
-                              className="border-b border-light outline-none p-1 w-[80%] text-light"
+                              className="border-b border-light outline-none p-1 w-full text-xs text-light"
                             />
                             <button
                               type="button"
-                              className="text-lg"
+                              className="text-sm"
                               onClick={() =>
                                 removeAdditionalCrewField(member.id)
                               }
@@ -493,14 +497,14 @@ const CreateModal = ({
                         ))}
                         <button
                           type="button"
-                          className=""
+                          className="mt-2 text-xs"
                           onClick={addAdditionalCrewField}
                         >
-                          Additional crew +
+                          Add crew +
                         </button>
                       </section>
                     </div>
-                  </div>
+                  </section>
                   {/* Notes */}
                   <textarea
                     placeholder="Notes"
@@ -565,39 +569,96 @@ const CreateModal = ({
                   </div>
                 </div>
               </section>
-              <section className="flex min-h-10 select-none border glass rounded-2xl p-3 flex-col w-full md:w-1/2 z-10"
+              {/* Crew Jobdesk Assignment */}
+              <section className="w-full md:w-1/2 z-10"
                 style={{
                   display: (formData.day[0]?.crew || []).length === 0 ? "none" : undefined
                 }}
               >
-                {/* Crew Jobdesk Assignment */}
-                <div className="">
+                <main className="flex items-start justify-start gap-1 flex-wrap min-h-10 select-none p-3 w-full">
                   {(formData.day[0]?.crew || []).map((member, idx) => (
-                    <div key={member.name} className="flex items-center w-full justify-between gap-2 mb-2 px-3 rounded-2xl z-10 glass border border-gray-400">
-                      <span className="font-body text-light">{member.name}</span>
-                      <select
-                        value={member.roles?.[0] || ""}
-                        onChange={e => {
-                          setFormData(prev => {
-                            const updatedCrew = prev.day[0].crew.map((m, i) =>
-                              i === idx ? { ...m, roles: [e.target.value] } : m
-                            );
-                            return {
-                              ...prev,
-                              day: [{ ...prev.day[0], crew: updatedCrew }]
-                            };
-                          });
-                        }}
-                        className="font-body outline-none p-1"
-                      >
-                        <option value="" className="text-dark bg-light">Select Jobdesk</option>
-                        {roleProduction.map(role => (
-                          <option key={role.id} value={role.name} className="text-dark bg-light">{role.name}</option>
+                    <div
+                      key={member.name + (member.id || "")}
+                      className="min-h-16 flex items-start w-1/4 mb-2 px-3 rounded-2xl z-10 glass border border-gray-400"
+                    >
+                      <div className="flex w-full flex-col gap-2">
+                        <div className="w-full flex items-center justify-between mt-2 mx-1">
+                          <p className="font-body text-light ">{member.name}</p>
+                          <button
+                            type="button"
+                            className="text-xs px-2 py-1 rounded "
+                            onClick={() => {
+                              setFormData(prev => {
+                                const updatedCrew = prev.day[0].crew.map((m, i) => {
+                                  if (i !== idx) return m;
+                                  return { ...m, roles: [...(m.roles || []), ""] };
+                                });
+                                return {
+                                  ...prev,
+                                  day: [{ ...prev.day[0], crew: updatedCrew }]
+                                };
+                              });
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="#f8f8f8" className="size-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                          </button>
+                        </div>
+                        {(member.roles || [""]).map((role, roleIdx) => (
+                          <div key={roleIdx} className="flex items-center text-xs gap-2 mb-1">
+                            <select
+                              value={role || ""}
+                              onChange={e => {
+                                setFormData(prev => {
+                                  const updatedCrew = prev.day[0].crew.map((m, i) => {
+                                    if (i !== idx) return m;
+                                    const updatedRoles = [...(m.roles || [])];
+                                    updatedRoles[roleIdx] = e.target.value;
+                                    return { ...m, roles: updatedRoles };
+                                  });
+                                  return {
+                                    ...prev,
+                                    day: [{ ...prev.day[0], crew: updatedCrew }]
+                                  };
+                                });
+                              }}
+                              className="font-body outline-none p-1"
+                            >
+                              <option value="" className="text-dark bg-light">Select Jobdesk</option>
+                              {roleProduction.map(roleOption => (
+                                <option key={roleOption.id} value={roleOption.name} className="text-dark bg-light">
+                                  {roleOption.name}
+                                </option>
+                              ))}
+                            </select>
+                            {member.roles && member.roles.length > 1 && (
+                              <button
+                                type="button"
+                                className="text-xs px-2 py-1 rounded"
+                                onClick={() => {
+                                  setFormData(prev => {
+                                    const updatedCrew = prev.day[0].crew.map((m, i) => {
+                                      if (i !== idx) return m;
+                                      const updatedRoles = (m.roles || []).filter((_, rIdx) => rIdx !== roleIdx);
+                                      return { ...m, roles: updatedRoles };
+                                    });
+                                    return {
+                                      ...prev,
+                                      day: [{ ...prev.day[0], crew: updatedCrew }]
+                                    };
+                                  });
+                                }}
+                              >
+                                -
+                              </button>
+                            )}
+                          </div>
                         ))}
-                      </select>
+                      </div>
                     </div>
                   ))}
-                </div>
+                </main>
               </section>
             </form>
           </section>

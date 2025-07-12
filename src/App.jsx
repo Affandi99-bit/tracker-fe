@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
-import { Loader, Navbar, CreateModal, Toast, Dashboard, FullscreenButton, } from "./components";
+import { Loader, Navbar, CreateModal, Toast, FullscreenButton, Maintenance } from "./components";
 import { MainTable, Readonly, Login } from "./pages";
 import axios from "axios";
 import { ToastProvider } from './components/ToastContext';
@@ -170,7 +170,7 @@ const MainApp = () => {
               path="/"
               element={
                 isLoading ? <Loader /> : (
-                  <div>
+                  <div className="bg-dark min-h-screen text-light font-body">
                     <Toast message={message} show={toastVisible} onClose={() => setToastVisible(false)} />
                     <Navbar
                       onSearch={(query) => {
@@ -185,7 +185,6 @@ const MainApp = () => {
                       showCreateModal={showCreateModal}
                       setShowCreateModal={setShowCreateModal}
                     />
-                    <Dashboard preview={tableData} />
                     <MainTable
                       tableData={tableData}
                       searchQuery={searchQuery}
@@ -226,3 +225,12 @@ export default function App() {
     </Router>
   );
 }
+// import React from 'react'
+
+// const App = () => {
+//   return (
+//     <Maintenance />
+//   )
+// }
+
+// export default App

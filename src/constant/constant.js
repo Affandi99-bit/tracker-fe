@@ -1,160 +1,62 @@
 export const crew = [
-  {
-    name: "Andika",
-    value: "andika",
-  },
-  {
-    name: "Adri",
-    value: "adri",
-  },
-  {
-    name: "Audrey",
-    value: "audrey",
-  },
-  {
-    name: "Anin",
-    value: "anin",
-  },
-  {
-    name: "Delia",
-    value: "delia",
-  },
-  {
-    name: "Dhona",
-    value: "dhona",
-  },
-  {
-    name: "Imam",
-    value: "imam",
-  },
-  {
-    name: "Kevin",
-    value: "kevin",
-  },
-  {
-    name: "Nova",
-    value: "nova",
-  },
-  {
-    name: "Okta",
-    value: "okta",
-  },
-  {
-    name: "Rafli",
-    value: "rafli",
-  },
-  {
-    name: "Rully",
-    value: "rully",
-  },
+  { name: "Andika Aris", roles: [] },
+  { name: "Adri Irfanto", roles: [] },
+  { name: "Anindya Aulia", roles: [] },
+  { name: "Audrey Aggessy", roles: [] },
+  { name: "Delia Sagita", roles: [] },
+  { name: "Helida Laylatus", roles: [] },
+  { name: "Imam Affandi", roles: [] },
+  { name: "Kevin Rizkianto", roles: [] },
+  { name: "Nova Laksmana", roles: [] },
+  { name: "Oktha Viano", roles: [] },
+  { name: "Rafli Fadillah", roles: [] },
+  { name: "Rully Okta", roles: [] },
+  { name: "Romadhona Larasati", roles: [] },
 ];
 export const tags = {
-  progress: [
-    {
-      title: "Done",
-      value: "Done",
-      color: "#22c55e",
-    },
-    {
-      title: "Ongoing",
-      value: "Ongoing",
-      color: "#D89216",
-    },
-  ],
-
   projectType: [
     {
       title: "Paid",
       value: "Paid",
-      color: "#114a4a",
+      color: "#004030",
     },
     {
       title: "Unpaid",
       value: "Unpaid",
-      color: "#114a4a",
+      color: "#3B060A",
     },
     {
       title: "Pitching",
       value: "Pitching",
-      color: "#114a4a",
+      color: "#131D4F",
     },
     {
       title: "Cancel",
       value: "Cancel",
-      color: "#ef4444",
+      color: "#C5172E",
     },
   ],
 
   projectCategories: [
     {
-      title: "Add",
-      value: "Add",
-      color: "#104e4a",
-    },
-    {
-      title: "Event",
-      value: "Event",
-      color: "#124549",
-    },
-    {
       title: "Produksi",
       value: "Produksi",
-      color: "#16324f",
-    },
-    {
-      title: "Sem Pro",
-      value: "Sem pro",
-      color: "#13293d",
+      color: "#347433",
     },
     {
       title: "Dokumentasi",
-      value: "Dok",
-      color: "#051c3d",
+      value: "Dokumentasi",
+      color: "#B22222",
     },
     {
       title: "Motion",
       value: "Motion",
-      color: "#1e3e3b",
+      color: "#E9A319",
     },
     {
       title: "Design",
       value: "Design",
-      color: "#384d56",
-    },
-    {
-      title: "VFX",
-      value: "VFX",
-      color: "#071e40",
-    },
-    {
-      title: "Editing",
-      value: "Editing",
-      color: "#132a4b",
-    },
-    // {
-    //   title: "Offline Editing",
-    //   value: "Editing",
-    //   color: "#132a4b",
-    // },
-    // {
-    //   title: "Online Editing",
-    //   value: "Editing",
-    //   color: "#132a4b",
-    // },
-    {
-      title: "Edit Foto",
-      value: "Edit Foto",
-      color: "#132a4b",
-    },
-    {
-      title: "Retouch Foto",
-      value: "Retouch Foto",
-      color: "#132a4b",
-    },
-    {
-      title: "Photoshoot",
-      value: "Photoshoot",
-      color: "#132a4b",
+      color: "#749BC2",
     },
   ],
 };
@@ -196,93 +98,287 @@ export const roleGraphic = [
   { id: 8, name: "Voice Over" },
 ];
 
-export const praprod = [
-  {
-    title: "Terima dan klarifikasi brief dari client",
-    pic: "Project Manager",
-  },
-  {
-    title: "Membuat script, storyboard, timeline, director board",
-    pic: "Creative",
-  },
-  {
-    title: "Survey lokasi produksi",
-    pic: "Videographer / Art Prop",
-  },
-  { title: "Tentukan crew produksi", pic: "Project Manager" },
-  { title: "Pra Produksi Meeting", pic: "Crew" },
-  { title: "Cek dan siapkan peralatan", pic: "Unit" },
-];
-export const prod = [
-  {
-    title: "Proses Syuting",
-    pic: "Project Manager",
-  },
-  {
-    title: "Transfer footage dari kamera ke storage",
-    pic: "Videographer",
-  },
-  {
-    title: "Backup footage dan mengorganisir file",
-    pic: "Videographer",
-  },
-  {
-    title: "Pengembalian alat",
-    pic: "Unit",
-  },
-  {
-    title: "Administrasi Berita Acara Produksi",
-    pic: "Project Manager",
-  },
-];
-export const postprod = [
-  {
-    title: "Editing offline",
-    pic: "Editor",
-  },
-  {
-    title: "Pict Lock",
-    pic: "Director",
-  },
-  {
-    title: "Editing Online",
-    pic: "Editor",
-  },
-  {
-    title: "QC",
-    pic: "Director",
-  },
-  {
-    title: "Preview Client",
-    pic: "Project Manager",
-  },
-  {
-    title: "Revisi 1,2,3",
-    pic: "Editor",
-  },
-  {
-    title: "Buat versi final & versi sosmed",
-    pic: "Editor",
-  },
-  {
-    title: "Upload ke sosial media & arsip",
-    pic: "Sosmed",
-  },
-];
-export const manafile = [
-  {
-    title: "Arsip file produksi",
-    pic: "Project Manager",
-  },
-  {
-    title: "Backup file final",
-    pic: "Editor",
-  },
-  {
-    title: "Dokumentasi project",
-    pic: "Project Manager",
-  },
-];
+export const vidProd = {
+  praprod: [
+    {
+      title: "Terima dan klarifikasi brief dari client",
+      pic: "Project Manager",
+    },
+    {
+      title: "Membuat script, storyboard, timeline, director board",
+      pic: "Creative",
+    },
+    {
+      title: "Survey lokasi produksi",
+      pic: "Videographer / Art Prop",
+    },
+    { title: "Tentukan crew produksi", pic: "Project Manager" },
+    { title: "Pra Produksi Meeting", pic: "Crew" },
+    { title: "Cek dan siapkan peralatan", pic: "Unit" },
+  ],
+  prod: [
+    {
+      title: "Proses Syuting",
+      pic: "Project Manager",
+    },
+    {
+      title: "Transfer footage dari kamera ke storage",
+      pic: "Videographer",
+    },
+    {
+      title: "Backup footage dan mengorganisir file",
+      pic: "Videographer",
+    },
+    {
+      title: "Pengembalian alat",
+      pic: "Unit",
+    },
+    {
+      title: "Administrasi Berita Acara Produksi",
+      pic: "Project Manager",
+    },
+  ],
+  postprod: [
+    {
+      title: "Editing offline",
+      pic: "Editor",
+    },
+    {
+      title: "Pict Lock",
+      pic: "Director",
+    },
+    {
+      title: "Editing Online",
+      pic: "Editor",
+    },
+    {
+      title: "QC",
+      pic: "Director",
+    },
+    {
+      title: "Preview Client",
+      pic: "Project Manager",
+    },
+    {
+      title: "Revisi 1,2,3",
+      pic: "Editor",
+    },
+    {
+      title: "Buat versi final & versi sosmed",
+      pic: "Editor",
+    },
+    {
+      title: "Upload ke sosial media & arsip",
+      pic: "Sosmed",
+    },
+  ],
+  manafile: [
+    {
+      title: "Arsip file produksi",
+      pic: "Project Manager",
+    },
+    {
+      title: "Backup file final",
+      pic: "Editor",
+    },
+    {
+      title: "Dokumentasi project",
+      pic: "Project Manager",
+    },
+  ],
+};
+export const design = {
+  praprod: [
+    {
+      title: "Terima dan klarifikasi brief desain dari client",
+      pic: "Project Manager",
+    },
+    {
+      title: "Tentukan konsep visual dan referensi",
+      pic: "Creative / Designer",
+    },
+    {
+      title: "Susun timeline pengerjaan desain",
+      pic: "Project Manager",
+    },
+  ],
+  prod: [
+    {
+      title: "Pembuatan desain draft",
+      pic: "Designer",
+    },
+    {
+      title: "Review dan revisi internal",
+      pic: "Creative Lead",
+    },
+    {
+      title: "Kirim desain untuk preview client",
+      pic: "Project Manager",
+    },
+    {
+      title: "Revisi 1,2,3",
+      pic: "Designer",
+    },
+  ],
+  postprod: [
+    {
+      title: "Finalisasi desain (CMYK, RGB, Web)",
+      pic: "Designer",
+    },
+    {
+      title: "Export format yang diperlukan",
+      pic: "Designer",
+    },
+    {
+      title: "Quality Control final file",
+      pic: "Creative Lead",
+    },
+  ],
+  manafile: [
+    {
+      title: "Backup file mentah (AI/PSD)",
+      pic: "Designer",
+    },
+    {
+      title: "Arsip versi final",
+      pic: "Project Manager",
+    },
+    {
+      title: "Dokumentasi hasil desain",
+      pic: "Project Manager",
+    },
+  ],
+};
+
+export const motion = {
+  praprod: [
+    {
+      title: "Terima brief motion dari client",
+      pic: "Project Manager",
+    },
+    {
+      title: "Susun konsep motion dan storyboard",
+      pic: "Motion Designer",
+    },
+    {
+      title: "Susun jadwal dan asset yang dibutuhkan",
+      pic: "Project Manager",
+    },
+  ],
+  prod: [
+    {
+      title: "Buat asset grafis (vector, ilustrasi)",
+      pic: "Designer",
+    },
+    {
+      title: "Animasi tahap awal (blocking)",
+      pic: "Motion Designer",
+    },
+    {
+      title: "Animasi lengkap dengan timing",
+      pic: "Motion Designer",
+    },
+    {
+      title: "Preview untuk internal review",
+      pic: "Creative Lead",
+    },
+  ],
+  postprod: [
+    {
+      title: "Kirim preview ke client",
+      pic: "Project Manager",
+    },
+    {
+      title: "Revisi animasi",
+      pic: "Motion Designer",
+    },
+    {
+      title: "Finalisasi animasi dan render",
+      pic: "Motion Designer",
+    },
+    {
+      title: "QC dan format delivery",
+      pic: "Creative Lead",
+    },
+  ],
+  manafile: [
+    {
+      title: "Arsip file project After Effects",
+      pic: "Motion Designer",
+    },
+    {
+      title: "Backup versi render final",
+      pic: "Motion Designer",
+    },
+    {
+      title: "Dokumentasi hasil motion",
+      pic: "Project Manager",
+    },
+  ],
+};
+
+export const dokumentasi = {
+  praprod: [
+    {
+      title: "Terima brief dokumentasi event",
+      pic: "Project Manager",
+    },
+    {
+      title: "Survey lokasi & rundown",
+      pic: "Photographer / Videographer",
+    },
+    {
+      title: "Koordinasi dengan EO / panitia",
+      pic: "Project Manager",
+    },
+  ],
+  prod: [
+    {
+      title: "Proses dokumentasi foto & video",
+      pic: "Photographer / Videographer",
+    },
+    {
+      title: "Transfer dan backup file dokumentasi",
+      pic: "Videographer",
+    },
+    {
+      title: "Kembalikan alat dokumentasi",
+      pic: "Unit",
+    },
+  ],
+  postprod: [
+    {
+      title: "Editing foto dan video dokumentasi",
+      pic: "Editor",
+    },
+    {
+      title: "Preview internal & revisi",
+      pic: "Creative Lead",
+    },
+    {
+      title: "Preview ke client & revisi",
+      pic: "Project Manager",
+    },
+    {
+      title: "Finalisasi file dan export",
+      pic: "Editor",
+    },
+  ],
+  manafile: [
+    {
+      title: "Backup file foto/video mentah dan final",
+      pic: "Editor",
+    },
+    {
+      title: "Upload ke Google Drive / link sharing",
+      pic: "Project Manager",
+    },
+    {
+      title: "Dokumentasi project dan publikasi",
+      pic: "Sosmed / PM",
+    },
+  ],
+};
 
 export const user = [
   {

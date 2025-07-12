@@ -28,11 +28,12 @@ const TableModal = ({
       showModal && (
       <main
         onClick={handleBackdropClick}
-        className="backdrop z-30 h-screen backdrop-blur w-full fixed top-0 left-0"
+        className="backdrop z-30 h-screen backdrop-blur w-full fixed top-0 left-0 flex items-center justify-center"
       >
-        <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-[95%] h-[35rem]">
-          <section className="relative overflow-hidden h-full bg-dark border border-light rounded">
-            <nav className="fixed w-full top-0 z-20 flex items-center justify-between p-3 gap-2">
+        <div className=" w-full md:w-[50rem]">
+          <section className="relative w-full overflow-hidden h-full bg-dark border border-light rounded-xl">
+            {/* Navbar */}
+            <nav className=" flex items-center justify-between p-3 gap-2">
               <button
                 onClick={() => setShowModal(false)}
                 className="z-10 text-xs text-light font-body flex items-center gap-2 tracking-widest p-2 w-20 font-semibold transition ease-in-out hover:translate-x-1 active:scale-90 duration-300"
@@ -53,24 +54,6 @@ const TableModal = ({
                 </svg>
                 Back
               </button>
-              <div className="flex flex-col items-center justify-center">
-                <h1 className="font-body text-light tracking-widest font-bold text-2xl">
-                  {pro.title}
-                </h1>
-                <div className="flex font-body flex-wrap">
-                  {[...(pro.categories || []), ...(pro.type || [])].map(
-                    (chip, i) => (
-                      <p key={i} className="text-light text-center">
-                        &nbsp;
-                        <span className=" tracking-widest text-[0.60rem] leading-[0.5rem] font-thin">
-                          {chip}
-                        </span>
-                        &nbsp; |
-                      </p>
-                    )
-                  )}
-                </div>
-              </div>
               <div className="flex items-center gap-2">
                 {/* Report */}
                 <button onClick={() => {
@@ -97,107 +80,60 @@ const TableModal = ({
                 </button>
               </div>
             </nav>
-
-            <main className="flex flex-col lg:flex-row w-full justify-start lg:items-start">
-              <section className=" z-10 text-light p-5 h-full w-full lg:w-1/2 mt-20">
-                <p className="font-body tracking-widest font-bold text-xl">
-                  {pro.client} - {pro.pic}
-                </p>
-                <p className="font-body tracking-widest font-bold text-md">
-                  Due Date :
-                  <span className="text-xs font-normal">
-                    &nbsp;{new Date(pro.deadline).toLocaleDateString("en-GB")}
-                  </span>{" "}
-                </p>
-                <p className="font-body tracking-widest font-bold text-md">
-                  Project Manager :
-                  <span className="text-xs font-normal">&nbsp;{pro.pm}</span>
-                </p>
-                <p className="font-body tracking-widest font-bold">Links:</p>
-                {(() => {
-                  const sections = ["praprod", "prod", "postprod", "manafile"];
-                  const firstSection = sections.find((section) =>
-                    Array.isArray(pro.kanban?.[section]) &&
-                    pro.kanban[section].some(
-                      (item) =>
-                        (Array.isArray(item.link) && item.link.length > 0 && item.link.some(l => l && l.trim() !== "")) ||
-                        (typeof item.link === "string" && item.link.trim() !== "")
-                    )
-                  );
-                  if (!firstSection) return null;
-                  return (
-                    <div className="font-body tracking-widest font-bold flex-wrap w-1/2 truncate">
-                      {pro.kanban[firstSection]
-                        .filter(
-                          (item) =>
-                            (Array.isArray(item.link) && item.link.length > 0 && item.link.some(l => l && l.trim() !== "")) ||
-                            (typeof item.link === "string" && item.link.trim() !== "")
-                        )
-                        .map((item, index) => (
-                          Array.isArray(item.link)
-                            ? item.link
-                              .filter(l => l && l.trim() !== "")
-                              .map((l, li) => (
-                                <a
-                                  key={index + "-" + li}
-                                  href={l}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-400 hover:text-blue-600 hover:underline "
-                                >
-                                  {item.link}
-                                </a>
-                              ))
-                            : (
-                              <a
-                                key={index}
-                                href={item.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-blue-400 hover:text-blue-600 hover:underline "
-                              >
-                                {item.link}
-                              </a>
-                            )
-                        ))}
-                    </div>
-                  );
-                })()}
-                <p className="font-body tracking-widest font-bold">Note :</p>
-                <textarea
-                  readOnly
-                  className="no-scrollbar outline-none font-body tracking-widest h-32 w-96 pl-5 text-xs"
-                  value={pro.note}
-                />
-                <p className="absolute opacity-65 font-body tracking-widest bottom-16 lg:bottom-2 left-2">
-                  Created at{" "}
-                  {new Date(pro.createdAt).toLocaleDateString("en-GB")}
-                </p>
-              </section>
-              <section className="relative z-10 text-light p-5 h-full w-1/2 flex flex-col items-start mt-20 gradient">
-                <p className="font-body tracking-widest font-bold">Crew :</p>
-                <div className="flex flex-col flex-wrap h-40 overflow-y-auto">
-                  {
-                    pro.day?.[0]?.crew?.map((member, i) => (
-                      <p
-                        key={i}
-                        className="pl-5 flex justify-start items-center font-body tracking-widest"
-                      >
-                        <span className="text-xs font-normal">
-                          {member.name}
-                        </span>
-                      </p>
-                    )) || <p className="text-xs pl-5">No crew members listed</p>
-                  }
-                </div>
-
-              </section>
-              <img
-                src="/logo.webp"
-                alt="logo"
-                className="absolute select-none z-0 -bottom-20 -right-20 opacity-10 -rotate-12 mix-blend-difference object-contain"
-              />
+            {/* Body */}
+            <main className="overflow-y-scroll flex flex-col w-full justify-start items-start z-10 text-light font-body p-5 mt-3" style={{ maxHeight: "70vh" }}>
+              <div className="flex items-start justify-center mt-2 w-full">
+                <p className="w-1/2 text-sm tracking-wide">Title</p>
+                <p className="w-1/2 text-sm font-semibold tracking-widest">:&nbsp;{pro.title}</p>
+              </div>
+              <div className="flex items-start justify-center mt-2 w-full">
+                <p className="w-1/2 text-sm tracking-wide">Client</p>
+                <p className="w-1/2 text-sm font-semibold tracking-widest">:&nbsp;{pro.client}</p>
+              </div>
+              <div className="flex items-start justify-center mt-2 w-full">
+                <p className="w-1/2 text-sm tracking-wide">Person in contact</p>
+                <p className="w-1/2 text-sm font-semibold tracking-widest">:&nbsp;{pro.pic}</p>
+              </div>
+              <div className="flex items-start justify-center mt-2 w-full">
+                <p className="w-1/2 text-sm tracking-wide">Project Manager</p>
+                <p className="w-1/2 text-sm font-semibold tracking-widest">:&nbsp;{pro.day[0].crew
+                  .filter(member => member.roles && member.roles.includes("Project Manager"))
+                  .map(member => member.name)
+                  .join(", ")
+                }</p>
+              </div>
+              <div className="flex items-start justify-center mt-2 w-full">
+                <p className="w-1/2 text-sm tracking-wide">Due Date</p>
+                <p className="w-1/2 text-sm font-semibold tracking-widest">:&nbsp;{new Date(pro.deadline).toLocaleDateString("en-GB")}</p>
+              </div>
+              <div className="flex items-start justify-center mt-2 w-full">
+                <p className="w-1/2 text-sm tracking-wide">Created at</p>
+                <p className="w-1/2 text-sm font-semibold tracking-widest">:&nbsp;{new Date(pro.createdAt).toLocaleDateString("en-GB")}</p>
+              </div>
+              <div className="flex items-start justify-center mt-2 w-full">
+                <p className="w-1/2 text-sm tracking-wide">Crew</p>
+                <div className="w-1/2 text-sm font-semibold tracking-widest">:&nbsp;{
+                  pro.day?.[0]?.crew?.map((member, i) => (
+                    <p
+                      key={i}
+                      className="pl-5 mt-3 w-full flex items-start justify-center"
+                    >
+                      <span className="w-1/2">
+                        {member.name}
+                      </span>
+                      <span className="w-1/2 font-normal tracking-normal">
+                        :&nbsp;{member.roles.join(', ')}
+                      </span>
+                    </p>
+                  )) || <p className="">No crew members listed</p>
+                }</div>
+              </div>
             </main>
+            {/* <img
+              src="/logo.webp"
+              alt="logo"
+              className="absolute select-none z-0 -bottom-20 -right-20 opacity-10 -rotate-12 mix-blend-difference object-contain"
+            /> */}
           </section>
         </div>
       </main>
