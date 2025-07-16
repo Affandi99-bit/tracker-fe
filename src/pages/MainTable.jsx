@@ -3,23 +3,29 @@ import { TableModal, Loader, ReadonlyModal } from "../components";
 import { findTagColor } from "../utils/utils";
 import Kanban from "./Kanban";
 
-function getOverallProgress(kanban, category) {
-  if (!kanban || !kanban.steps || !category) return 0;
-  // Find the correct steps for the selected category
-  if (kanban.type !== category) return 0;
-  const stepNames = ["praprod", "prod", "postprod", "manafile"];
-  let total = 0;
-  let count = 0;
-  for (const name of stepNames) {
-    const step = kanban.steps.find(s => s.name === name);
-    if (step && step.items.length > 0) {
-      const doneCount = step.items.filter(i => i.done === true).length;
-      total += (doneCount / step.items.length) * 100;
-      count++;
-    }
-  }
-  return count ? Math.round(total / count) : 0;
-}
+const calculateOverallProgress = ({ project }) => {
+  if (!Array.isArray(project.kanban)) return 0;
+
+  let totalItems = 0;
+  let completedItems = 0;
+
+  project.kanban.forEach(division => {
+    if (!Array.isArray(division.steps)) return;
+
+    division.steps.forEach(step => {
+      if (!Array.isArray(step.items)) return;
+
+      step.items.forEach(item => {
+        totalItems += 1;
+        if (item.done === true) completedItems += 1;
+      });
+    });
+  });
+
+  return totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+};
+
+
 const DataTable = ({
   tableData,
   setSelectedRowData,
@@ -29,7 +35,6 @@ const DataTable = ({
   setShowReadonlyModal,
   setReadonlyRow,
   deleteData,
-  updateData
 }) => {
   const [loadingId, setLoadingId] = useState(null);
 
@@ -41,7 +46,6 @@ const DataTable = ({
   return (
     <tbody className="text-center mx-10 ">
       {tableData.map((row, index) => {
-        // const progress = getOverallProgress(row.kanban, row.type);
         return (
           <tr
             onClick={() => handleRowClick(row)}
@@ -94,12 +98,12 @@ const DataTable = ({
                   <div
                     className="bg-light h-2.5 rounded-full transition-all duration-300"
                     style={{
-                      width: `${getOverallProgress(row.kanban, row.categories[0])}%`
+                      width: `${calculateOverallProgress({ project: row })}%`
                     }}
                   ></div>
                 </div>
                 <p className="text-[#269fc6] text-xs">
-                  {getOverallProgress(row.kanban, row.categories[0])}%
+                  {Math.round(calculateOverallProgress({ project: row }))}%
                 </p>
               </div>
             </td>
@@ -159,7 +163,7 @@ const DataTable = ({
                       />
                     </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="size-4 hover:size-5 hover:scale-105 duration-300 active:scale-95 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="#f8f8f8" className="size-4 hover:size-5 hover:scale-105 duration-300 active:scale-95 cursor-pointer">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
 
@@ -254,7 +258,7 @@ const MainTable = ({
   return (
     <main className="flex flex-col h-screen z-40">
       <section className="flex-grow mt-20 mb-3 md:mx-12 rounded-2xl overflow-x-scroll no-scrollbar">
-        <table className="border-collapse mt-[35rem] xl:mt-0 select-none relative w-full table-fixed">
+        <table className="border-collapse mt-0 select-none relative w-full table-fixed">
           <thead className="font-body tracking-widest">
             <tr className="text-start">
               <th onClick={handleTitle} className="w-40 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark rounded-tl-2xl">

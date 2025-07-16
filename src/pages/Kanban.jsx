@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { vidProd, design, motion, dokumentasi } from '../constant/constant';
 import { useToast } from '../components/ToastContext';
 import { KanbanModal } from '../components';
 
-// Use capitalized values to match your constants and database
 const typeOptions = [
     { label: "Produksi", value: "Produksi", constant: vidProd },
     { label: "Design", value: "Design", constant: design },
@@ -12,27 +11,28 @@ const typeOptions = [
 ];
 
 const Kanban = ({ updateData, setKanban, project }) => {
-    // Get selected category (string)
-    const selectedCategory = Array.isArray(project?.categories)
-        ? project.categories[0]
-        : project?.categories || "Produksi";
-
-    // Find the typeOption that matches the selected category
-    const selectedTypeOption = typeOptions.find(opt => opt.value === selectedCategory) || typeOptions[0];
-
-    // Use only the selected type's constant
-    const getCurrentConstant = () => selectedTypeOption.constant;
-
-    // Helper to get kanban step data from project
+    const [selectedCategoryIdx, setSelectedCategoryIdx] = useState(0);
+    const categories = Array.isArray(project.categories) && project.categories.length > 0
+        ? project.categories
+        : ["Produksi"];
+    const selectedCategory = categories[selectedCategoryIdx];
+    const selectedKanban = useMemo(() => {
+        return Array.isArray(project.kanban)
+            ? project.kanban.find(k => k.type === selectedCategory)
+            : null;
+    }, [project.kanban, selectedCategory]);
+    function getCurrentConstant() {
+        const opt = typeOptions.find(o => o.value === selectedCategory);
+        return opt ? opt.constant : vidProd;
+    }
     const getStepData = (stepName) => {
-        if (project?.kanban?.steps && project?.kanban?.type === selectedCategory) {
-            const step = project.kanban.steps.find(s => s.name === stepName);
+        if (selectedKanban && selectedKanban.steps) {
+            const step = selectedKanban.steps.find(s => s.name === stepName);
             return step ? step.items : [];
         }
-        // fallback to constant
         return getCurrentConstant()[stepName] || [];
     };
-
+    const uniqueCategories = [...new Set(categories)];
     const [praprodData, setPraprodData] = useState(getStepData("praprod"));
     const [prodData, setProdData] = useState(getStepData("prod"));
     const [postprodData, setPostprodData] = useState(getStepData("postprod"));
@@ -46,31 +46,67 @@ const Kanban = ({ updateData, setKanban, project }) => {
     const { showToast } = useToast();
 
     useEffect(() => {
-        setPraprodData(getStepData("praprod"));
-        setProdData(getStepData("prod"));
-        setPostprodData(getStepData("postprod"));
-        setManafileData(getStepData("manafile"));
-        // eslint-disable-next-line
-    }, [project.kanban, selectedCategory]);
+        const constant = getCurrentConstant();
 
-    // Progress calculation for selected category only
+        // Clear data before reloading to avoid stale state
+        setPraprodData([]);
+        setProdData([]);
+        setPostprodData([]);
+        setManafileData([]);
+
+        const selected = Array.isArray(project.kanban)
+            ? project.kanban.find(k => k.type === selectedCategory)
+            : null;
+
+        const getData = (stepName) => {
+            if (selected && selected.steps) {
+                const step = selected.steps.find(s => s.name === stepName);
+                return step ? step.items : [];
+            }
+            return constant[stepName] || [];
+        };
+
+        // Update data
+        setPraprodData(getData("praprod"));
+        setProdData(getData("prod"));
+        setPostprodData(getData("postprod"));
+        setManafileData(getData("manafile"));
+    }, [selectedCategory, project.kanban]);
+
+    const stepList = [
+        { name: "praprod", label: "pra", data: praprodData, setData: setPraprodData },
+        { name: "prod", label: "pro", data: prodData, setData: setProdData },
+        { name: "postprod", label: "post", data: postprodData, setData: setPostprodData },
+        { name: "manafile", label: "file", data: manafileData, setData: setManafileData }
+    ];
     const praprodProgress = praprodData.length ? (praprodData.filter(i => i.done === true).length / praprodData.length) * 100 : 0;
     const prodProgress = prodData.length ? (prodData.filter(i => i.done === true).length / prodData.length) * 100 : 0;
     const postprodProgress = postprodData.length ? (postprodData.filter(i => i.done === true).length / postprodData.length) * 100 : 0;
     const manafileProgress = manafileData.length ? (manafileData.filter(i => i.done === true).length / manafileData.length) * 100 : 0;
-    const overallProgress = (praprodProgress + prodProgress + postprodProgress + manafileProgress) / 4;
+    const sectionProgress = (praprodProgress + prodProgress + postprodProgress + manafileProgress) / 4;
+    const calculateOverallProgress = () => {
+        if (!Array.isArray(project.kanban)) return 0;
 
-    // Only show progress for the selected type (sum all steps for that type)
-    const stepProgresses = [
-        praprodData,
-        prodData,
-        postprodData,
-        manafileData
-    ].map(data => data.length ? (data.filter(i => i.done === true).length / data.length) * 100 : 0);
+        let totalItems = 0;
+        let completedItems = 0;
 
-    // Show the average progress for the selected type only (not all types)
-    const selectedTypeProgress = stepProgresses.reduce((a, b) => a + b, 0) / stepProgresses.length;
+        project.kanban.forEach(division => {
+            if (!Array.isArray(division.steps)) return;
 
+            division.steps.forEach(step => {
+                if (!Array.isArray(step.items)) return;
+
+                step.items.forEach(item => {
+                    totalItems += 1;
+                    if (item.done === true) completedItems += 1;
+                });
+            });
+        });
+
+        return totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+    };
+
+    const overallProgress = calculateOverallProgress();
     const openKanbanModal = (stepIdx, itemIdx = null) => {
         setModalStepIndex(stepIdx);
         setModalItemIndex(itemIdx);
@@ -92,6 +128,31 @@ const Kanban = ({ updateData, setKanban, project }) => {
             updatedData.push(updatedItem);
         }
         step.setData(updatedData);
+        const updatedKanban = project.kanban.map((kanban) => {
+            if (kanban.type === selectedCategory) {
+                return {
+                    ...kanban,
+                    steps: kanban.steps.map((step) => {
+                        if (step.name === modalStepIndex) {
+                            return {
+                                ...step,
+                                items: updatedData,
+                            };
+                        }
+                        return step;
+                    }),
+                };
+            }
+            return kanban;
+        });
+
+        const updatedProject = {
+            ...project,
+            kanban: updatedKanban,
+        };
+        console.log(updatedProject)
+        updateData(updatedProject);
+
         setKanbanModal(false);
     };
 
@@ -157,7 +218,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     </div>
                                 </div>
                                 <ul className='my-2'>
-                                    {/* Show todo as a list of checkboxes/text */}
                                     {Array.isArray(item.todo) && item.todo.length > 0 ? (
                                         item.todo.map((todo, i) => (
                                             <li key={i} className="flex items-center gap-1 text-xs">
@@ -170,7 +230,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                                         name="todo"
                                                         checked={!!todo.done}
                                                         onChange={e => {
-                                                            // Prevent parent click
                                                             e.stopPropagation();
                                                             const updated = [...data];
                                                             updated[index].todo = updated[index].todo.map((t, idx) =>
@@ -199,7 +258,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                                         <span>{todo.title}</span>
                                                     ) : (
                                                         <span className="line-through text-gray-400">{todo.title}</span>
-                                                        // Or to hide: null
                                                     )}
                                                 </label>
 
@@ -208,7 +266,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     ) : null}
                                 </ul>
                                 <ul className='my-2 w-full'>
-                                    {/* Show links as clickable anchors */}
                                     {Array.isArray(item.link) && item.link.length > 0 ? (
                                         item.link.map((l, i) => (
                                             <li key={i} className='flex items-start justify-start'>
@@ -254,7 +311,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
     const handleSave = async () => {
         setIsSaving(true);
 
-        // Build steps array for kanban
         const steps = stepList.map(step => ({
             name: step.name,
             items: (step.data || []).map(item => ({
@@ -274,25 +330,30 @@ const Kanban = ({ updateData, setKanban, project }) => {
             }))
         }));
 
-        const kanban = {
+        let updatedKanbanArr = Array.isArray(project.kanban) ? [...project.kanban] : [];
+        const newKanban = {
             type: selectedCategory,
-            steps
+            steps: steps.map(step => ({
+                name: step.name,
+                items: step.items.map(item => ({
+                    title: item.title,
+                    pic: item.pic,
+                    done: item.done,
+                    link: item.link,
+                    note: item.note,
+                    todo: item.todo,
+                }))
+            }))
         };
-
-        const allDone = stepList.every(
-            step => step.data.length > 0 && step.data.every(item => item.done === true)
-        );
-
-        let updatedDone = project.done;
-        if (allDone) {
-            updatedDone = true;
+        const idx = updatedKanbanArr.findIndex(k => k.type === selectedCategory);
+        if (idx >= 0) {
+            updatedKanbanArr[idx] = newKanban;
+        } else {
+            updatedKanbanArr.push(newKanban);
         }
-
         const updatedProject = {
             ...project,
-            kanban,
-            done: updatedDone,
-            archived: allDone ? true : project.archived
+            kanban: updatedKanbanArr,
         };
 
         try {
@@ -314,58 +375,57 @@ const Kanban = ({ updateData, setKanban, project }) => {
         );
     }
 
-    const getStepLabel = (stepName) => {
-        if (selectedCategory === "Design") {
-            if (stepName === "prod" || stepName === "postprod") return "Design";
-        }
-        if (selectedCategory === "Motion") {
-            if (stepName === "prod" || stepName === "postprod") return "Motion";
-        }
-        // Default labels
-        switch (stepName) {
-            case "praprod": return "Pra Produksi";
-            case "prod": return "Produksi";
-            case "postprod": return "Post Produksi";
-            case "manafile": return "File Management";
-            default: return stepName;
-        }
-    };
-
-    const stepList = [
-        { name: "praprod", label: getStepLabel("praprod"), data: praprodData, setData: setPraprodData },
-        { name: "prod", label: getStepLabel("prod"), data: prodData, setData: setProdData },
-        { name: "postprod", label: getStepLabel("postprod"), data: postprodData, setData: setPostprodData },
-        { name: "manafile", label: getStepLabel("manafile"), data: manafileData, setData: setManafileData }
-    ];
-
     return (
         <div role='main' className='bg-dark font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-40'>
-            <img src="/logo.webp" alt="" className='z-0 opacity-5 fixed -rotate-12 right-0 top-0 size-[50rem] pointer-events-none object-contain' />
+
             <section className='flex items-start justify-between gap-5 p-5'>
                 <button id='back' onClick={() => { setKanban(false) }} className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                     </svg>
-                    Go Back
+                    Back
                 </button>
                 {/* Overall Progress Bar */}
+                {project.kanban?.length > 0 && (
+                    <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
+                        <div className="w-full m-1 rounded-full h-2.5 bg-gray-700/25">
+                            <div
+                                className="bg-[#F8F8F8] h-2.5 rounded-full transition-all duration-300"
+                                style={{ width: `${overallProgress}%` }}
+                            />
+                        </div>
+                        <p className="text-gray-400 text-xs">Overall Progress: {Math.round(overallProgress)}%</p>
+                    </div>
+                )}
+                {/* Categories Progress Bar */}
                 <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
                     <div className="w-full m-1 rounded-full h-2.5 bg-gray-700/25">
                         <div
                             className="bg-[#F8F8F8] h-2.5 rounded-full transition-all duration-300"
-                            style={{ width: `${overallProgress}%` }}
+                            style={{ width: `${sectionProgress}%` }}
                         />
                     </div>
-                    <p className="text-gray-400 text-xs">Progress: {Math.round(overallProgress)}%</p>
+                    <p className="text-gray-400 text-xs">Progress: {Math.round(sectionProgress)}%</p>
                 </div>
-                {/* Show selected category */}
-                <div className='text-xs font-semibold text-light tracking-wider'>
-                    <span className='font-normal'>Category:</span> {selectedTypeOption.label}
-                </div>
+                {/* Category Switcher */}
+                <select
+                    id="category-select"
+                    value={selectedCategoryIdx}
+                    onChange={e => setSelectedCategoryIdx(Number(e.target.value))}
+                    className=" text-xs outline-none"
+                >
+                    {uniqueCategories.map((cat, idx) => (
+                        <option key={`${cat}-${idx}`} className='bg-dark text-light' value={idx}>
+                            {cat}
+                        </option>
+                    ))}
+                </select>
             </section>
             <div className='flex items-start justify-evenly gap-5 pl-5 w-full'>
                 {stepList.map((step, idx) =>
-                    renderSection(step.label, step.data, step.setData, idx)
+                    <React.Fragment key={step.name}>
+                        {renderSection(step.label, step.data, step.setData, idx)}
+                    </React.Fragment>
                 )}
             </div>
             {showKanbanModal && (

@@ -48,7 +48,7 @@ const Maintenance = () => {
                 </span>
                 Maintenance
                 <span className="text-sm font-mono">
-                    <Countdown targetDate="2025-07-12T00:00:00" />
+                    <Countdown targetDate="2026-07-12T00:00:00" />
                 </span>
             </p>
         </div>

@@ -397,7 +397,7 @@ const CreateModal = ({
                                   setFormData(prev => ({
                                     ...prev,
                                     categories: checked
-                                      ? [...prev.categories, value]
+                                      ? [...new Set([...prev.categories, value])]
                                       : prev.categories.filter(item => item !== value)
                                   }));
                                 }}

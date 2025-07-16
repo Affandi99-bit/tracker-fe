@@ -177,65 +177,66 @@ export const vidProd = {
     },
   ],
 };
+
 export const design = {
   praprod: [
     {
-      title: "Terima dan klarifikasi brief desain dari client",
-      pic: "Project Manager",
+      title: "Klarifikasi kebutuhan desain dengan client",
+      pic: "Creative Director",
     },
     {
-      title: "Tentukan konsep visual dan referensi",
-      pic: "Creative / Designer",
+      title: "Buat konsep visual & kumpulkan referensi",
+      pic: "Lead Designer",
     },
     {
-      title: "Susun timeline pengerjaan desain",
-      pic: "Project Manager",
+      title: "Rancang jadwal pengerjaan desain",
+      pic: "Account Executive",
     },
   ],
   prod: [
     {
-      title: "Pembuatan desain draft",
-      pic: "Designer",
+      title: "Desain draft awal",
+      pic: "Visual Designer",
     },
     {
-      title: "Review dan revisi internal",
-      pic: "Creative Lead",
+      title: "Cek internal dan lakukan koreksi",
+      pic: "Art Director",
     },
     {
-      title: "Kirim desain untuk preview client",
-      pic: "Project Manager",
+      title: "Presentasikan desain ke client",
+      pic: "Client Service",
     },
     {
-      title: "Revisi 1,2,3",
-      pic: "Designer",
+      title: "Proses revisi tahap 1 sampai 3",
+      pic: "Visual Designer",
     },
   ],
   postprod: [
     {
-      title: "Finalisasi desain (CMYK, RGB, Web)",
-      pic: "Designer",
+      title: "Siapkan versi final (print & digital)",
+      pic: "Graphic Designer",
     },
     {
-      title: "Export format yang diperlukan",
-      pic: "Designer",
+      title: "Export ke format akhir (JPG, PDF, PNG)",
+      pic: "Graphic Designer",
     },
     {
-      title: "Quality Control final file",
-      pic: "Creative Lead",
+      title: "Periksa kualitas dan kesesuaian",
+      pic: "Art Director",
     },
   ],
   manafile: [
     {
-      title: "Backup file mentah (AI/PSD)",
-      pic: "Designer",
+      title: "Simpan file mentahan (PSD/AI)",
+      pic: "Graphic Designer",
     },
     {
-      title: "Arsip versi final",
-      pic: "Project Manager",
+      title: "Simpan hasil akhir dalam arsip",
+      pic: "Account Executive",
     },
     {
-      title: "Dokumentasi hasil desain",
-      pic: "Project Manager",
+      title: "Catat dan dokumentasikan desain",
+      pic: "Account Executive",
     },
   ],
 };
@@ -243,66 +244,66 @@ export const design = {
 export const motion = {
   praprod: [
     {
-      title: "Terima brief motion dari client",
-      pic: "Project Manager",
+      title: "Diskusikan dan pahami brief motion",
+      pic: "Motion Producer",
     },
     {
-      title: "Susun konsep motion dan storyboard",
-      pic: "Motion Designer",
+      title: "Rancang storyboard dan konsep visual",
+      pic: "Animator",
     },
     {
-      title: "Susun jadwal dan asset yang dibutuhkan",
-      pic: "Project Manager",
+      title: "Buat rencana waktu dan kumpulkan asset",
+      pic: "Production Assistant",
     },
   ],
   prod: [
     {
-      title: "Buat asset grafis (vector, ilustrasi)",
-      pic: "Designer",
+      title: "Desain elemen visual (grafis, ilustrasi)",
+      pic: "Graphic Artist",
     },
     {
-      title: "Animasi tahap awal (blocking)",
-      pic: "Motion Designer",
+      title: "Mulai animasi kasar (blocking stage)",
+      pic: "Animator",
     },
     {
-      title: "Animasi lengkap dengan timing",
-      pic: "Motion Designer",
+      title: "Lanjutkan animasi dengan detail penuh",
+      pic: "Animator",
     },
     {
-      title: "Preview untuk internal review",
-      pic: "Creative Lead",
+      title: "Tampilkan preview untuk tim internal",
+      pic: "Motion Supervisor",
     },
   ],
   postprod: [
     {
-      title: "Kirim preview ke client",
-      pic: "Project Manager",
+      title: "Kirim draft animasi ke klien",
+      pic: "Motion Producer",
     },
     {
-      title: "Revisi animasi",
-      pic: "Motion Designer",
+      title: "Terapkan revisi dari feedback klien",
+      pic: "Animator",
     },
     {
-      title: "Finalisasi animasi dan render",
-      pic: "Motion Designer",
+      title: "Final render dan penyempurnaan animasi",
+      pic: "Animator",
     },
     {
-      title: "QC dan format delivery",
-      pic: "Creative Lead",
+      title: "Cek akhir dan ekspor dalam berbagai format",
+      pic: "Motion Supervisor",
     },
   ],
   manafile: [
     {
-      title: "Arsip file project After Effects",
-      pic: "Motion Designer",
+      title: "Simpan file proyek AE",
+      pic: "Animator",
     },
     {
-      title: "Backup versi render final",
-      pic: "Motion Designer",
+      title: "Backup file hasil render akhir",
+      pic: "Animator",
     },
     {
-      title: "Dokumentasi hasil motion",
-      pic: "Project Manager",
+      title: "Simpan dokumentasi video motion",
+      pic: "Motion Producer",
     },
   ],
 };
