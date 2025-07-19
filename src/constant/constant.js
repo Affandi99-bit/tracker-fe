@@ -105,7 +105,6 @@ export const vidProd = {
   prod: [
     { title: "Proses syuting", pic: "Crew" },
     { title: "Transfer & backup footage", pic: "Videographer" },
-    { title: "Berita acara produksi", pic: "Project Manager" },
   ],
   postprod: [
     { title: "Editing (offline & online)", pic: "Editor" },
@@ -113,6 +112,7 @@ export const vidProd = {
     { title: "Versi final & upload ke sosial media", pic: "Editor / Sosmed" },
   ],
   manafile: [
+    { title: "Berita acara produksi", pic: "Project Manager" },
     { title: "Backup file final & arsip", pic: "Editor" },
     { title: "Upload file ke Google Drive", pic: "Project Manager" },
     { title: "Dokumentasi project", pic: "Project Manager" },
@@ -137,6 +137,7 @@ export const design = {
     { title: "Upload hasil akhir ke Google Drive", pic: "Account Executive" },
   ],
   manafile: [
+    { title: "Berita acara produksi", pic: "Project Manager" },
     { title: "Simpan file mentahan & final", pic: "Graphic Designer" },
     { title: "Dokumentasikan desain", pic: "Account Executive" },
   ],
@@ -168,6 +169,7 @@ export const motion = {
     },
   ],
   manafile: [
+    { title: "Berita acara produksi", pic: "Project Manager" },
     { title: "Simpan file proyek & render akhir", pic: "Animator" },
     { title: "Upload file ke Google Drive", pic: "Motion Producer" },
     { title: "Dokumentasi video motion", pic: "Motion Producer" },
@@ -192,6 +194,7 @@ export const dokumentasi = {
     { title: "Finalisasi & upload ke sosial media", pic: "Editor / Sosmed" },
   ],
   manafile: [
+    { title: "Berita acara produksi", pic: "Project Manager" },
     { title: "Backup file mentah & final", pic: "Editor" },
     { title: "Upload ke Google Drive", pic: "Project Manager" },
     { title: "Dokumentasi project & publikasi", pic: "PM / Sosmed" },

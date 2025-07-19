@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// import useToast from './ToastContext'
 
 const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const [title, setTitle] = useState(draft.title || '');
@@ -9,7 +8,6 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const [todos, setTodos] = useState(Array.isArray(draft.todo) ? draft.todo : []);
     const [newLink, setNewLink] = useState('');
     const [newTodo, setNewTodo] = useState('');
-    // const { showToast } = useToast();
     const handleSave = () => {
         const updated = {
             ...draft,
@@ -17,14 +15,12 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
             pic,
             note,
             link: links,
-            // Map todos to backend format
             todo: todos.map(t => ({
                 title: t.text,
                 done: !!t.checked
             })),
         };
         onSave(updated);
-        // showToast("Under Development", 'success');
     };
 
     const removeLink = (idx) => setLinks(links.filter((_, i) => i !== idx));
@@ -65,7 +61,7 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
             className="backdrop z-50 backdrop-blur fixed top-0 left-0 flex items-center justify-center w-full h-screen"
         >
             <div onClick={(e) => e.stopPropagation()} className="">
-                <section className="relative overflow-hidden w-[50rem] h-[25rem] bg-dark text-light font-body border border-light rounded">
+                <section className="relative overflow-hidden w-[50rem] h-[25rem] bg-dark text-light font-body border border-light rounded-2xl">
                     <main className='relative flex items-start justify-between h-full p-4'>
                         <button onClick={onClose} className='absolute top-1 left-1 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -77,8 +73,8 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                         <section className='w-1/2 h-full p-3 '>
                             <section className='flex flex-col items-start justify-start gap-2 h-full'>
                                 <div className='flex items-center justify-between gap-2 w-full'>
-                                    <input type="text" className='glass rounded outline-none p-1 text-xs' placeholder='Title' value={title} onChange={e => setTitle(e.target.value)} />
-                                    <input type="text" className='glass rounded outline-none p-1 text-xs' placeholder='PIC' value={pic} onChange={e => setPic(e.target.value)} />
+                                    <input type="text" className='glass outline-none p-2 text-xs rounded-xl' placeholder='Title' value={title} onChange={e => setTitle(e.target.value)} />
+                                    <input type="text" className='glass outline-none p-2 text-xs rounded-xl' placeholder='PIC' value={pic} onChange={e => setPic(e.target.value)} />
                                 </div>
 
                                 {/* Links */}
@@ -109,7 +105,7 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                 </div>
 
                                 {/* Note */}
-                                <textarea className='glass rounded outline-none p-1 w-full min-h-20 text-xs' placeholder='Note' value={note} onChange={e => setNote(e.target.value)} />
+                                <textarea className='glass rounded-xl outline-none p-1 w-full min-h-20 text-xs' placeholder='Note' value={note} onChange={e => setNote(e.target.value)} />
                             </section>
                         </section>
 
@@ -147,17 +143,17 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                 </div>
                             </div>
 
-                            <div className='absolute bottom-0 left-1 flex items-center justify-between w-full mt-2'>
+                            <div className='absolute bottom-0 left-1 px-2 flex items-center justify-between w-full mt-2'>
                                 <button
                                     onClick={() => {
                                         if (typeof onDelete === 'function') onDelete();
                                         onClose();
                                     }}
-                                    className='border-dashed border border-gray-400 p-1 w-16 h-7 flex items-center justify-center text-xs cursor-pointer rounded transition ease-in-out hover:scale-105 duration-300 active:scale-95'
+                                    className=' border border-gray-400 p-1 w-16 h-7 flex items-center justify-center text-xs cursor-pointer rounded-xl transition ease-in-out hover:scale-105 duration-300 active:scale-95'
                                 >
                                     Delete
                                 </button>
-                                <button onClick={handleSave} className='bg-light text-dark p-1 w-16 h-7 flex items-center justify-center text-xs cursor-pointer rounded transition ease-in-out hover:scale-105 duration-300 active:scale-95'>Save</button>
+                                <button onClick={handleSave} className='bg-light text-dark p-1 w-16 h-7 flex items-center justify-center text-xs cursor-pointer rounded-xl transition ease-in-out hover:scale-105 duration-300 active:scale-95'>Save</button>
                             </div>
                         </section>
                     </main>

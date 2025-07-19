@@ -65,7 +65,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
         setManafileData(getData("manafile"));
     }, [project.kanban]);
 
-    const isProduksi = project.categories[0] === "Produksi" || "Dokumentasi";
+    const isProduksi = project.categories[0] === "Produksi" || project.categories[0] === "Dokumentasi";
     const stepList = isProduksi
         ? [
             { name: "praprod", label: "Pra Produksi", data: praprodData, setData: setPraprodData },
@@ -79,12 +79,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
             { name: "postprod", label: "Motion", data: postprodData, setData: setPostprodData },
             { name: "manafile", label: "File Management", data: manafileData, setData: setManafileData }
         ];
-
-    const praprodProgress = praprodData.length ? (praprodData.filter(i => i.done === true).length / praprodData.length) * 100 : 0;
-    const prodProgress = prodData.length ? (prodData.filter(i => i.done === true).length / prodData.length) * 100 : 0;
-    const postprodProgress = postprodData.length ? (postprodData.filter(i => i.done === true).length / postprodData.length) * 100 : 0;
-    const manafileProgress = manafileData.length ? (manafileData.filter(i => i.done === true).length / manafileData.length) * 100 : 0;
-    const sectionProgress = (praprodProgress + prodProgress + postprodProgress + manafileProgress) / 4;
+    // ...existing code...
 
     const openKanbanModal = (stepIdx, itemIdx = null) => {
         setModalStepIndex(stepIdx);
@@ -143,9 +138,9 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 <p className='p-2 font-bold tracking-widest text-lg'>{title}</p>
                 {/* Persentase */}
                 <main className='flex items-center gap-1'>
-                    <div className="w-48 m-2  rounded-full h-2.5 bg-gray-700/25">
+                    <div className="w-48 m-3 rounded-full h-1.5 bg-gray-700/25">
                         <div
-                            className="bg-[#f8f8f8] h-2.5 rounded-full transition-all duration-300"
+                            className="bg-[#f8f8f8] h-1.5 rounded-full transition-all duration-300"
                             style={{ width: `${(checkedCount / data.length) * 100}%` }}
                         />
                     </div>
@@ -162,29 +157,31 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     updated[index].done = !isChecked;
                                     setData(updated);
                                 }}
-                                className={`bg-[#262626] relative overflow-hidden flex flex-col justify-between items-start p-4 w-72 rounded mb-2 hover:opacity-65 cursor-pointer transition duration-200 ${isChecked ? 'ring-2 ring-[#F8F8F8]' : ''}`}
+                                className={`bg-[#262626] relative overflow-hidden flex flex-col justify-between items-start p-4 w-72 rounded-xl mb-2.5 hover:opacity-65 cursor-pointer transition duration-200 ${isChecked ? 'ring ring-[#f8f8f88e]' : ''}`}
                             >
                                 <button
-                                    className='absolute top-1 right-1 z-10 opacity-45 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
+                                    className='absolute top-2 right-2 z-10 opacity-45 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
                                     onClick={e => {
                                         e.stopPropagation();
                                         openKanbanModal(stepIdx, index);
                                     }}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f8f8f8" className="size-3">
+                                        <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32L19.513 8.2Z" />
                                     </svg>
+
                                 </button>
-                                <span className='absolute -bottom-1 -right-1 z-10 opacity-10'>
+                                {/* <span className='absolute bottom-1 right-1 z-10 '>
                                     {isChecked && (
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#f8f8f8" className="size-20">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#06923E" className="size-10">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
+
                                     )}
-                                </span>
+                                </span> */}
                                 {/* Title & PIC */}
-                                <div className='flex flex-col gap-1 my-3 border-b border-b-light/10 w-full'>
-                                    <p className='text-md '>{item.title}</p>
+                                <div className='flex flex-col gap-1 mt-3 pb-5 border-b border-b-light/10 w-full'>
+                                    <p className='text-md font-semibold tracking-wider'>{item.title}</p>
                                     <div className='flex w-full items-center justify-between'>
                                         {(() => {
                                             const firstRole = item.pic?.split('/')[0]?.trim();
@@ -196,69 +193,79 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                         })()}
                                     </div>
                                 </div>
+                                {/* To-Do Section */}
                                 <ul className='my-2'>
+                                    {Array.isArray(item.todo) && item.todo.length > 0 && (
+                                        <p className='text-xs font-semibold tracking-widest mb-2'>To-Do</p>
+                                    )}
                                     {Array.isArray(item.todo) && item.todo.length > 0 ? (
                                         item.todo.map((todo, i) => (
-                                            <li key={i} className="flex items-center gap-1 text-xs">
-                                                <label
-                                                    key={index}
-                                                    className={`flex flex-row items-center gap-2 font-body tracking-widest cursor-pointer `}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        name="todo"
-                                                        checked={!!todo.done}
-                                                        onChange={e => {
-                                                            e.stopPropagation();
-                                                            const updated = [...data];
-                                                            updated[index].todo = updated[index].todo.map((t, idx) =>
-                                                                idx === i ? { ...t, done: !t.done } : t
-                                                            );
-                                                            setData(updated);
-                                                        }}
-                                                        className="peer hidden"
-                                                    />
-                                                    <div className="size-3 flex rounded bg-dark peer-checked:bg-light">
-                                                        <svg
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            className="size-3 stroke-dark peer-checked:stroke-dark"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path
-                                                                d="M4 12.6111L8.92308 17.5L20 6.5"
-                                                                strokeWidth="2"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                            ></path>
-                                                        </svg>
-                                                    </div>
-                                                    {!todo.done ? (
-                                                        <span>{todo.title}</span>
-                                                    ) : (
-                                                        <span className="line-through text-gray-400">{todo.title}</span>
-                                                    )}
-                                                </label>
+                                            <React.Fragment key={i}>
+                                                <li className="flex items-center gap-1 text-xs">
+                                                    <label
+                                                        key={index}
+                                                        className={`flex flex-row items-center gap-2 font-body tracking-widest cursor-pointer `}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            name="todo"
+                                                            checked={!!todo.done}
+                                                            onChange={e => {
+                                                                e.stopPropagation();
+                                                                const updated = [...data];
+                                                                updated[index].todo = updated[index].todo.map((t, idx) =>
+                                                                    idx === i ? { ...t, done: !t.done } : t
+                                                                );
+                                                                setData(updated);
+                                                            }}
+                                                            className="peer hidden"
+                                                        />
+                                                        <div className="size-3 flex rounded bg-dark peer-checked:bg-light">
+                                                            <svg
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                className="size-3 stroke-dark peer-checked:stroke-dark"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                            >
+                                                                <path
+                                                                    d="M4 12.6111L8.92308 17.5L20 6.5"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                ></path>
+                                                            </svg>
+                                                        </div>
+                                                        {!todo.done ? (
+                                                            <span>{todo.title}</span>
+                                                        ) : (
+                                                            <span className="line-through text-gray-400">{todo.title}</span>
+                                                        )}
+                                                    </label>
 
-                                            </li>
+                                                </li>
+                                            </React.Fragment>
                                         ))
                                     ) : null}
                                 </ul>
+                                {/* Links Section */}
                                 <ul className='my-2 w-full'>
+                                    {Array.isArray(item.link) && item.link.length > 0 && (
+                                        <p className='text-xs font-semibold tracking-widest mb-2'>Links</p>
+                                    )}
                                     {Array.isArray(item.link) && item.link.length > 0 ? (
                                         item.link.map((l, i) => (
-                                            <li key={i} className='flex items-start justify-start'>
-                                                <a href={l} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
-                                                    {l}
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                                    </svg>
-                                                </a>
-                                            </li>
+                                            <React.Fragment key={i}>
+                                                <li className='flex items-start justify-start'>
+                                                    <a href={l} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
+                                                        {l}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                        </svg>
+                                                    </a>
+                                                </li>
+                                            </React.Fragment>
                                         ))
-                                    ) : (
-                                        null
-                                    )}
+                                    ) : null}
                                 </ul>
                                 {item.note && item.note.trim() !== '' && (
                                     <>
@@ -275,7 +282,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     })}
                     {/* Add Box Button */}
                     <div
-                        className='w-full min-w-48 h-10 border border-light/50 rounded-lg mt-2 flex items-center justify-center transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
+                        className='w-full min-w-48 h-10 border border-light/50 rounded-xl mt-2 flex items-center justify-center transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer'
                         onClick={() => openKanbanModal(stepIdx)}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={.5} stroke="#f8f8f8" className="size-6">
@@ -355,7 +362,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
     }
 
     return (
-        <div role='main' className='bg-dark font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-40'>
+        <div role='main' className='bg-[#181818] font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-40'>
 
             <section className='flex items-start justify-between gap-5 p-5'>
                 <button id='back' onClick={() => { setKanban(false) }} className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'>
@@ -365,15 +372,15 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     Back
                 </button>
                 {/* Categories Progress Bar */}
-                <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
+                {/* <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
                     <div className="w-full m-1 rounded-full h-2.5 bg-gray-700/25">
                         <div
                             className="bg-[#F8F8F8] h-2.5 rounded-full transition-all duration-300"
                             style={{ width: `${sectionProgress}%` }}
                         />
                     </div>
-                    <p className="text-gray-400 text-xs">Progress: {Math.round(sectionProgress)}%</p>
-                </div>
+                    <p className="text-gray-400 text-sm">Progress: {Math.round(sectionProgress)}%</p>
+                </div> */}
                 {/* Category Tag */}
                 <div className='flex flex-col gap-1 justify-end items-end mx-1'>
                     <p className='text-sm font-semibold tracking-wider'>
@@ -406,36 +413,37 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     }}
                 />
             )}
-            <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSaving}
-                className='fixed z-20 bottom-5 right-5 cursor-pointer bg-light text-dark font-body tracking-widest font-semibold rounded-lg p-2 transition ease-in-out hover:scale-105 duration-300 active:scale-95 disabled:opacity-50'
-            >
-                {isSaving ? (
-                    <span className="flex items-center gap-2">
-                        <svg className="animate-spin size-5" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" stroke="#222222" strokeWidth="4" fill="none" />
-                        </svg>
-                        Saving...
-                    </span>
-                ) : "Save"}
-            </button>
-            <button
-                type="button"
-                onClick={() => {
-                    const constant = getCurrentConstant();
-                    setPraprodData(constant.praprod);
-                    setProdData(constant.prod);
-                    setPostprodData(constant.postprod);
-                    setManafileData(constant.manafile);
-                }}
-                className="glass text-light border border-light rounded-lg p-2 m-2 fixed z-20 bottom-20 right-5 cursor-pointer font-body tracking-widest font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95 "
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#ffffff" className="size-6 hover:animate-spin">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
-            </button>
+            <div className='fixed z-20 bottom-5 right-5 flex items-center gap-2'>
+                <button
+                    type="button"
+                    onClick={() => {
+                        const constant = getCurrentConstant();
+                        setPraprodData(constant.praprod);
+                        setProdData(constant.prod);
+                        setPostprodData(constant.postprod);
+                        setManafileData(constant.manafile);
+                    }}
+                    className="border bg-dark border-light rounded-full p-1 m-2 cursor-pointer font-body tracking-widest font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95 "
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#f8f8f8" className="size-5 hover:animate-spin">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </button>
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className=' cursor-pointer bg-[#f2f2f2] text-dark font-body tracking-widest font-semibold rounded-xl w-20 h-10 transition ease-in-out hover:scale-105 duration-300 active:scale-95 disabled:opacity-50'
+                >
+                    {isSaving ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <svg className="animate-spin size-5" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="#222222" strokeWidth="4" fill="none" />
+                            </svg>
+                        </span>
+                    ) : "Save"}
+                </button>
+            </div>
         </div>
     );
 };
