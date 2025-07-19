@@ -1,8 +1,8 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { TableModal, Loader, ReadonlyModal } from "../components";
+import { useToast } from "../components/ToastContext";
 import { findTagColor } from "../utils/utils";
 import Kanban from "./Kanban";
-
 const calculateOverallProgress = ({ project }) => {
   if (!Array.isArray(project.kanban)) return 0;
 
@@ -37,6 +37,7 @@ const DataTable = ({
   deleteData,
 }) => {
   const [loadingId, setLoadingId] = useState(null);
+  const { showToast } = useToast();
 
   const handleRowClick = (rowData) => {
     setSelectedRowData(rowData);
@@ -102,7 +103,7 @@ const DataTable = ({
                     }}
                   ></div>
                 </div>
-                <p className="text-[#269fc6] text-xs">
+                <p className="text-[#269fc6] text-xs w-28 text-end">
                   {Math.round(calculateOverallProgress({ project: row }))}%
                 </p>
               </div>
@@ -142,6 +143,7 @@ const DataTable = ({
                       await deleteData(row._id);
                     } finally {
                       setLoadingId(null);
+                      showToast("Project Deleted", 'error');
                     }
                   }}
                 >
@@ -264,14 +266,20 @@ const MainTable = ({
               <th onClick={handleTitle} className="w-40 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark rounded-tl-2xl">
                 <div className="px-2 flex items-center justify-start gap-2 cursor-pointer">
                   Project Title
-                  <svg className="size-6" viewBox="0 0 24 24">...</svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                  </svg>
+
                 </div>
               </th>
               <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark">Client</th>
               <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark">PIC Client</th>
               <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark">PM</th>
               <th onClick={handleDate} className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark">
-                <div className="flex items-center justify-start cursor-pointer">Due Date <svg className="size-6" viewBox="0 0 24 24">...</svg></div>
+                <div className="flex items-center justify-start cursor-pointer">Due Date <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                </svg>
+                </div>
               </th>
               <th className="text-start px-2 w-32 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark">Type</th>
               <th className="text-start px-2 w-28 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark">Progress</th>
@@ -299,11 +307,12 @@ const MainTable = ({
           setKanban={setKanban}
           updateData={updateData}
           project={selectedKanbanProject}
-          selectedTypes={selectedKanbanProject.type} // Pass selected types
+          selectedTypes={selectedKanbanProject.type}
         />
       )}
       {showReadonlyModal && (
         <ReadonlyModal
+          key={readonlyRow?._id}
           link={`${window.location.origin}/readonly/${readonlyRow._id}`}
           onClose={() => setShowReadonlyModal(false)}
         />

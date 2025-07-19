@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { tags, crew as crewList } from "../constant/constant";
 import { useToast } from './ToastContext';
-import { roleProduction } from "../constant/constant";
+// import { roleProduction } from "../constant/constant";
+import { useRoleProduction } from '../constant/constant'
 
 const CreateModal = ({
   showModal,
@@ -14,7 +15,7 @@ const CreateModal = ({
   setTableModal,
 }) => {
   const { showToast } = useToast();
-
+  const roleProduction = useRoleProduction();
   const initialFormData = {
     title: "",
     pm: "",
@@ -43,7 +44,7 @@ const CreateModal = ({
   const [formData, setFormData] = useState(isEditing ? {
     ...initialData,
     deadline: initialData.deadline ? initialData.deadline.split('T')[0] : '',
-    status: initialData.status || false, // ensure status is set
+    status: initialData.status || false,
   } : initialFormData);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);

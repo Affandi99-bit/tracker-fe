@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, } from 'react';
 import { vidProd, design, motion, dokumentasi } from '../constant/constant';
 import { useToast } from '../components/ToastContext';
 import { KanbanModal } from '../components';
@@ -11,18 +11,13 @@ const typeOptions = [
 ];
 
 const Kanban = ({ updateData, setKanban, project }) => {
-    const [selectedCategoryIdx, setSelectedCategoryIdx] = useState(0);
-    const categories = Array.isArray(project.categories) && project.categories.length > 0
-        ? project.categories
-        : ["Produksi"];
-    const selectedCategory = categories[selectedCategoryIdx];
-    const selectedKanban = useMemo(() => {
+    const selectedKanban = (() => {
         return Array.isArray(project.kanban)
-            ? project.kanban.find(k => k.type === selectedCategory)
+            ? project.kanban.find(k => k.type === project.categories[0])
             : null;
-    }, [project.kanban, selectedCategory]);
+    })
     function getCurrentConstant() {
-        const opt = typeOptions.find(o => o.value === selectedCategory);
+        const opt = typeOptions.find(o => o.value === project.categories[0]);
         return opt ? opt.constant : vidProd;
     }
     const getStepData = (stepName) => {
@@ -32,7 +27,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
         }
         return getCurrentConstant()[stepName] || [];
     };
-    const uniqueCategories = [...new Set(categories)];
     const [praprodData, setPraprodData] = useState(getStepData("praprod"));
     const [prodData, setProdData] = useState(getStepData("prod"));
     const [postprodData, setPostprodData] = useState(getStepData("postprod"));
@@ -48,14 +42,13 @@ const Kanban = ({ updateData, setKanban, project }) => {
     useEffect(() => {
         const constant = getCurrentConstant();
 
-        // Clear data before reloading to avoid stale state
         setPraprodData([]);
         setProdData([]);
         setPostprodData([]);
         setManafileData([]);
 
         const selected = Array.isArray(project.kanban)
-            ? project.kanban.find(k => k.type === selectedCategory)
+            ? project.kanban.find(k => k.type === project.categories[0])
             : null;
 
         const getData = (stepName) => {
@@ -66,47 +59,33 @@ const Kanban = ({ updateData, setKanban, project }) => {
             return constant[stepName] || [];
         };
 
-        // Update data
         setPraprodData(getData("praprod"));
         setProdData(getData("prod"));
         setPostprodData(getData("postprod"));
         setManafileData(getData("manafile"));
-    }, [selectedCategory, project.kanban]);
+    }, [project.kanban]);
 
-    const stepList = [
-        { name: "praprod", label: "pra", data: praprodData, setData: setPraprodData },
-        { name: "prod", label: "pro", data: prodData, setData: setProdData },
-        { name: "postprod", label: "post", data: postprodData, setData: setPostprodData },
-        { name: "manafile", label: "file", data: manafileData, setData: setManafileData }
-    ];
+    const isProduksi = project.categories[0] === "Produksi" || "Dokumentasi";
+    const stepList = isProduksi
+        ? [
+            { name: "praprod", label: "Pra Produksi", data: praprodData, setData: setPraprodData },
+            { name: "prod", label: "Produksi", data: prodData, setData: setProdData },
+            { name: "postprod", label: "Post Produksi", data: postprodData, setData: setPostprodData },
+            { name: "manafile", label: "File Management", data: manafileData, setData: setManafileData }
+        ]
+        : [
+            { name: "praprod", label: "Pra Produksi", data: praprodData, setData: setPraprodData },
+            { name: "prod", label: "Design", data: prodData, setData: setProdData },
+            { name: "postprod", label: "Motion", data: postprodData, setData: setPostprodData },
+            { name: "manafile", label: "File Management", data: manafileData, setData: setManafileData }
+        ];
+
     const praprodProgress = praprodData.length ? (praprodData.filter(i => i.done === true).length / praprodData.length) * 100 : 0;
     const prodProgress = prodData.length ? (prodData.filter(i => i.done === true).length / prodData.length) * 100 : 0;
     const postprodProgress = postprodData.length ? (postprodData.filter(i => i.done === true).length / postprodData.length) * 100 : 0;
     const manafileProgress = manafileData.length ? (manafileData.filter(i => i.done === true).length / manafileData.length) * 100 : 0;
     const sectionProgress = (praprodProgress + prodProgress + postprodProgress + manafileProgress) / 4;
-    const calculateOverallProgress = () => {
-        if (!Array.isArray(project.kanban)) return 0;
 
-        let totalItems = 0;
-        let completedItems = 0;
-
-        project.kanban.forEach(division => {
-            if (!Array.isArray(division.steps)) return;
-
-            division.steps.forEach(step => {
-                if (!Array.isArray(step.items)) return;
-
-                step.items.forEach(item => {
-                    totalItems += 1;
-                    if (item.done === true) completedItems += 1;
-                });
-            });
-        });
-
-        return totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
-    };
-
-    const overallProgress = calculateOverallProgress();
     const openKanbanModal = (stepIdx, itemIdx = null) => {
         setModalStepIndex(stepIdx);
         setModalItemIndex(itemIdx);
@@ -129,7 +108,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
         }
         step.setData(updatedData);
         const updatedKanban = project.kanban.map((kanban) => {
-            if (kanban.type === selectedCategory) {
+            if (kanban.type === project.categories[0]) {
                 return {
                     ...kanban,
                     steps: kanban.steps.map((step) => {
@@ -332,7 +311,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
 
         let updatedKanbanArr = Array.isArray(project.kanban) ? [...project.kanban] : [];
         const newKanban = {
-            type: selectedCategory,
+            type: project.categories[0],
             steps: steps.map(step => ({
                 name: step.name,
                 items: step.items.map(item => ({
@@ -345,7 +324,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 }))
             }))
         };
-        const idx = updatedKanbanArr.findIndex(k => k.type === selectedCategory);
+        const idx = updatedKanbanArr.findIndex(k => k.type === project.categories[0]);
         if (idx >= 0) {
             updatedKanbanArr[idx] = newKanban;
         } else {
@@ -385,18 +364,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     </svg>
                     Back
                 </button>
-                {/* Overall Progress Bar */}
-                {project.kanban?.length > 0 && (
-                    <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
-                        <div className="w-full m-1 rounded-full h-2.5 bg-gray-700/25">
-                            <div
-                                className="bg-[#F8F8F8] h-2.5 rounded-full transition-all duration-300"
-                                style={{ width: `${overallProgress}%` }}
-                            />
-                        </div>
-                        <p className="text-gray-400 text-xs">Overall Progress: {Math.round(overallProgress)}%</p>
-                    </div>
-                )}
                 {/* Categories Progress Bar */}
                 <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
                     <div className="w-full m-1 rounded-full h-2.5 bg-gray-700/25">
@@ -407,19 +374,15 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     </div>
                     <p className="text-gray-400 text-xs">Progress: {Math.round(sectionProgress)}%</p>
                 </div>
-                {/* Category Switcher */}
-                <select
-                    id="category-select"
-                    value={selectedCategoryIdx}
-                    onChange={e => setSelectedCategoryIdx(Number(e.target.value))}
-                    className=" text-xs outline-none"
-                >
-                    {uniqueCategories.map((cat, idx) => (
-                        <option key={`${cat}-${idx}`} className='bg-dark text-light' value={idx}>
-                            {cat}
-                        </option>
-                    ))}
-                </select>
+                {/* Category Tag */}
+                <div className='flex flex-col gap-1 justify-end items-end mx-1'>
+                    <p className='text-sm font-semibold tracking-wider'>
+                        {(project.categories[0] === "Produksi" || project.categories[0] === "Dokumentasi")
+                            ? "Blackstudio"
+                            : "Blackmotion"}
+                    </p>
+                    <p className='text-xs'>{project.categories[0]}</p>
+                </div>
             </section>
             <div className='flex items-start justify-evenly gap-5 pl-5 w-full'>
                 {stepList.map((step, idx) =>
