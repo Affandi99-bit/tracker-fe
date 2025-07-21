@@ -16,42 +16,7 @@ const Dropdown = ({ selectedTags, setSelectedTags }) => {
           Filters
         </h1>
         <div className="w-full p-2 flex justify-start items-center flex-wrap">
-          {tags.progress.map((option) => (
-            <label
-              htmlFor={`hr-${option.value}`}
-              key={option.value}
-              className={`flex flex-row w-32 items-center gap-2 font-body tracking-widest cursor-pointer text-light p-2`}
-            >
-              <input
-                id={`hr-${option.value}`}
-                type="checkbox"
-                name="status"
-                value={option.value}
-                checked={selectedTags.includes(option.value)}
-                onChange={() => handleTagChange(option.value)}
-                className="peer hidden"
-              />
-              <div
-                htmlFor={`hr-${option.value}`}
-                className="size-5 flex rounded-md border border-[#a2a1a833] bg-dark peer-checked:bg-light transition"
-              >
-                <svg
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="size-5 stroke-dark"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 12.6111L8.92308 17.5L20 6.5"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>
-                </svg>
-              </div>
-              {option.title}
-            </label>
-          ))}
+
           {tags.projectCategories.map((option) => (
             <label
               htmlFor={`hr-${option.value}`}

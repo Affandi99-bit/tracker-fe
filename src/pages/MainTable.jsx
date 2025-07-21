@@ -214,7 +214,7 @@ const MainTable = ({
         selectedTags.length === 0 ||
         selectedTags.every(
           (tag) =>
-            (typeof item.done === "boolean" && item.done.includes(tag)) ||
+            (item.done === "boolean" && item.done.includes(tag)) ||
             item.type?.includes(tag) ||
             item.categories?.includes(tag)
         );
