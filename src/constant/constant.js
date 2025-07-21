@@ -1,16 +1,16 @@
 export const crew = [
-  { name: "Andika Aris F.", roles: [] },
+  { name: "Andika Aris", roles: [] },
   { name: "Adri Irfanto", roles: [] },
   { name: "Anindya Aulia", roles: [] },
-  { name: "Audrey Agessy A.", roles: [] },
+  { name: "Audrey Agessy", roles: [] },
   { name: "Delia Sagita", roles: [] },
-  { name: "Helida Laylatus S.", roles: [] },
+  { name: "Helida Laylatus", roles: [] },
   { name: "Imam Affandi", roles: [] },
   { name: "Kevin Rizkianto", roles: [] },
-  { name: "Nova Laksmana M.P.", roles: [] },
-  { name: "Oktha Viano R.", roles: [] },
-  { name: "M. Rafli Fadillah", roles: [] },
-  { name: "Rully Okta D.", roles: [] },
+  { name: "Nova Laksmana", roles: [] },
+  { name: "Oktha Viano", roles: [] },
+  { name: "Rafli Fadillah", roles: [] },
+  { name: "Rully Okta", roles: [] },
   { name: "Romadhona Larasati", roles: [] },
 ];
 export const tags = {
