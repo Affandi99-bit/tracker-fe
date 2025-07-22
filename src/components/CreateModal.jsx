@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { tags, crew as crewList } from "../constant/constant";
 import { useToast } from './ToastContext';
-// import { roleProduction } from "../constant/constant";
 import { useRoleProduction } from '../constant/constant'
 
 const CreateModal = ({
@@ -16,10 +15,11 @@ const CreateModal = ({
 }) => {
   const { showToast } = useToast();
   const roleProduction = useRoleProduction();
+
   const initialFormData = {
     title: "",
     pm: "",
-    deadline: new Date().toISOString().split('T')[0],
+    deadline: new Date().toISOString().split("T")[0],
     client: "",
     pic: "",
     final_file: "",
@@ -35,167 +35,124 @@ const CreateModal = ({
           operational: [],
           orderlist: [],
         },
-        note: '',
+        note: "",
         totalExpenses: 0,
       },
     ],
     status: false,
   };
-  const [formData, setFormData] = useState(isEditing ? {
-    ...initialData,
-    deadline: initialData.deadline ? initialData.deadline.split('T')[0] : '',
-    status: initialData.status || false,
-  } : initialFormData);
+
+  const [formData, setFormData] = useState(() => {
+    if (isEditing && initialData) {
+      return {
+        ...initialData,
+        deadline: initialData?.deadline?.split("T")[0] || "",
+        status: initialData.status || false,
+        day: initialData.day?.length ? initialData.day : [initialFormData.day[0]],
+      };
+    }
+    return initialFormData;
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
-  const [additionalCrewMembers, setAdditionalCrewMembers] = useState(
-    isEditing
-      ? (initialData.day[0]?.crew || [])
-        .filter(
-          (member) =>
-            !crewList.some(
-              (constantMember) => constantMember.name === member.name
-            )
-        )
-        .map((member, index) => ({
-          id: index,
-          value: member.name,
-        }))
-      : []
-  );
+
+  const [additionalCrewMembers, setAdditionalCrewMembers] = useState(() => {
+    if (isEditing && initialData?.day?.[0]?.crew?.length) {
+      return initialData.day[0].crew
+        .filter((member) => !crewList.some((c) => c.name === member.name))
+        .map((member, index) => ({ id: index, value: member.name }));
+    }
+    return [];
+  });
 
   useEffect(() => {
-    setFormData(prevFormData => {
-      const baseCrew = (prevFormData.day[0]?.crew || []).filter(
-        member => !member.id
+    setFormData((prev) => {
+      const additionalNames = additionalCrewMembers.map(m => m.value);
+      const baseCrew = (prev.day[0]?.crew || []).filter(
+        (m) => !m.id && !additionalNames.includes(m.name)
       );
-      const additional = additionalCrewMembers
-        .filter(member => member.value.trim() !== "")
-        .map(member => ({
-          id: member.id,
-          name: member.value,
-          roles: []
-        }));
+      const additional = additionalCrewMembers.map((m) => ({
+        id: m.id,
+        name: m.value,
+        roles: m.value ? (prev.day[0]?.crew.find(c => c.name === m.value)?.roles || [""]) : [""],
+      }));
       return {
-        ...prevFormData,
-        day: [{
-          ...prevFormData.day[0],
-          crew: [...baseCrew, ...additional]
-        }]
+        ...prev,
+        day: [{ ...prev.day[0], crew: [...baseCrew, ...additional] }],
       };
     });
   }, [additionalCrewMembers]);
+  const handleCheckboxChange = (type, value, checked) => {
+    setFormData((prev) => ({
+      ...prev,
+      [type]: checked
+        ? [...new Set([...prev[type], value])]
+        : prev[type].filter((item) => item !== value),
+    }));
+  };
 
   const inputHandle = (e) => {
     const { name, value, checked, type } = e.target;
-    if (name === "crew" && type === "checkbox") {
-      const currentCrew = formData.day[0]?.crew || [];
-      const updatedCrew = checked
-        ? [...currentCrew, { name: value, roles: [] }]
-        : currentCrew.filter((member) => member.name !== value);
-
-      setFormData({
-        ...formData,
-        day: [
-          {
-            ...formData.day[0] || {},
-            crew: updatedCrew,
-          },
-        ],
-      });
-    } else if (name === "type" && type === "checkbox") {
-      setFormData(prev => ({
-        ...prev,
-        type: checked
-          ? [...prev.type, value]
-          : prev.type.filter(item => item !== value)
-      }));
-    } else if (name === "categories" && type === "checkbox") {
-      setFormData(prev => ({
-        ...prev,
-        categories: checked
-          ? [...prev.categories, value]
-          : prev.categories.filter(item => item !== value)
-      }));
+    if (type === "checkbox") {
+      if (name === "crew") {
+        const currentCrew = formData.day[0]?.crew || [];
+        const updatedCrew = checked
+          ? [...currentCrew, { name: value, roles: [] }]
+          : currentCrew.filter((member) => member.name !== value);
+        setFormData((prev) => ({
+          ...prev,
+          day: [{ ...prev.day[0], crew: updatedCrew }],
+        }));
+      } else {
+        handleCheckboxChange(name, value, checked);
+      }
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const addAdditionalCrewField = () => {
-    setAdditionalCrewMembers((prev) => [
-      ...prev,
-      { id: Date.now(), value: "" },
-    ]);
+    setAdditionalCrewMembers((prev) => [...prev, { id: Date.now(), value: "" }]);
   };
 
   const handleAdditionalCrewChange = (id, value) => {
-    setAdditionalCrewMembers(prev =>
-      prev.map(member =>
-        member.id === id ? { ...member, value } : member
-      )
+    setAdditionalCrewMembers((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, value } : m))
     );
-    setFormData(prevFormData => {
-      const currentDay = prevFormData.day[0] || {};
-      const updatedCrew = (currentDay.crew || []).map(member =>
-        member.id === id ? { ...member, name: value } : member
-      );
-      return {
-        ...prevFormData,
-        day: [{ ...currentDay, crew: updatedCrew }]
-      };
-    });
   };
 
   const removeAdditionalCrewField = (id) => {
-    setAdditionalCrewMembers((prev) =>
-      prev.filter((member) => member.id !== id)
-    );
-    setFormData(prevFormData => ({
-      ...prevFormData,
-      day: [{
-        ...prevFormData.day[0] || {},
-        crew: (prevFormData.day[0]?.crew || []).filter(member => member.id !== id)
-      }]
-    }));
+    setAdditionalCrewMembers((prev) => prev.filter((m) => m.id !== id));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
-    const allCrew = [
-      ...(formData.day[0].crew || []).filter(m => m.name.trim() !== ""),
-      ...additionalCrewMembers
-        .filter(member => member.value.trim() !== "")
-        .map(member => ({
-          name: member.value.trim(),
-          roles: []
-        }))
-    ].filter((v, i, a) => a.findIndex(t => t.name === v.name) === i);
+    const cleanedCrew = (formData.day[0]?.crew || []).map((m) => ({
+      name: m.name,
+      roles: m.roles || [],
+    }));
 
     const finalData = {
       ...formData,
-      status: false, // always push as ongoing
-      day: [{
-        ...formData.day[0],
-        crew: allCrew,
-      }],
+      status: false,
+      day: [{ ...formData.day[0], crew: cleanedCrew }],
     };
-    console.log("Form Data Submitted:", finalData);
+
     try {
       if (isEditing) {
         await updateData(finalData);
         setTableModal(false);
-        showToast("Project updated successfully", 'success');
+        showToast("Project updated successfully", "success");
       } else {
         await addNewData(finalData);
-        showToast("Project created successfully", 'success');
+        showToast("Project created successfully", "success");
       }
       setShowModal(false);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      showToast("Operation failed", 'error');
+    } catch (err) {
+      console.error("Form submission error:", err);
+      showToast("Operation failed", "error");
     } finally {
       setIsLoading(false);
     }
@@ -206,12 +163,12 @@ const CreateModal = ({
       setIsLoadingDelete(true);
       try {
         await deleteData(formData._id);
-        showToast("Project deleted successfully", 'success');
+        showToast("Project deleted successfully", "success");
         setShowModal(false);
         setTableModal(false);
-      } catch (error) {
-        console.error("Error deleting project:", 'error', error);
-        showToast("Deletion failed");
+      } catch (err) {
+        console.error("Deletion failed:", err);
+        showToast("Deletion failed", "error");
       } finally {
         setIsLoadingDelete(false);
       }
@@ -219,7 +176,7 @@ const CreateModal = ({
   };
 
   return (
-    showModal && (
+    showModal ? (
       <div>
         <main className="fixed overflow-y-auto z-40 top-0 left-0 text-light h-screen">
           <section className="relative overflow-auto w-screen h-full no-scrollbar bg-dark">
@@ -278,9 +235,9 @@ const CreateModal = ({
                       className="glass border border-gray-400 font-light rounded p-2 font-body tracking-widest outline-none"
                     />
                   </label>
-                  <div className="flex flex-col md:flex-row gap-1 justify-between">
+                  <div className="flex flex-col md:flex-row gap-1 items-center">
                     {/* Client */}
-                    <label className="font-body font-semibold tracking-widest flex flex-col">
+                    <label className="font-body font-semibold tracking-widest flex flex-col w-1/3">
                       Client
                       <input
                         required
@@ -293,7 +250,7 @@ const CreateModal = ({
                       />
                     </label>
                     {/* PIC */}
-                    <label className="font-body font-semibold tracking-widest flex flex-col">
+                    <label className="font-body font-semibold tracking-widest flex flex-col w-1/3">
                       Client PIC
                       <input
                         required
@@ -306,7 +263,7 @@ const CreateModal = ({
                       />
                     </label>
                     {/* Deadline */}
-                    <label className="font-body font-semibold tracking-widest flex flex-col">
+                    <label className="font-body font-semibold tracking-widest flex flex-col w-1/3">
                       Event Date:
                       <input
                         type="date"
@@ -580,10 +537,32 @@ const CreateModal = ({
                   {(formData.day[0]?.crew || []).map((member, idx) => (
                     <div
                       key={member.name + (member.id || "")}
-                      className="min-h-16 flex items-start w-1/4 mb-2 px-3 rounded-2xl z-10 glass border border-gray-400"
+                      className="min-h-16 flex items-start w-48 mb-2 px-3 rounded-2xl z-10 glass border border-gray-400"
                     >
                       <div className="flex w-full flex-col gap-2">
                         <div className="w-full flex items-center justify-between mt-2 mx-1">
+                          <button
+                            type="button"
+                            className="text-xs px-1 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer" title="Delete crew job"
+                            onClick={() => {
+                              setFormData(prev => {
+                                const updatedCrew = prev.day[0].crew.filter((_, i) => i !== idx);
+                                return {
+                                  ...prev,
+                                  day: [{ ...prev.day[0], crew: updatedCrew }]
+                                };
+                              });
+                              if (member.id !== undefined) {
+                                setAdditionalCrewMembers(prev =>
+                                  prev.filter(m => m.id !== member.id)
+                                );
+                              }
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="#f8f8f8" className="size-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                          </button>
                           <p className="font-body text-light ">{member.name}</p>
                           <button
                             type="button"
@@ -627,11 +606,13 @@ const CreateModal = ({
                               className="font-body outline-none p-1"
                             >
                               <option value="" className="text-dark bg-light">Select Jobdesk</option>
-                              {roleProduction.map(roleOption => (
-                                <option key={roleOption.id} value={roleOption.name} className="text-dark bg-light">
-                                  {roleOption.name}
-                                </option>
-                              ))}
+                              {[...roleProduction]
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map(roleOption => (
+                                  <option key={roleOption.id} value={roleOption.name} className="text-dark bg-light">
+                                    {roleOption.name}
+                                  </option>
+                                ))}
                             </select>
                             {member.roles && member.roles.length > 1 && (
                               <button
@@ -665,7 +646,7 @@ const CreateModal = ({
           </section>
         </main>
       </div>
-    )
+    ) : null
   );
 };
 
