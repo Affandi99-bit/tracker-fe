@@ -74,7 +74,7 @@ const DataTable = ({
                     style={{
                       backgroundColor: findTagColor(chip),
                     }}
-                    className="rounded-xl w-16 h-5 text-light text-[0.60rem] font-semibold tracking-widest flex items-center justify-center"
+                    className="rounded-xl w-18 h-5 text-light text-[0.60rem] font-semibold tracking-widest flex items-center justify-center"
                   >
                     {chip}
                   </p>
@@ -86,7 +86,7 @@ const DataTable = ({
                     style={{
                       backgroundColor: findTagColor(type),
                     }}
-                    className="rounded-xl w-16 h-5 text-light text-[0.60rem] font-semibold tracking-widest flex items-center justify-center "
+                    className="rounded-xl w-18 h-5 text-light text-[0.60rem] font-semibold tracking-widest flex items-center justify-center "
                   >
                     {type}
                   </p>

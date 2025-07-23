@@ -36,7 +36,7 @@ export const tags = {
     {
       title: "Dokumentasi",
       value: "Dokumentasi",
-      color: "#B22222",
+      color: "#090040",
     },
     {
       title: "Motion",
