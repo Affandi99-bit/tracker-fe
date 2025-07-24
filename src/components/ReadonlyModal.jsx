@@ -29,7 +29,7 @@ const ReadonlyModal = ({ link, onClose }) => {
         <div className='fixed top-0 left-0 z-50 glass w-full h-full flex items-center justify-center'>
             <section
                 ref={modalRef}
-                className='bg-dark rounded-lg p-5 text-light flex flex-col justify-center items-center w-xl h-48'
+                className='bg-dark rounded-xl border border-light/50 p-5 text-light flex flex-col justify-center items-center w-xl h-48'
             >
                 <p className='text-center font-body'>
                     This project is in readonly mode. You can share the link below for others to view.
@@ -42,7 +42,7 @@ const ReadonlyModal = ({ link, onClose }) => {
                         className='glass outline-none border border-white rounded-2xl h-10 w-full px-3'
                     />
                     <button
-                        className='px-4 py-2 bg-light text-dark rounded-lg hover:scale-105 duration-300 active:scale-95 cursor-pointer'
+                        className='w-20 h-10 bg-light text-dark rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer'
                         onClick={handleCopy}
                     >
                         Copy

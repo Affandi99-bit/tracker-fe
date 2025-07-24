@@ -10,12 +10,88 @@ const typeOptions = [
     { label: "Dokumentasi", value: "Dokumentasi", constant: dokumentasi },
 ];
 
+const ResetModal = ({ onCancel, onReset }) => (
+    <div className='fixed top-0 left-0 z-50 glass w-full h-full flex items-center justify-center'>
+        <section className='bg-dark border border-light/50 rounded-lg p-5 text-light flex flex-col justify-center items-center w-xl h-48'>
+            <p className='text-center font-body'>
+                Are you sure you want to reset this kanban? This action cannot be undone.
+            </p>
+            <div className='flex items-center justify-end gap-5 w-full mt-5'>
+                <button
+                    className='w-20 h-10 border border-light text-light rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer'
+                    onClick={onCancel}
+                >
+                    Cancel
+                </button>
+                <button
+                    className='w-20 h-10 bg-light text-dark rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer'
+                    onClick={onReset}
+                >
+                    Reset
+                </button>
+            </div>
+        </section>
+    </div>
+);
+
+const GOOGLE_API_KEY = "AIzaSyDc6sqyAKybW9hTzMylP3QHtSc78xUbRXI";
+
+const DriveFolderPreview = ({ url }) => {
+    const [files, setFiles] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const extractFolderId = (url) => {
+            const match = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : null;
+        };
+
+        const fetchFiles = async (folderId) => {
+            setLoading(true);
+            const query = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&key=${GOOGLE_API_KEY}`;
+            const res = await fetch(query);
+            const data = await res.json();
+            setFiles(data.files || []);
+            setLoading(false);
+        };
+
+        const folderId = extractFolderId(url);
+        if (folderId) {
+            fetchFiles(folderId);
+        }
+    }, [url]);
+
+    if (files.length === 0 && !loading) return null;
+
+    return (
+        <div className="mt-1 rounded-xl bg-[#1c1c1c] p-2 text-xs font-body text-light ">
+            <p className="font-semibold mb-1">Isi Folder:</p>
+            {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin size-5" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="#222222" strokeWidth="4" fill="none" />
+                    </svg>
+                </span>
+            ) : (
+                <ul className="list-disc list-inside">
+                    {files.map((file) => (
+                        <li key={file.id}>
+                            {file.name}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+};
+
 const Kanban = ({ updateData, setKanban, project }) => {
     const selectedKanban = (() => {
         return Array.isArray(project.kanban)
             ? project.kanban.find(k => k.type === project.categories[0])
             : null;
     })
+
     function getCurrentConstant() {
         const opt = typeOptions.find(o => o.value === project.categories[0]);
         return opt ? opt.constant : vidProd;
@@ -26,14 +102,14 @@ const Kanban = ({ updateData, setKanban, project }) => {
             return step ? step.items : [];
         }
         return getCurrentConstant()[stepName] || [];
-    };
+    }
+    const [showResetModal, setShowResetModal] = useState(false);
     const [praprodData, setPraprodData] = useState(getStepData("praprod"));
     const [prodData, setProdData] = useState(getStepData("prod"));
     const [postprodData, setPostprodData] = useState(getStepData("postprod"));
     const [manafileData, setManafileData] = useState(getStepData("manafile"));
     const [draft, setDraft] = useState(null);
     const [showKanbanModal, setKanbanModal] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [modalStepIndex, setModalStepIndex] = useState(null);
     const [modalItemIndex, setModalItemIndex] = useState(null);
 
@@ -79,7 +155,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
             { name: "postprod", label: "Motion", data: postprodData, setData: setPostprodData },
             { name: "manafile", label: "File Management", data: manafileData, setData: setManafileData }
         ];
-    // ...existing code...
 
     const openKanbanModal = (stepIdx, itemIdx = null) => {
         setModalStepIndex(stepIdx);
@@ -102,33 +177,64 @@ const Kanban = ({ updateData, setKanban, project }) => {
             updatedData.push(updatedItem);
         }
         step.setData(updatedData);
-        const updatedKanban = project.kanban.map((kanban) => {
-            if (kanban.type === project.categories[0]) {
-                return {
-                    ...kanban,
-                    steps: kanban.steps.map((step) => {
-                        if (step.name === modalStepIndex) {
-                            return {
-                                ...step,
-                                items: updatedData,
-                            };
-                        }
-                        return step;
-                    }),
-                };
-            }
-            return kanban;
-        });
+
+        let updatedKanban;
+        if (Array.isArray(project.kanban) && project.kanban.length > 0) {
+            updatedKanban = project.kanban.map((kanban) => {
+                if (kanban.type === project.categories[0]) {
+                    return {
+                        ...kanban,
+                        steps: kanban.steps.map((step, idx) => {
+                            if (idx === modalStepIndex) {
+                                return {
+                                    ...step,
+                                    items: updatedData,
+                                };
+                            }
+                            return step;
+                        }),
+                    };
+                }
+                return kanban;
+            });
+        } else {
+            updatedKanban = [{
+                type: project.categories[0],
+                steps: stepList.map((step, idx) => ({
+                    name: step.name,
+                    items: idx === modalStepIndex ? updatedData : step.data,
+                })),
+            }];
+        }
 
         const updatedProject = {
             ...project,
             kanban: updatedKanban,
         };
-        console.log(updatedProject)
+        console.log(updatedProject);
         updateData(updatedProject);
-
+        showToast("Kanban Updated", "success");
         setKanbanModal(false);
     };
+
+    const handleResetKanban = async () => {
+        setShowResetModal(false);
+        const updatedKanban = (project.kanban || []).filter(k => k.type !== project.categories[0]);
+        const updatedProject = {
+            ...project,
+            kanban: updatedKanban,
+        };
+        await updateData(updatedProject);
+    };
+
+    function getCrewByRole(role) {
+        if (!project.day || !project.day[0] || !project.day[0].crew) return null;
+        const crewList = project.day[0].crew;
+        return crewList.find(c =>
+            (Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === role.toLowerCase())) ||
+            (c.name && c.name.toLowerCase() === role.toLowerCase())
+        );
+    }
 
     const renderSection = (title, data, setData, stepIdx) => {
         const checkedCount = data.filter(item => item.done === true).length;
@@ -171,20 +277,22 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     </svg>
 
                                 </button>
-                                {/* <span className='absolute bottom-1 right-1 z-10 '>
-                                    {isChecked && (
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#06923E" className="size-10">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                        </svg>
-
-                                    )}
-                                </span> */}
                                 {/* Title & PIC */}
                                 <div className='flex flex-col gap-1 mt-3 pb-5 border-b border-b-light/10 w-full'>
                                     <p className='text-md font-semibold tracking-wider'>{item.title}</p>
                                     <div className='flex w-full items-center justify-between'>
                                         {(() => {
                                             const firstRole = item.pic?.split('/')[0]?.trim();
+                                            if (firstRole === "Crew" && project.day && project.day[0] && Array.isArray(project.day[0].crew)) {
+                                                return (
+                                                    <div className="flex flex-col gap-1">
+                                                        <p className='text-xs font-medium'>Crew Produksi</p>
+                                                        {project.day[0].crew.map((c, idx) => (
+                                                            <p key={idx} className='text-xs text-gray-400'>{c.name}  ·  {c.roles.join(', ')}</p>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            }
                                             const crew = getCrewByRole(firstRole);
                                             if (crew) {
                                                 return <p className='text-xs text-gray-400'>{crew.name} as {firstRole}</p>;
@@ -238,7 +346,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                                         {!todo.done ? (
                                                             <span>{todo.title}</span>
                                                         ) : (
-                                                            <span className="line-through text-gray-400">{todo.title}</span>
+                                                            <span className="text-gray-500">{todo.title}</span>
                                                         )}
                                                     </label>
 
@@ -258,11 +366,12 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                                 <li className='flex items-start justify-start'>
                                                     <a href={l} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
                                                         {l}
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                                        </svg>
                                                     </a>
                                                 </li>
+
+                                                {l.includes("drive.google.com/drive/folders/") && (
+                                                    <DriveFolderPreview url={l} />
+                                                )}
                                             </React.Fragment>
                                         ))
                                     ) : null}
@@ -293,77 +402,10 @@ const Kanban = ({ updateData, setKanban, project }) => {
             </section>
         );
     }
-    // Save handler
-    const handleSave = async () => {
-        setIsSaving(true);
 
-        const steps = stepList.map(step => ({
-            name: step.name,
-            items: (step.data || []).map(item => ({
-                title: item.title || '',
-                pic: item.pic || '',
-                done: item.done === true,
-                link: Array.isArray(item.link)
-                    ? item.link.filter(l => l && l.trim() !== '')
-                    : item.link && item.link.trim() !== '' ? [item.link] : [],
-                note: item.note || '',
-                todo: Array.isArray(item.todo)
-                    ? item.todo.map(t => ({
-                        title: t.title || '',
-                        done: !!t.done
-                    }))
-                    : [],
-            }))
-        }));
-
-        let updatedKanbanArr = Array.isArray(project.kanban) ? [...project.kanban] : [];
-        const newKanban = {
-            type: project.categories[0],
-            steps: steps.map(step => ({
-                name: step.name,
-                items: step.items.map(item => ({
-                    title: item.title,
-                    pic: item.pic,
-                    done: item.done,
-                    link: item.link,
-                    note: item.note,
-                    todo: item.todo,
-                }))
-            }))
-        };
-        const idx = updatedKanbanArr.findIndex(k => k.type === project.categories[0]);
-        if (idx >= 0) {
-            updatedKanbanArr[idx] = newKanban;
-        } else {
-            updatedKanbanArr.push(newKanban);
-        }
-        const updatedProject = {
-            ...project,
-            kanban: updatedKanbanArr,
-        };
-
-        try {
-            await updateData(updatedProject);
-            showToast("Kanban Updated", 'success');
-        } catch (err) {
-            showToast("Kanban Failed to Update", 'error', err);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    function getCrewByRole(role) {
-        if (!project.day || !project.day[0] || !project.day[0].crew) return null;
-        const crewList = project.day[0].crew;
-        return crewList.find(c =>
-            (Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === role.toLowerCase())) ||
-            (c.name && c.name.toLowerCase() === role.toLowerCase())
-        );
-    }
 
     return (
         <div role='main' className='bg-[#181818] font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-40'>
-
             <section className='flex items-start justify-between gap-5 p-5'>
                 <button id='back' onClick={() => { setKanban(false) }} className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
@@ -371,16 +413,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     </svg>
                     Back
                 </button>
-                {/* Categories Progress Bar */}
-                {/* <div className="w-full flex flex-col gap-1 justify-end items-end mx-5">
-                    <div className="w-full m-1 rounded-full h-2.5 bg-gray-700/25">
-                        <div
-                            className="bg-[#F8F8F8] h-2.5 rounded-full transition-all duration-300"
-                            style={{ width: `${sectionProgress}%` }}
-                        />
-                    </div>
-                    <p className="text-gray-400 text-sm">Progress: {Math.round(sectionProgress)}%</p>
-                </div> */}
                 {/* Category Tag */}
                 <div className='flex flex-col gap-1 justify-end items-end mx-1'>
                     <p className='text-sm font-semibold tracking-wider'>
@@ -413,39 +445,25 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     }}
                 />
             )}
+            {showResetModal && (
+                <ResetModal
+                    onCancel={() => setShowResetModal(false)}
+                    onReset={handleResetKanban}
+                />
+            )}
             <div className='fixed z-20 bottom-5 right-5 flex items-center gap-2'>
                 <button
                     type="button"
-                    onClick={() => {
-                        const constant = getCurrentConstant();
-                        setPraprodData(constant.praprod);
-                        setProdData(constant.prod);
-                        setPostprodData(constant.postprod);
-                        setManafileData(constant.manafile);
-                    }}
+                    onClick={() => { setShowResetModal(true) }}
                     className="border bg-dark border-light rounded-full p-1 m-2 cursor-pointer font-body tracking-widest font-semibold transition ease-in-out hover:scale-105 duration-300 active:scale-95 "
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#f8f8f8" className="size-5 hover:animate-spin">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                     </svg>
                 </button>
-                <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className=' cursor-pointer bg-[#f2f2f2] text-dark font-body tracking-widest font-semibold rounded-xl w-20 h-10 transition ease-in-out hover:scale-105 duration-300 active:scale-95 disabled:opacity-50'
-                >
-                    {isSaving ? (
-                        <span className="flex items-center justify-center gap-2">
-                            <svg className="animate-spin size-5" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10" stroke="#222222" strokeWidth="4" fill="none" />
-                            </svg>
-                        </span>
-                    ) : "Save"}
-                </button>
             </div>
         </div>
-    );
+    )
 };
 
 export default Kanban;

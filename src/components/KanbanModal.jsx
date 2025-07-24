@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { useRoleProduction } from "../constant/constant"
 const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const [title, setTitle] = useState(draft.title || '');
     const [pic, setPic] = useState(draft.pic || '');
@@ -8,6 +8,8 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const [todos, setTodos] = useState(Array.isArray(draft.todo) ? draft.todo : []);
     const [newLink, setNewLink] = useState('');
     const [newTodo, setNewTodo] = useState('');
+    const roleProduction = useRoleProduction();
+
     const handleSave = () => {
         const updated = {
             ...draft,
@@ -21,6 +23,7 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
             })),
         };
         onSave(updated);
+        onClose()
     };
 
     const removeLink = (idx) => setLinks(links.filter((_, i) => i !== idx));
@@ -73,8 +76,25 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                         <section className='w-1/2 h-full p-3 '>
                             <section className='flex flex-col items-start justify-start gap-2 h-full'>
                                 <div className='flex items-center justify-between gap-2 w-full'>
-                                    <input type="text" className='glass outline-none p-2 text-xs rounded-xl' placeholder='Title' value={title} onChange={e => setTitle(e.target.value)} />
-                                    <input type="text" className='glass outline-none p-2 text-xs rounded-xl' placeholder='PIC' value={pic} onChange={e => setPic(e.target.value)} />
+                                    <input type="text" className='w-1/2 glass outline-none p-2 text-xs rounded-xl' placeholder='Title' value={title} onChange={e => setTitle(e.target.value)} />
+                                    {/* <input type="text" className='glass outline-none p-2 text-xs rounded-xl' placeholder='PIC' value={pic} onChange={e => setPic(e.target.value)} /> */}
+                                    <select
+                                        value={pic}
+                                        onChange={e => setPic(e.target.value)}
+                                        className='w-1/2 glass outline-none py-2 px-3 text-xs rounded-xl appearance-none' // <-- add appearance-none
+                                        name="jobdesk select"
+                                        id="jobselect"
+
+                                    >
+                                        <option value="" className="text-dark bg-light">Select PIC</option>
+                                        {[...roleProduction]
+                                            .sort((a, b) => a.name.localeCompare(b.name))
+                                            .map(roleOption => (
+                                                <option key={roleOption.id} value={roleOption.name} className="text-dark bg-light">
+                                                    {roleOption.name}
+                                                </option>
+                                            ))}
+                                    </select>
                                 </div>
 
                                 {/* Links */}
@@ -117,13 +137,28 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                     <div key={idx} className="flex items-center justify-between w-full">
                                         <div className="text-xs px-2 py-1 text-light">
                                             <label className={`flex flex-row items-center gap-1 tracking-widest cursor-pointer`}>
-                                                <input type="checkbox" checked={todo.checked} onChange={() => toggleTodo(idx)} className="peer hidden" />
+                                                <input
+                                                    type="checkbox"
+                                                    checked={todo.checked}
+                                                    onChange={() => toggleTodo(idx)}
+                                                    className="peer hidden"
+                                                />
                                                 <div className="size-3 flex rounded border border-light bg-dark peer-checked:bg-light transition cursor-pointer">
                                                     <svg fill="none" viewBox="0 0 24 24" className="size-3 stroke-dark peer-checked:stroke-dark" xmlns="http://www.w3.org/2000/svg">
                                                         <path d="M4 12.6111L8.92308 17.5L20 6.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                                     </svg>
                                                 </div>
-                                                {todo.text}
+                                                <input
+                                                    type="text"
+                                                    value={todo.text}
+                                                    onChange={e => {
+                                                        const updated = [...todos];
+                                                        updated[idx].text = e.target.value;
+                                                        setTodos(updated);
+                                                    }}
+                                                    className="bg-transparent border-b border-light/20 px-1 min-w-32 text-xs outline-none"
+                                                    placeholder="To-Do"
+                                                />
                                             </label>
                                         </div>
                                         <button type="button" onClick={() => removeTodo(idx)} className="text-xs px-1 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer" title="Delete To-Do">
@@ -153,7 +188,7 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                 >
                                     Delete
                                 </button>
-                                <button onClick={handleSave} className='bg-light text-dark p-1 w-16 h-7 flex items-center justify-center text-xs cursor-pointer rounded-xl transition ease-in-out hover:scale-105 duration-300 active:scale-95'>Save</button>
+                                <button onClick={() => { handleSave() }} className='bg-light text-dark p-1 w-16 h-7 flex items-center justify-center text-xs cursor-pointer rounded-xl transition ease-in-out hover:scale-105 duration-300 active:scale-95'>Save</button>
                             </div>
                         </section>
                     </main>
