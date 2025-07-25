@@ -9,8 +9,10 @@ import ReadonlyModal from "./ReadonlyModal.jsx";
 import FullscreenButton from "./FullscreenButton.jsx";
 import KanbanModal from "./KanbanModal.jsx";
 import Maintenance from "./Maintenance.jsx";
+import PrintLayout from "./PrintLayout.jsx";
 export {
   Navbar,
+  PrintLayout,
   Maintenance,
   KanbanModal,
   FullscreenButton,

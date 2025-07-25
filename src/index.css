@@ -5,8 +5,6 @@
   src: url("/SFUIDisplay-Light.ttf");
 }
 
-@custom-variant dark (&:is(.dark *));
-
 @theme {
   --color-dark: #222222;
   --color-light: #e8e8e8;

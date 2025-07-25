@@ -1,14 +1,52 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
-import { roleProduction, roleGraphic } from "../constant/constant";
+// import { roleProduction, roleGraphic } from "../constant/constant";
 import { useToast } from '../components/ToastContext';
+import { PrintLayout } from "../components";
+import html2canvas from "html2canvas"
+import jsPDF from "jspdf"
 
 const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const { showToast } = useToast();
   const [pro, setPro] = useState(initialPro || {});
   const [loading, setLoading] = useState(false);
   const [days, setDays] = useState([]);
+  const printRef = useRef()
 
+  const handleExportPDF = async () => {
+    const input = printRef.current;
+    if (!input) {
+      showToast("Export failed: nothing to export", "error");
+      return;
+    }
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    let position = 0;
+    let heightLeft = pdfHeight;
+
+    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+    heightLeft -= pdf.internal.pageSize.getHeight();
+
+    while (heightLeft > 0) {
+      position = heightLeft - pdfHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pdf.internal.pageSize.getHeight();
+    }
+
+    pdf.save(`${pro?.title || "report"}.pdf`);
+  };
   useEffect(() => {
     if (initialPro) {
       setPro(initialPro);
@@ -32,6 +70,19 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     }
   }, [initialPro]);
 
+  useEffect(() => {
+    // Whenever pro.categories or days change, update template for each day
+    if (pro.categories) {
+      setDays(prevDays =>
+        prevDays.map(day => ({
+          ...day,
+          template: pro.categories.some(cat =>
+            ["Produksi", "Dokumentasi"].includes(cat)
+          ),
+        }))
+      );
+    }
+  }, [pro.categories]);
   // Add a new day
   const addDay = () => {
     setDays([
@@ -158,7 +209,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       <nav className="flex justify-between px-10 font-body text-sm tracking-wider items-center w-full h-10 border-b border-light">
         <button
           type="button"
-          className="flex gap-1 items-center text-light"
+          className="flex gap-1 items-center text-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer"
           onClick={() => setShowReportGenerator(false)}
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={0.5} stroke="#e8e8e8" className="size-6">
@@ -189,12 +240,42 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         </main>
       </nav>
       <main className="flex flex-col items-start justify-between h-screen w-full overflow-y-auto no-scrollbar">
+        {/* Absolute */}
+        <div className="glass rounded-xl border border-light/50 w-56 h-40 absolute bottom-5 right-5 flex flex-col items-center justify-center gap-2">
+          {/* Total */}
+          <div className="flex flex-col items-start justify-start">
+            <p className="mb-1 text-xs">Total Expenses</p>
+            <NumericFormat
+              displayType="input"
+              thousandSeparator
+              prefix={"Rp. "}
+              value={days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0) || pro?.total}
+              placeholder="Rp. 0"
+              className="glass text-xs rounded-xl p-2 w-full outline-none"
+              disabled
+            />
+          </div>
+          {/* Export */}
+          <div className="flex items-end justify-between gap-1">
+            <button
+              type="button"
+              onClick={() => handleExportPDF()}
+              className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center border-light/50 text-light w-20 h-10 justify-center"
+            >
+              Export
+            </button>
+            {/* Save */}
+            <button type="submit" onClick={handleSubmit} className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center bg-light text-dark w-20 h-10 justify-center">
+              Save {loading ? <span className="animate-spin"><svg width="100%" height="100%" viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z" stroke="#f8f8f8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span> : null}
+            </button>
+          </div>
+        </div>
         {/* Aside */}
-        <aside className="glass p-5 h-full font-body font-thin text-sm tracking-wider w-full border-b border-light">
+        <aside className="glass p-5 m-1 w-3/4 h-full rounded-xl font-body font-thin text-sm tracking-wider border border-light/50">
           <div className="flex w-full h-full items-start justify-evenly relative">
             {/* Crew section */}
-            <section className="p-2 h-full flex flex-col gap-1 font-body text-xs font-thin w-1/3">
-              <p className="font-body text-sm font-thin tracking-widest pl-4">Crew</p>
+            <section className="px-2 h-full flex flex-col gap-1 font-body text-xs font-thin w-1/3">
+              {/* <p className="font-body text-sm  tracking-widest pl-4">Crew</p> */}
               {pro.day[0].crew.map((item, index) => (
                 <div className="flex items-center justify-start" key={index}>
                   <p className="w-1/2">{item.name}</p>
@@ -202,38 +283,19 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                 </div>
               ))}
             </section>
-            <section className="flex flex-col w-96 h-full">
-              <p className="text-xs my-2">PM : {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
+            <section className="flex flex-col w-1/3 h-full">
+              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">PM</span> <span className="w-1/2">: {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
                 ? pro.day[0].crew
                   .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
                   .map(c => c.name)
                   .join(", ") || "No Project Manager"
-                : "No Crew"}</p>
-              <div className="flex items-start justify-start">
-                <p className="w-1/2 mb-2 text-xs">Client : {pro.client}</p>
-                <p className="w-1/2 mb-2 text-xs">PIC Client : {pro.pic}</p>
-              </div>
+                : "No Crew"}</span></p>
+              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">Client</span> <span className="w-1/2">: {pro.client}</span></p>
+              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">PIC Client</span> <span className="w-1/2">: {pro.pic}</span></p>
               {/* <p className="mb-2">Note</p> */}
-              <textarea placeholder="Note" readOnly value={pro?.note || ''} className="no-scrollbar glass rounded-xl p-2 w-full mt-1 outline-none h-full" />
+              <textarea placeholder="Note" readOnly value={pro?.note || ''} className="no-scrollbar glass rounded-xl text-xs p-2 w-full mt-1 outline-none h-full" />
             </section>
-            {/* Absolute */}
-            <div className="h-full text-right flex items-end gap-2">
-              <div className="w-76">
-                <NumericFormat
-                  displayType="input"
-                  thousandSeparator
-                  prefix={"Rp. "}
-                  value={days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0) || pro?.total}
-                  placeholder="Rp. 0"
-                  className="glass text-xs rounded-xl p-2 w-full outline-none"
-                  disabled
-                />
-              </div>
-              {/* Save Button */}
-              <button type="submit" onClick={handleSubmit} className="border rounded-xl flex gap-2 items-center bg-light text-dark px-4 py-2">
-                Save {loading ? <span className="animate-spin"><svg width="100%" height="100%" viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z" stroke="#f8f8f8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span> : null}
-              </button>
-            </div>
+
           </div>
         </aside>
         {/* Content */}
@@ -243,61 +305,10 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">
               {/* Expenses section */}
               <section className="relative rounded-xl glass p-2 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-3/4">
-                <div className="absolute right-2 top-2 flex items-center gap-2">
-                  <p className="font-body text-xs font-thin tracking-widest">
-                    {day.template
-                      ? "Production | Documentation"
-                      : "Design |  Motion"}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDays(prevDays => prevDays.map((day, idx) =>
-                        idx === dayIndex ? { ...day, template: !day.template } : day
-                      ));
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={0.5}
-                      stroke="currentColor"
-                      className="size-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDays(prevDays => prevDays.filter((_, index) => index !== dayIndex));
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={0.5}
-                      stroke="currentColor"
-                      className="size-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18 18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
                 {day.template ? (
                   <div>
                     {/* Rent */}
-                    <p className="font-body text-xs font-thin tracking-widest">
+                    <p className="font-body text-xs font-thin tracking-widest mt-2">
                       Rent Expenses
                     </p>
                     {day.expense.rent.map((expense, index) => (
@@ -394,12 +405,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() => {
                         handleAddExpense(dayIndex, "rent");
                       }}
-                      className="text-dark bg-light rounded-xl p-px outline-none font-body text-xs font-thin w-20"
+                      className="text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-xl p-px outline-none font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
                     {/* Operational */}
-                    <p className="font-body text-xs font-thin tracking-widest">
+                    <p className="font-body text-xs font-thin tracking-widest mt-2">
                       Operational Expenses
                     </p>
                     {day.expense.operational.map((expense, index) => (
@@ -524,12 +535,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() =>
                         handleAddExpense(dayIndex, "operational")
                       }
-                      className="text-dark bg-light rounded-xl p-px outline-none font-body text-xs font-thin w-20"
+                      className="text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-xl p-px outline-none font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
                     {/* Backup */}
-                    <p className="font-medium ">Backup</p>
+                    <p className="font-body text-xs font-thin tracking-widest mt-2">Backup</p>
                     {day.backup?.map((backupItem, backupIndex) => (
                       <div key={backupIndex} className="flex items-center w-full gap-1">
                         <input
@@ -606,7 +617,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                           })
                         );
                       }}
-                      className="text-dark bg-light rounded-xl p-px outline-none font-body text-xs font-thin w-20"
+                      className="text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-xl p-px outline-none font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
@@ -614,7 +625,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                 ) : (
                   <div>
                     {/* Design */}
-                    <p>Order List</p>
+                    <p className="font-body text-xs font-thin tracking-widest mt-2">Order List</p>
                     {(day.expense?.orderlist || []).map((order, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
@@ -686,12 +697,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() => {
                         handleAddExpense(dayIndex, "orderlist");
                       }}
-                      className="text-dark bg-light rounded-xl p-px outline-none font-body text-xs font-thin w-20"
+                      className="text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-xl p-px outline-none font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
                     {/*Design Expense */}
-                    <p className="font-body text-xs font-thin tracking-widest">
+                    <p className="font-body text-xs font-thin tracking-widest mt-2">
                       Operational Expenses
                     </p>
                     {day.expense.operational.map((expense, index) => (
@@ -818,14 +829,14 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                       onClick={() =>
                         handleAddExpense(dayIndex, "operational")
                       }
-                      className="text-dark bg-light rounded-xl p-px outline-none font-body text-xs font-thin w-20"
+                      className="text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-xl p-px outline-none font-body text-xs font-thin w-20"
                     >
                       Add
                     </button>
                   </div>
                 )}
                 {/* Note & Total */}
-                <main className="w-full">
+                <main className="w-full mt-2">
                   <section className="flex items-center gap-1">
                     <textarea
                       placeholder="Note"
@@ -866,14 +877,16 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           ))}
           <button
             type="button"
-            className="w-20 m-1 rounded-xl text-dark bg-light flex justify-center font-body text-xs font-thin"
+            className="w-20 m-1 rounded-xl text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center font-body text-xs font-thin"
             onClick={addDay}
           >
             Add Day
           </button>
         </form>
       </main>
-
+      {/* <div ref={printRef}>
+        <PrintLayout pro={pro} days={days} />
+      </div> */}
     </main>
   );
 };
