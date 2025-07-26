@@ -1,68 +1,104 @@
+// components/PrintLayout.jsx
 import React from "react";
 
-const currency = (val = 0) =>
-    "Rp. " + parseInt(val).toLocaleString("id-ID");
-
 const PrintLayout = ({ pro, days }) => {
-    const total = days.reduce((acc, d) => acc + (d.totalExpenses || 0), 0);
+    const totalExpenses = days.reduce((acc, d) => acc + (d.totalExpenses || 0), 0);
+    const formatCurrency = (num) =>
+        `Rp. ${parseFloat(num || 0).toLocaleString("id-ID")}`;
 
     return (
-        <div
-            id="pdf-content"
-            style={{
-                padding: "2rem",
-                fontFamily: "SF UI Display",
-                color: "#000",
-                backgroundColor: "#fff",
-                width: "100%",
-                fontSize: "12px",
-            }}
-        >
-            <main className="w-full">
-                <div className="flex items-center justify-start gap-3 w-full">
-                    <img src="/logo.webp" alt="Company Logo" className="invert object-contain size-20" />
-                    <h1 className="font-bold text-center text-5xl">BERITA ACARA PRODUKSI</h1>
-                </div>
-                {/* Header */}
-                <div className="flex flex-col items-start justify-start">
-                    <h2 >{pro?.title}</h2>
-                    <p >Client: {pro.client}</p>
-                    <p >PIC: {pro.pic}</p>
-                </div>
-            </main>
+        <div style={{
+            width: "210mm",
+            minHeight: "297mm",
+            padding: "20mm",
+            fontFamily: "Arial, sans-serif",
+            fontSize: "10pt",
+            color: "#000",
+            boxSizing: "border-box",
+            backgroundColor: "#fff"
+        }}>
+            {/* Report Title */}
+            <div style={{ margin: "8mm 0 4mm" }}>
+                <strong style={{ fontSize: "12pt" }}>Project Report Summary</strong>
+            </div>
 
-            <hr />
+            {/* Header Information */}
+            <table style={{ width: "100%", marginBottom: "6mm" }}>
+                <tbody>
+                    <tr>
+                        <td><strong>Project Title:</strong></td>
+                        <td>{pro?.title || "-"}</td>
+                        <td><strong>Client:</strong></td>
+                        <td>{pro?.client || "-"}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Start Date:</strong></td>
+                        <td>{pro?.start || "-"}</td>
+                        <td><strong>Deadline:</strong></td>
+                        <td>{pro?.deadline || "-"}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PIC Client:</strong></td>
+                        <td>{pro?.pic || "-"}</td>
+                        <td><strong>Total Expenses:</strong></td>
+                        <td>{formatCurrency(totalExpenses)}</td>
+                    </tr>
+                </tbody>
+            </table>
 
-            {/* Project Info */}
-            <p><strong>Start:</strong> {pro.start}</p>
-            <p><strong>Deadline:</strong> {pro.deadline}</p>
-            {pro.note && <p><strong>Note:</strong> {pro.note}</p>}
+            {/* Crew Section */}
+            <div style={{ margin: "10mm 0 4mm" }}>
+                <strong>Crew</strong>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "8mm" }}>
+                <thead>
+                    <tr>
+                        <th style={{ borderBottom: "1px solid #000", textAlign: "left" }}>Name</th>
+                        <th style={{ borderBottom: "1px solid #000", textAlign: "left" }}>Roles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {days[0]?.crew?.map((c, i) => (
+                        <tr key={i}>
+                            <td>{c.name}</td>
+                            <td>{c.roles?.join(", ")}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
 
-            <hr style={{ margin: "1rem 0" }} />
+            {/* Expenses per Day */}
+            <div style={{ margin: "10mm 0 4mm" }}>
+                <strong>Detailed Expenses</strong>
+            </div>
+            {days.map((day, i) => (
+                <div key={i} style={{ marginBottom: "8mm", pageBreakInside: "avoid" }}>
+                    <div style={{ margin: "5mm 0 3mm" }}>
+                        <strong>Day {i + 1}{day.date ? ` - ${day.date}` : ""} {pro?.title ? `for ${pro.title}` : ""}</strong>
+                    </div>
 
-            {/* Days */}
-            {days.map((day, index) => (
-                <div key={day.id} style={{ marginBottom: "2rem", pageBreakInside: "avoid" }}>
-                    <h3>Day {index + 1} — {day.date || "No Date"}</h3>
-                    <p><strong>Template:</strong> {day.template ? "Production" : "Design"}</p>
-                    <p><strong>Note:</strong> {day.note || "–"}</p>
-
-                    {/* Crew */}
-                    {day.crew?.length > 0 && (
+                    {/* Rent */}
+                    {day.expense.rent.length > 0 && (
                         <>
-                            <h4>Crew</h4>
-                            <table width="50%" border="1" cellPadding={4} style={{ borderCollapse: "collapse", marginBottom: "1rem" }}>
+                            <div style={{ margin: "4mm 0 2mm" }}><strong>Rent Expenses</strong></div>
+                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "2mm" }}>
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Roles</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                        <th>Note</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {day.crew.map((c, i) => (
-                                        <tr key={i}>
-                                            <td>{c.name}</td>
-                                            <td>{c.roles?.join(", ")}</td>
+                                    {day.expense.rent.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td>{item.name}</td>
+                                            <td>{item.qty}</td>
+                                            <td>{formatCurrency(item.price)}</td>
+                                            <td>{formatCurrency(item.qty * item.price)}</td>
+                                            <td>{item.note || "-"}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -70,94 +106,95 @@ const PrintLayout = ({ pro, days }) => {
                         </>
                     )}
 
-                    {/* Expenses */}
-                    <h4>Expenses</h4>
-                    {["rent", "operational", "orderlist"].map((type) =>
-                        day.expense?.[type]?.length > 0 ? (
-                            <div key={type} style={{ marginBottom: "1rem" }}>
-                                <strong>{type.toUpperCase()}</strong>
-                                <table width="100%" border="1" cellPadding={4} style={{ borderCollapse: "collapse", marginTop: "0.5rem" }}>
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Qty</th>
-                                            <th>Price</th>
-                                            <th>Note</th>
-                                            {type === "operational" && <th>Category</th>}
+                    {/* Operational */}
+                    {day.expense.operational.length > 0 && (
+                        <>
+                            <div style={{ margin: "4mm 0 2mm" }}><strong>Operational Expenses</strong></div>
+                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "2mm" }}>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                        <th>Category</th>
+                                        <th>Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {day.expense.operational.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td>{item.name}</td>
+                                            <td>{item.qty}</td>
+                                            <td>{formatCurrency(item.price)}</td>
+                                            <td>{formatCurrency(item.qty * item.price)}</td>
+                                            <td>{item.category || "-"}</td>
+                                            <td>{item.note || "-"}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {day.expense[type].map((exp, i) => (
-                                            <tr key={i}>
-                                                <td>{exp.name}</td>
-                                                <td>{exp.qty}</td>
-                                                <td>{currency(exp.price)}</td>
-                                                <td>{exp.note}</td>
-                                                {type === "operational" && <td>{exp.category}</td>}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : null
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>
+                    )}
+
+                    {/* Order List */}
+                    {day.expense.orderlist.length > 0 && (
+                        <>
+                            <div style={{ margin: "4mm 0 2mm" }}><strong>Order List Expenses</strong></div>
+                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "2mm" }}>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Qty</th>
+                                        <th>Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {day.expense.orderlist.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td>{item.name}</td>
+                                            <td>{item.qty}</td>
+                                            <td>{item.note || "-"}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>
                     )}
 
                     {/* Backup */}
                     {day.backup?.length > 0 && (
                         <>
-                            <h4>Backup</h4>
-                            <table width="100%" border="1" cellPadding={4} style={{ borderCollapse: "collapse" }}>
-                                <thead>
-                                    <tr>
-                                        <th>Source</th>
-                                        <th>Target</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {day.backup.map((b, i) => (
-                                        <tr key={i}>
-                                            <td>{b.source}</td>
-                                            <td>{b.target}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <div style={{ margin: "4mm 0 2mm" }}><strong>Backup</strong></div>
+                            <ul style={{ paddingLeft: "1.2em", marginTop: "0" }}>
+                                {day.backup.map((b, idx) => (
+                                    <li key={idx}>
+                                        {b.source} → {b.target}
+                                    </li>
+                                ))}
+                            </ul>
                         </>
                     )}
 
-                    <p><strong>Subtotal:</strong> {currency(day.totalExpenses)}</p>
+                    {/* Day Note */}
+                    {day.note && (
+                        <>
+                            <div style={{ margin: "4mm 0 2mm" }}><strong>Note for Day {i + 1}</strong></div>
+                            <p style={{ whiteSpace: "pre-wrap", marginBottom: "2mm" }}>{day.note}</p>
+                        </>
+                    )}
+
+                    <p><strong>Total for Day {i + 1}:</strong> {formatCurrency(day.totalExpenses)}</p>
                 </div>
             ))}
 
-            <hr />
-
-            {/* Total */}
-            <h3>Total Project Expenses: {currency(total || pro.total)}</h3>
-
-            <br /><br /><br />
-
-            {/* Signatures */}
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "2rem" }}>
-                <div style={{ textAlign: "center" }}>
-                    <p>Project Manager</p>
-                    <br /><br />
-                    <p style={{ borderTop: "1px solid #000", width: "200px", margin: "0 auto" }}>
-                        {
-                            days[0]?.crew?.find(c =>
-                                Array.isArray(c.roles) &&
-                                c.roles.some(r => r.toLowerCase() === "project manager")
-                            )?.name || "___________________"
-                        }
-                    </p>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                    <p>PIC Client</p>
-                    <br /><br />
-                    <p style={{ borderTop: "1px solid #000", width: "200px", margin: "0 auto" }}>
-                        {pro.pic || "___________________"}
-                    </p>
-                </div>
-            </div>
+            {/* Final Project Note */}
+            {pro.note && (
+                <>
+                    <div style={{ margin: "10mm 0 2mm" }}><strong>Project Note</strong></div>
+                    <p style={{ whiteSpace: "pre-wrap" }}>{pro.note}</p>
+                </>
+            )}
         </div>
     );
 };

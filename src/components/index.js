@@ -10,8 +10,10 @@ import FullscreenButton from "./FullscreenButton.jsx";
 import KanbanModal from "./KanbanModal.jsx";
 import Maintenance from "./Maintenance.jsx";
 import PrintLayout from "./PrintLayout.jsx";
+import Tooltip from "./Tooltip.jsx";
 export {
   Navbar,
+  Tooltip,
   PrintLayout,
   Maintenance,
   KanbanModal,

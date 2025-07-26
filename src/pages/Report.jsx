@@ -47,6 +47,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
 
     pdf.save(`${pro?.title || "report"}.pdf`);
   };
+
   useEffect(() => {
     if (initialPro) {
       setPro(initialPro);
@@ -71,7 +72,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   }, [initialPro]);
 
   useEffect(() => {
-    // Whenever pro.categories or days change, update template for each day
     if (pro.categories) {
       setDays(prevDays =>
         prevDays.map(day => ({
@@ -83,7 +83,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       );
     }
   }, [pro.categories]);
-  // Add a new day
   const addDay = () => {
     setDays([
       ...days,
@@ -100,7 +99,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     ]);
   };
 
-  // Calculate total expenses for a day
   const calculateTotalExpenses = (day) => {
     if (!day) return 0;
     const parseNumber = (value) => isNaN(parseFloat(value)) ? 0 : parseFloat(value);
@@ -202,7 +200,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       setLoading(false);
     }
   };
-
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d)) return "";
+    return d.toISOString().slice(0, 10);
+  };
   return (
     <main className="fixed top-0 left-0 z-40 bg-dark w-full h-screen flex flex-col items-start">
       {/* Navbar */}
@@ -223,8 +226,8 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <p>Start :</p>
             <input
               type="date"
-              value={pro?.start}
-              onChange={e => handleInputChange('start', e.target.value)}
+              value={formatDate(pro?.createdAt)}
+              onChange={e => handleInputChange('createdAt', e.target.value)}
               className="border border-gray-400 glass rounded-xl px-1 p-px outline-none m-1 font-body text-light text-xs font-thin"
             />
           </div>
@@ -232,79 +235,21 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <p>Deadline :</p>
             <input
               type="date"
-              value={pro?.deadline}
-              readOnly
+              value={formatDate(pro?.deadline)}
+              onChange={e => handleInputChange('deadline', e.target.value)}
               className="border border-gray-400 glass rounded-xl px-1 p-px outline-none m-1 font-body text-xs text-light font-thin"
             />
           </div>
         </main>
       </nav>
-      <main className="flex flex-col items-start justify-between h-screen w-full overflow-y-auto no-scrollbar">
-        {/* Absolute */}
-        <div className="glass rounded-xl border border-light/50 w-56 h-40 absolute bottom-5 right-5 flex flex-col items-center justify-center gap-2">
-          {/* Total */}
-          <div className="flex flex-col items-start justify-start">
-            <p className="mb-1 text-xs">Total Expenses</p>
-            <NumericFormat
-              displayType="input"
-              thousandSeparator
-              prefix={"Rp. "}
-              value={days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0) || pro?.total}
-              placeholder="Rp. 0"
-              className="glass text-xs rounded-xl p-2 w-full outline-none"
-              disabled
-            />
-          </div>
-          {/* Export */}
-          <div className="flex items-end justify-between gap-1">
-            <button
-              type="button"
-              onClick={() => handleExportPDF()}
-              className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center border-light/50 text-light w-20 h-10 justify-center"
-            >
-              Export
-            </button>
-            {/* Save */}
-            <button type="submit" onClick={handleSubmit} className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center bg-light text-dark w-20 h-10 justify-center">
-              Save {loading ? <span className="animate-spin"><svg width="100%" height="100%" viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z" stroke="#f8f8f8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span> : null}
-            </button>
-          </div>
-        </div>
-        {/* Aside */}
-        <aside className="glass p-5 m-1 w-3/4 h-full rounded-xl font-body font-thin text-sm tracking-wider border border-light/50">
-          <div className="flex w-full h-full items-start justify-evenly relative">
-            {/* Crew section */}
-            <section className="px-2 h-full flex flex-col gap-1 font-body text-xs font-thin w-1/3">
-              {/* <p className="font-body text-sm  tracking-widest pl-4">Crew</p> */}
-              {pro.day[0].crew.map((item, index) => (
-                <div className="flex items-center justify-start" key={index}>
-                  <p className="w-1/2">{item.name}</p>
-                  <p className="w-1/2">:&nbsp;{item.roles.join(", ")}</p>
-                </div>
-              ))}
-            </section>
-            <section className="flex flex-col w-1/3 h-full">
-              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">PM</span> <span className="w-1/2">: {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
-                ? pro.day[0].crew
-                  .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
-                  .map(c => c.name)
-                  .join(", ") || "No Project Manager"
-                : "No Crew"}</span></p>
-              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">Client</span> <span className="w-1/2">: {pro.client}</span></p>
-              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">PIC Client</span> <span className="w-1/2">: {pro.pic}</span></p>
-              {/* <p className="mb-2">Note</p> */}
-              <textarea placeholder="Note" readOnly value={pro?.note || ''} className="no-scrollbar glass rounded-xl text-xs p-2 w-full mt-1 outline-none h-full" />
-            </section>
-
-          </div>
-        </aside>
+      <main className="flex items-start justify-between h-screen w-full overflow-y-auto no-scrollbar">
         {/* Content */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+        <form ref={printRef} onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
           {/* Data per Day */}
           {days.map((day, dayIndex) => (
             <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">
               {/* Expenses section */}
-              <section className="relative rounded-xl glass p-2 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-3/4">
+              <section className="relative rounded-xl glass p-5 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-full">
                 {day.template ? (
                   <div>
                     {/* Rent */}
@@ -883,10 +828,66 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             Add Day
           </button>
         </form>
+        {/* Aside */}
+        <aside className="glass p-2 m-1 w-1/3 h-full rounded-xl font-body font-thin text-sm tracking-wider border border-light/50">
+          <div className="flex flex-col w-full h-full items-start justify-evenly relative">
+            <section className="flex flex-col w-full">
+              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">PM</span> <span className="w-1/2">: {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
+                ? pro.day[0].crew
+                  .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
+                  .map(c => c.name)
+                  .join(", ") || "No Project Manager"
+                : "No Crew"}</span></p>
+              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">Client</span> <span className="w-1/2">: {pro.client}</span></p>
+              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">PIC Client</span> <span className="w-1/2">: {pro.pic}</span></p>
+              {/* <p className="mb-2">Note</p> */}
+            </section>
+            {/* Crew section */}
+            <section className="px-2 h-full w-full flex flex-col gap-1 font-body text-xs font-thin ">
+              <p className="font-body text-xs tracking-widest my-1">Crew</p>
+              {pro.day[0].crew.map((item, index) => (
+                <div className="flex items-center justify-start w-full" key={index}>
+                  <p className="w-1/2">{item.name}</p>
+                  <p className="w-1/2">:&nbsp;{item.roles.join(", ")}</p>
+                </div>
+              ))}
+            </section>
+            <div className="flex flex-col items-end justify-end w-full gap-2">
+              <textarea placeholder="Note" readOnly value={pro?.note || ''} className="no-scrollbar glass rounded-xl text-xs p-2 w-full mt-1 outline-none h-full" />
+              {/* Total */}
+              <div className="w-full flex flex-col items-start justify-start">
+                <p className="mb-1 text-xs">Total Expenses</p>
+                <NumericFormat
+                  displayType="input"
+                  thousandSeparator
+                  prefix={"Rp. "}
+                  value={days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0) || pro?.total}
+                  placeholder="Rp. 0"
+                  className="glass text-xs rounded-xl p-2 w-full outline-none"
+                  disabled
+                />
+              </div>
+              {/* Export */}
+              <div className="w-full flex items-end justify-between gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleExportPDF()}
+                  className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center border-light/50 text-light w-20 h-10 justify-center"
+                >
+                  Export
+                </button>
+                {/* Save */}
+                <button type="submit" onClick={handleSubmit} className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center bg-light text-dark w-20 h-10 justify-center">
+                  {loading ? <span className="animate-spin"><svg width="100%" height="100%" viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span> : "Save"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
       </main>
-      {/* <div ref={printRef}>
+      <div style={{ position: "absolute", left: "-9999px", top: 0 }} ref={printRef}>
         <PrintLayout pro={pro} days={days} />
-      </div> */}
+      </div>
     </main>
   );
 };
