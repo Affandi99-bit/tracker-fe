@@ -46,7 +46,7 @@ const DeleteModal = ({ show, onCancel, onConfirm, loading }) => {
             Cancel
           </button>
           <button
-            className="w-20 h-10 bg-light text-dark rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer"
+            className="w-20 h-10 flex items-center justify-center bg-light text-dark rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer"
             onClick={onConfirm}
             disabled={loading}
           >
