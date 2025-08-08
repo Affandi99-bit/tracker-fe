@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
 import { Loader, Navbar, CreateModal, Toast, FullscreenButton, Maintenance } from "./components";
-import { MainTable, Readonly, Login } from "./pages";
+import { MainTable, Readonly, Login, SOP } from "./pages";
 import axios from "axios";
 import { ToastProvider } from './components/ToastContext';
 
@@ -137,6 +137,10 @@ const MainApp = () => {
           <Route
             path="/readonly/:id"
             element={<ReadonlyWrapper data={tableData} />}
+          />
+          <Route
+            path="/sop"
+            element={<SOP />}
           />
           <Route
             path="/tv"

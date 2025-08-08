@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { tags } from "../constant/constant";
+import { Link } from 'react-router-dom'
 import Tooltip from "./Tooltip";
+import { useToast } from "./ToastContext";
 const Dropdown = ({ selectedTags, setSelectedTags }) => {
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
@@ -109,7 +111,7 @@ const Navbar = ({
   const [showArchive, setShowArchive] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showLastMonth, setShowLastMonth] = useState(false);
-
+  const { showToast } = useToast();
   const handleInput = (e) => {
     onSearch(e.target.value);
   };
@@ -156,30 +158,35 @@ const Navbar = ({
                     placeholder="Search..."
                   />
                 ) : null}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="#E8E8E8"
-                  className="size-6 transition ease-in-out hover:scale-110  duration-300 active:scale-90 cursor-pointer "
-                  onClick={() => setShowSearch(!showSearch)}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                  />
-                </svg>
+                <button className='transition ease-in-out hover:scale-110  duration-300 active:scale-90 cursor-pointer '>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="#E8E8E8"
+                    className="size-6"
+                    onClick={() => { }}>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                    />
+                  </svg>
+                </button>
               </div>
             </Tooltip>
             {/* SOP Button */}
             <Tooltip position="left" content={"SOP Library"}>
-              <button id="sop" className="transition ease-in-out hover:scale-110  duration-300 active:scale-90 cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-                </svg>
-              </button>
+              <Link to={"/sop"}>
+                <button id="sop"
+                  // onClick={() => { showToast("Under Development", "error"); }}
+                  className="transition ease-in-out hover:scale-110  duration-300 active:scale-90 cursor-pointer">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                  </svg>
+                </button>
+              </Link>
             </Tooltip>
             {/* Archive Button */}
             <Tooltip position="left" content={"Archive"}>
