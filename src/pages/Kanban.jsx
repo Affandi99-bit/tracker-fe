@@ -364,13 +364,12 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                         item.link.map((l, i) => (
                                             <React.Fragment key={i}>
                                                 <li className='flex items-start justify-start'>
-                                                    <a href={l} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
-                                                        {l}
+                                                    <a href={l.link} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
+                                                        {l.title || l.link}
                                                     </a>
                                                 </li>
-
-                                                {l.includes("drive.google.com/drive/folders/") && (
-                                                    <DriveFolderPreview url={l} />
+                                                {typeof l.link === "string" && l.link.includes("drive.google.com/drive/folders/") && (
+                                                    <DriveFolderPreview url={l.link} />
                                                 )}
                                             </React.Fragment>
                                         ))

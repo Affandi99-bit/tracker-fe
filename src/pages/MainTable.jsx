@@ -85,37 +85,14 @@ const DataTable = ({
   setKanban,
   setShowReadonlyModal,
   setReadonlyRow,
-  deleteData,
-  updateData,
   setShowReport,
-  setReportRow
+  setReportRow,
+  handleDeleteClick, // Receive from props
+  loadingId // Receive from props
 }) => {
-  const [loadingId, setLoadingId] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [rowToDelete, setRowToDelete] = useState(null);
-
-  const { showToast } = useToast();
-
   const handleRowClick = (rowData) => {
     setSelectedRowData(rowData);
     setShowModal(true);
-  };
-
-  const handleDeleteClick = (row) => {
-    setRowToDelete(row);
-    setShowDeleteModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    setLoadingId(rowToDelete._id);
-    try {
-      await deleteData(rowToDelete._id);
-      setShowDeleteModal(false);
-      showToast("Project Deleted", "error");
-    } finally {
-      setLoadingId(null);
-      setRowToDelete(null);
-    }
   };
 
   return (
@@ -235,7 +212,7 @@ const DataTable = ({
                       id="delete-button"
                       onClick={e => {
                         e.stopPropagation();
-                        handleDeleteClick(row);
+                        handleDeleteClick(row); // Use prop
                       }}
                     >
                       {loadingId === row._id ? (
@@ -268,15 +245,6 @@ const DataTable = ({
           );
         })}
       </tbody>
-      <DeleteModal
-        show={showDeleteModal}
-        onCancel={() => {
-          setShowDeleteModal(false);
-          setRowToDelete(null);
-        }}
-        onConfirm={handleConfirmDelete}
-        loading={loadingId !== null}
-      />
     </>
   );
 };
@@ -302,6 +270,9 @@ const MainTable = ({
   const [readonlyRow, setReadonlyRow] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [reportRow, setReportRow] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState(null);
+  const [loadingId, setLoadingId] = useState(null);
 
   useEffect(() => {
     if (!tableData) return;
@@ -356,6 +327,23 @@ const MainTable = ({
     setSortedDataLocal(sortedByTitle);
   };
 
+  const handleDeleteClick = (row) => {
+    setRowToDelete(row);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setLoadingId(rowToDelete._id);
+    try {
+      await deleteData(rowToDelete._id);
+      setShowDeleteModal(false);
+      // Optionally show toast here if you want
+    } finally {
+      setLoadingId(null);
+      setRowToDelete(null);
+    }
+  };
+
   if (!tableData || !sortedData) {
     return <Loader />;
   }
@@ -402,6 +390,8 @@ const MainTable = ({
               setReadonlyRow={setReadonlyRow}
               setShowReport={setShowReport}
               setReportRow={setReportRow}
+              handleDeleteClick={handleDeleteClick} // Pass down
+              loadingId={loadingId} // Pass down
             />
           </Suspense>
         </table>
@@ -438,6 +428,15 @@ const MainTable = ({
           updateData={updateData}
         />
       )}
+      <DeleteModal
+        show={showDeleteModal}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setRowToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        loading={loadingId !== null}
+      />
     </main>
   );
 };

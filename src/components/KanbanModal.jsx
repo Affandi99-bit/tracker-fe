@@ -4,9 +4,19 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const [title, setTitle] = useState(draft.title || '');
     const [pic, setPic] = useState(draft.pic || '');
     const [note, setNote] = useState(draft.note || '');
-    const [links, setLinks] = useState(Array.isArray(draft.link) ? draft.link : []);
+    // Change links to array of objects
+    const [links, setLinks] = useState(
+        Array.isArray(draft.link)
+            ? draft.link.map(l =>
+                typeof l === "string"
+                    ? { title: l, link: l }
+                    : { title: l.title || l.link, link: l.link }
+            )
+            : []
+    );
     const [todos, setTodos] = useState(Array.isArray(draft.todo) ? draft.todo : []);
     const [newLink, setNewLink] = useState('');
+    const [newLinkTitle, setNewLinkTitle] = useState('');
     const [newTodo, setNewTodo] = useState('');
     const roleProduction = useRoleProduction();
 
@@ -27,10 +37,12 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     };
 
     const removeLink = (idx) => setLinks(links.filter((_, i) => i !== idx));
+    // Push as object
     const addLink = () => {
         if (newLink.trim()) {
-            setLinks([...links, newLink.trim()]);
+            setLinks([...links, { title: newLinkTitle.trim() || newLink.trim(), link: newLink.trim() }]);
             setNewLink('');
+            setNewLinkTitle('');
         }
     };
 
@@ -101,8 +113,8 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                 <div className="flex flex-col gap-1 w-full mt-2">
                                     {links.map((linkValue, linkIdx) => (
                                         <div key={linkIdx} className="flex items-center justify-between w-full">
-                                            <a href={linkValue} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
-                                                {linkValue}
+                                            <a href={linkValue.link} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
+                                                {linkValue.title || linkValue.link}
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                                                 </svg>
@@ -115,7 +127,20 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                         </div>
                                     ))}
                                     <div className="flex items-center gap-2 mt-1">
-                                        <input type="text" className='rounded-xl border border-light/50 text-xs px-2 outline-none' placeholder="Add new link" value={newLink} onChange={e => setNewLink(e.target.value)} />
+                                        <input
+                                            type="text"
+                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none'
+                                            placeholder="Link URL"
+                                            value={newLink}
+                                            onChange={e => setNewLink(e.target.value)}
+                                        />
+                                        <input
+                                            type="text"
+                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none'
+                                            placeholder="Link Title (optional)"
+                                            value={newLinkTitle}
+                                            onChange={e => setNewLinkTitle(e.target.value)}
+                                        />
                                         <button type="button" onClick={addLink} className='transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer' title="Add link">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
