@@ -17,7 +17,12 @@ function getDefaultKanban(category) {
         type: category,
         steps: Object.keys(base).map(stepName => ({
             name: stepName,
-            items: base[stepName]
+            items: base[stepName].map(item => ({
+                ...item,
+                done: false,
+                link: [],
+                note: ''
+            }))
         }))
     }];
 }
@@ -97,12 +102,21 @@ function useDebouncedSave(updateData, delay = 500) {
     return (updatedProject) => {
         clearTimeout(timeout.current);
         timeout.current = setTimeout(() => {
-            updateData(updatedProject);
+            updateData(updatedProject).then(() => {
+            }).catch(err => {
+                console.error('Debounced save failed:', err);
+            });
         }, delay);
     };
 }
 
-const Kanban = ({ updateData, setKanban, project }) => {
+const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
+    // Ensure project is not null and has required properties
+    if (!project || !project._id || !project.categories || !project.categories.length) {
+        console.error('Invalid project data:', project);
+        return <div>Invalid project data</div>;
+    }
+
     const selectedKanban = (() => {
         return Array.isArray(project.kanban)
             ? project.kanban.find(k => k.type === project.categories[0])
@@ -136,11 +150,13 @@ const Kanban = ({ updateData, setKanban, project }) => {
     useEffect(() => {
         const constant = getCurrentConstant();
 
+        // Initialize with empty arrays first
         setPraprodData([]);
         setProdData([]);
         setPostprodData([]);
         setManafileData([]);
 
+        // Check if project has existing kanban data
         const selected = Array.isArray(project.kanban)
             ? project.kanban.find(k => k.type === project.categories[0])
             : null;
@@ -150,14 +166,61 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 const step = selected.steps.find(s => s.name === stepName);
                 return step ? step.items : [];
             }
-            return constant[stepName] || [];
+            // If no existing data, get from constants and structure properly
+            const constantItems = constant[stepName] || [];
+            return constantItems.map(item => ({
+                ...item,
+                done: false,
+                link: [],
+                note: ''
+            }));
         };
 
-        setPraprodData(getData("praprod"));
-        setProdData(getData("prod"));
-        setPostprodData(getData("postprod"));
-        setManafileData(getData("manafile"));
-    }, [project.kanban]);
+        // Set the data
+        const praprodItems = getData("praprod");
+        const prodItems = getData("prod");
+        const postprodItems = getData("postprod");
+        const manafileItems = getData("manafile");
+
+        setPraprodData(praprodItems);
+        setProdData(prodItems);
+        setPostprodData(postprodItems);
+        setManafileData(manafileItems);
+
+        // If no existing kanban data, create initial structure
+        if (!selected && project.categories && project.categories.length > 0) {
+            const initialKanban = [{
+                type: project.categories[0],
+                steps: [
+                    { name: "praprod", items: praprodItems },
+                    { name: "prod", items: prodItems },
+                    { name: "postprod", items: postprodItems },
+                    { name: "manafile", items: manafileItems }
+                ]
+            }];
+            
+            // Update project with initial kanban structure
+            const updatedProject = {
+                ...project,
+                _id: project._id,
+                kanban: initialKanban
+            };
+            
+            // Save to database
+            updateData(updatedProject).then(() => {
+                // Update the project state
+                Object.assign(project, updatedProject);
+                
+                // Notify parent component of the update
+                if (onProjectUpdate) {
+                    onProjectUpdate(updatedProject);
+                }
+            }).catch(err => {
+                console.error('Error initializing kanban:', err);
+                showToast("Error initializing kanban", "error");
+            });
+        }
+    }, [project.kanban, project.categories]);
 
     const isProduksi = project.categories[0] === "Produksi" || project.categories[0] === "Dokumentasi";
     const stepList = isProduksi
@@ -180,97 +243,124 @@ const Kanban = ({ updateData, setKanban, project }) => {
         if (itemIdx !== null) {
             setDraft(stepList[stepIdx].data[itemIdx]);
         } else {
-            setDraft({ title: '', pic: '', note: '', link: [], todo: [], done: '' });
+            setDraft({ 
+                title: '', 
+                pic: '', 
+                note: '', 
+                link: [], 
+                done: false 
+            });
         }
         setKanbanModal(true);
     };
 
-    const handleModalSave = (updatedItem) => {
-        console.log('Saving item:', updatedItem);
-        if (modalStepIndex === null) {
-            console.error('No step index selected');
-            return;
-        }
-
-        // Get current step
-        const step = stepList[modalStepIndex];
-        let updatedData = [...step.data];
-
-        // Update or add new item
-        if (modalItemIndex !== null) {
-            updatedData[modalItemIndex] = updatedItem;
-        } else {
-            updatedData.push(updatedItem);
-        }
-
-        // Update local state
-        step.setData(updatedData);
-
-        // Create updated kanban structure
-        let updatedKanban;
-        const currentKanban = project.kanban?.[0] || { type: project.categories[0], steps: [] };
-
-        // Map all steps with their current data
-        const updatedSteps = [
-            {
-                name: "praprod",
-                items: modalStepIndex === 0 ? updatedData : praprodData
-            },
-            {
-                name: "prod",
-                items: modalStepIndex === 1 ? updatedData : prodData
-            },
-            {
-                name: "postprod",
-                items: modalStepIndex === 2 ? updatedData : postprodData
-            },
-            {
-                name: "manafile",
-                items: modalStepIndex === 3 ? updatedData : manafileData
+    const handleModalSave = async (updatedItem) => {
+        try {
+            if (modalStepIndex === null) {
+                console.error('No step index selected');
+                return;
             }
-        ];
 
-        // Create the kanban structure
-        updatedKanban = [{
-            type: project.categories[0],
-            steps: updatedSteps
-        }];
+            // Validate and clean the updated item
+            const cleanedItem = {
+                ...updatedItem,
+                link: Array.isArray(updatedItem.link) ? updatedItem.link.filter(l => (l.title && l.title.trim()) || (l.link && l.link.trim())) : []
+            };
 
-        // Create the final project update
-        const updatedProject = {
-            ...project,
-            _id: project._id,
-            kanban: updatedKanban
-        };
+            // Get current step
+            const step = stepList[modalStepIndex];
+            let updatedData = [...step.data];
 
-        // Debug log
-        console.log('Updating project:', {
-            projectId: updatedProject._id,
-            kanbanType: updatedKanban[0].type,
-            steps: updatedKanban[0].steps.map(s => ({
-                name: s.name,
-                itemCount: s.items.length
-            }))
-        });
+            // Update or add new item
+            if (modalItemIndex !== null) {
+                updatedData[modalItemIndex] = cleanedItem;
+            } else {
+                updatedData.push(cleanedItem);
+            }
 
-        // Send update to database
-        updateData(updatedProject).catch(err => {
-            console.error('Error updating:', err);
-            showToast("Error updating kanban", "error");
-        });
+            // Update local state
+            step.setData(updatedData);
 
-        setKanbanModal(false);
+            // Create updated kanban structure with current state
+            const updatedKanban = [{
+                type: project.categories[0],
+                steps: [
+                    {
+                        name: "praprod",
+                        items: modalStepIndex === 0 ? updatedData : praprodData
+                    },
+                    {
+                        name: "prod",
+                        items: modalStepIndex === 1 ? updatedData : prodData
+                    },
+                    {
+                        name: "postprod",
+                        items: modalStepIndex === 2 ? updatedData : postprodData
+                    },
+                    {
+                        name: "manafile",
+                        items: modalStepIndex === 3 ? updatedData : manafileData
+                    }
+                ]
+            }];
+
+            // Create the final project update
+            const updatedProject = {
+                ...project,
+                _id: project._id,
+                kanban: updatedKanban
+            };
+
+            // Send update to database
+            const result = await updateData(updatedProject);
+            
+            // Update the project state to reflect changes
+            Object.assign(project, updatedProject);
+            
+            // Notify parent component of the update
+            if (onProjectUpdate) {
+                onProjectUpdate(updatedProject);
+            }
+            
+            setKanbanModal(false);
+            showToast("Kanban item saved successfully", "success");
+        } catch (err) {
+            console.error('Error saving kanban item:', err);
+            showToast("Error saving kanban item", "error");
+        }
     }
 
     const handleResetKanban = async () => {
         setShowResetModal(false);
-        const updatedKanban = (project.kanban || []).filter(k => k.type !== project.categories[0]);
-        const updatedProject = {
-            ...project,
-            _id: project._id,
-            kanban: updatedKanban,
-        };
-        await updateData(updatedProject);
+        try {
+            const updatedKanban = (project.kanban || []).filter(k => k.type !== project.categories[0]);
+            const updatedProject = {
+                ...project,
+                _id: project._id,
+                kanban: updatedKanban,
+            };
+            
+            await updateData(updatedProject);
+            
+            // Update local state to reflect the reset
+            setPraprodData([]);
+            setProdData([]);
+            setPostprodData([]);
+            setManafileData([]);
+            
+            // Update the project state
+            Object.assign(project, updatedProject);
+            
+            // Notify parent component of the update
+            if (onProjectUpdate) {
+                onProjectUpdate(updatedProject);
+            }
+            
+            showToast("Kanban reset successfully", "success");
+        } catch (err) {
+            console.error('Error resetting kanban:', err);
+            showToast("Error resetting kanban", "error");
+        }
     };
 
     function getCrewByRole(role) {
@@ -308,28 +398,30 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     updated[index].done = !isChecked;
                                     setData(updated);
 
-                                    const updatedKanban = (
-                                        Array.isArray(project.kanban) && project.kanban.length > 0
-                                            ? project.kanban
-                                            : getDefaultKanban(project.categories[0])
-                                    ).map(k => {
-                                        if (k.type === project.categories[0]) {
-                                            return {
-                                                ...k,
-                                                steps: stepList.map(step => ({
-                                                    name: step.name,
-                                                    items: step.name === stepList[stepIdx].name ? updated : step.data,
-                                                })),
-                                            };
-                                        }
-                                        return k;
-                                    });
+                                    // Create updated kanban structure
+                                    const updatedKanban = [{
+                                        type: project.categories[0],
+                                        steps: stepList.map(step => ({
+                                            name: step.name,
+                                            items: step.name === stepList[stepIdx].name ? updated : step.data,
+                                        })),
+                                    }];
 
                                     const updatedProject = {
                                         ...project,
                                         _id: project._id,
                                         kanban: updatedKanban,
                                     };
+                                    
+                                    // Update the project state immediately
+                                    Object.assign(project, updatedProject);
+                                    
+                                    // Notify parent component of the update
+                                    if (onProjectUpdate) {
+                                        onProjectUpdate(updatedProject);
+                                    }
+                                    
+                                    // Save to database
                                     debouncedSave(updatedProject);
                                 }}
                                 className={`bg-[#262626] relative overflow-hidden flex flex-col justify-between items-start p-4 w-72 rounded-xl mb-2.5 hover:opacity-65 cursor-pointer transition duration-200 ${isChecked ? 'ring ring-[#f8f8f88e]' : ''}`}
@@ -369,69 +461,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                         })()}
                                     </div>
                                 </div>
-                                {/* To-Do Section */}
-                                <ul className='my-2'>
-                                    {Array.isArray(item.todo) && item.todo.length > 0 && (
-                                        <p className='text-xs font-semibold tracking-widest mb-2'>To-Do</p>
-                                    )}
-                                    {Array.isArray(item.todo) && item.todo.length > 0 ? (
-                                        item.todo.map((todo, i) => (
-                                            <React.Fragment key={i}>
-                                                <li className="flex items-center gap-1 text-xs">
-                                                    <label
-                                                        key={index}
-                                                        className={`flex flex-row items-center gap-2 font-body tracking-widest cursor-pointer `}
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            name="todo"
-                                                            checked={!!todo.done} // <-- use 'done'
-                                                            onChange={e => {
-                                                                e.stopPropagation();
-                                                                const updated = [...data];
-                                                                updated[index].todo = updated[index].todo.map((t, idx) =>
-                                                                    idx === i ? { ...t, done: !t.done } : t
-                                                                );
-                                                                setData(updated);
-                                                                const updatedKanban = (project.kanban || []).map(k => {
-                                                                    if (k.type === project.categories[0]) {
-                                                                        return {
-                                                                            ...k,
-                                                                            steps: stepList.map(step => ({
-                                                                                name: step.name,
-                                                                                items: step.name === stepList[stepIdx].name ? updated : step.data,
-                                                                            })),
-                                                                        };
-                                                                    }
-                                                                    return k;
-                                                                });
-                                                                const updatedProject = {
-                                                                    ...project,
-                                                                    kanban: updatedKanban,
-                                                                };
-                                                                debouncedSave(updatedProject);
-                                                            }}
-                                                            className="peer hidden"
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            value={todo.title} // <-- use 'title'
-                                                            onChange={e => {
-                                                                const updated = [...data];
-                                                                updated[index].todo = updated[index].todo.map((t, idx) =>
-                                                                    idx === i ? { ...t, title: e.target.value } : t
-                                                                );
-                                                                setData(updated);
-                                                            }}
-                                                            className="bg-transparent border-b border-light/20 px-1 min-w-32 text-xs outline-none"
-                                                            placeholder="To-Do"
-                                                        />
-                                                    </label>
-                                                </li>
-                                            </React.Fragment>
-                                        ))
-                                    ) : null}
-                                </ul>
+
                                 {/* Links Section */}
                                 <ul className='my-2 w-full'>
                                     {Array.isArray(item.link) && item.link.length > 0 && (
@@ -440,9 +470,22 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     {Array.isArray(item.link) && item.link.length > 0 ? (
                                         item.link.map((l, i) => (
                                             <React.Fragment key={i}>
-                                                <li className='flex items-start justify-start'>
-                                                    <a href={l.link} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
+                                                <li className='flex items-center gap-3 mb-2'>
+                                                    {l.title && l.link && l.title !== l.link && (
+                                                        <span className="text-xs text-gray-400 px-2 truncate">
+                                                            {l.link}
+                                                        </span>
+                                                    )}
+                                                    <a 
+                                                        href={l.link} 
+                                                        target='_blank' 
+                                                        rel="noreferrer" 
+                                                        className="text-xs px-2 py-1 text-blue-500 hover:underline truncate"
+                                                    >
                                                         {l.title || l.link}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                        </svg>
                                                     </a>
                                                 </li>
                                                 {typeof l.link === "string" && l.link.includes("drive.google.com/drive/folders/") && (
@@ -485,26 +528,36 @@ const Kanban = ({ updateData, setKanban, project }) => {
                 <button
                     id='back'
                     onClick={() => {
-                        const updatedKanban = (project.kanban || []).map(k => {
-                            if (k.type === project.categories[0]) {
-                                return {
-                                    ...k,
-                                    steps: stepList.map(step => ({
-                                        name: step.name,
-                                        items: step.data,
-                                    })),
-                                };
-                            }
-                            return k;
-                        });
+                        // Create updated kanban structure with current state
+                        const updatedKanban = [{
+                            type: project.categories[0],
+                            steps: stepList.map(step => ({
+                                name: step.name,
+                                items: step.data,
+                            })),
+                        }];
+                        
                         const updatedProject = {
                             ...project,
-                            kanban: updatedKanban,
+                            _id: project._id,
+                            kanban: updatedKanban
                         };
-                        updateData(updatedProject);
-                        console.log("Updated Project:", updatedProject);
-
-                        setKanban(false);
+                        
+                        // Save to database before closing
+                        updateData(updatedProject).then(() => {
+                            // Update the project state to reflect changes
+                            Object.assign(project, updatedProject);
+                            
+                            // Notify parent component of the update
+                            if (onProjectUpdate) {
+                                onProjectUpdate(updatedProject);
+                            }
+                            
+                            setKanban(false);
+                        }).catch(err => {
+                            console.error('Error saving before closing:', err);
+                            showToast("Error saving changes", "error");
+                        });
                     }}
                     className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'
                 >
@@ -544,22 +597,14 @@ const Kanban = ({ updateData, setKanban, project }) => {
                             // Update local state
                             step.setData(updatedData);
 
-                            // Create stepDataMap using the current data states
-                            const stepDataMap = {
-                                praprod: modalStepIndex === 0 ? updatedData : praprodData,
-                                prod: modalStepIndex === 1 ? updatedData : prodData,
-                                postprod: modalStepIndex === 2 ? updatedData : postprodData,
-                                manafile: modalStepIndex === 3 ? updatedData : manafileData
-                            };
-
-                            // Create updated kanban structure
+                            // Create updated kanban structure with current state
                             const updatedKanban = [{
                                 type: project.categories[0],
                                 steps: [
-                                    { name: "praprod", items: stepDataMap.praprod || [] },
-                                    { name: "prod", items: stepDataMap.prod || [] },
-                                    { name: "postprod", items: stepDataMap.postprod || [] },
-                                    { name: "manafile", items: stepDataMap.manafile || [] }
+                                    { name: "praprod", items: modalStepIndex === 0 ? updatedData : praprodData },
+                                    { name: "prod", items: modalStepIndex === 1 ? updatedData : prodData },
+                                    { name: "postprod", items: modalStepIndex === 2 ? updatedData : postprodData },
+                                    { name: "manafile", items: modalStepIndex === 3 ? updatedData : manafileData }
                                 ]
                             }];
 
@@ -570,18 +615,18 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                 kanban: updatedKanban
                             };
 
-                            // Debug log
-                            console.log('Deleting item, updated project:', {
-                                projectId: project._id,
-                                kanbanType: updatedKanban[0].type,
-                                steps: updatedKanban[0].steps.map(s => ({
-                                    name: s.name,
-                                    itemCount: s.items?.length || 0
-                                }))
-                            });
-
                             // Send update to database
-                            updateData(updatedProject).catch(err => {
+                            updateData(updatedProject).then(() => {
+                                // Update the project state to reflect changes
+                                Object.assign(project, updatedProject);
+                                
+                                // Notify parent component of the update
+                                if (onProjectUpdate) {
+                                    onProjectUpdate(updatedProject);
+                                }
+                                
+                                showToast("Kanban item deleted successfully", "success");
+                            }).catch(err => {
                                 console.error('Error updating:', err);
                                 showToast("Error updating kanban", "error");
                             });

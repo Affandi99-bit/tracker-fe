@@ -4,7 +4,7 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const [title, setTitle] = useState(draft.title || '');
     const [pic, setPic] = useState(draft.pic || '');
     const [note, setNote] = useState(draft.note || '');
-    const [done, setDone] = useState(!!draft.done); // <-- matches schema
+    const [done, setDone] = useState(!!draft.done);
 
     // Links → always array of { title, link }
     const [links, setLinks] = useState(
@@ -17,16 +17,8 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
             : []
     );
 
-    // Todos → always array of { title, done }
-    const [todos, setTodos] = useState(
-        Array.isArray(draft.todo)
-            ? draft.todo.map(t => ({ title: t.title || "", done: !!t.done }))
-            : []
-    );
-
     const [newLink, setNewLink] = useState('');
     const [newLinkTitle, setNewLinkTitle] = useState('');
-    const [newTodo, setNewTodo] = useState('');
 
     const roleProduction = useRoleProduction();
 
@@ -36,40 +28,28 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
             title,
             pic,
             note,
-            done, // <-- matches schema field
+            done,
             link: links,
-            todo: todos.map(t => ({
-                title: t.title,
-                done: !!t.done
-            })),
         };
         onSave(updated);
-        console.log("Saved draft:", updated);
         onClose();
     };
 
     const removeLink = (idx) => setLinks(links.filter((_, i) => i !== idx));
     const addLink = () => {
-        if (newLink.trim()) {
+        if (newLink.trim() || newLinkTitle.trim()) {
+            const linkTitle = newLinkTitle.trim() || newLink.trim();
+            const linkUrl = newLink.trim() || newLinkTitle.trim();
+            
             setLinks([
                 ...links,
-                { title: newLinkTitle.trim() || newLink.trim(), link: newLink.trim() }
+                { 
+                    title: linkTitle, 
+                    link: linkUrl
+                }
             ]);
             setNewLink('');
             setNewLinkTitle('');
-        }
-    };
-
-    const removeTodo = (idx) => setTodos(todos.filter((_, i) => i !== idx));
-    const toggleTodo = (idx) => {
-        const updated = [...todos];
-        updated[idx].done = !updated[idx].done; // matches schema
-        setTodos(updated);
-    };
-    const addTodo = () => {
-        if (newTodo.trim()) {
-            setTodos([...todos, { title: newTodo.trim(), done: false }]);
-            setNewTodo('');
         }
     };
     return (
@@ -94,7 +74,7 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                     <select
                                         value={pic}
                                         onChange={e => setPic(e.target.value)}
-                                        className='w-1/2 glass outline-none py-2 px-3 text-xs rounded-xl appearance-none' // <-- add appearance-none
+                                        className='w-1/2 glass outline-none py-2 px-3 text-xs rounded-xl appearance-none'
                                         name="jobdesk select"
                                         id="jobselect"
                                     >
@@ -123,37 +103,21 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                     </div>
                                     <p className='text-xs'>Set as Done</p>
                                 </label>
-                                {/* Links */}
-                                <div className="flex flex-col gap-1 w-full mt-2">
-                                    {links.map((linkValue, linkIdx) => (
-                                        <div key={linkIdx} className="flex items-center justify-between w-full">
-                                            <a href={linkValue.link} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500">
-                                                {linkValue.title || linkValue.link}
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                                </svg>
-                                            </a>
-                                            <button type="button" onClick={() => removeLink(linkIdx)} className="text-xs px-1 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <div className="flex items-center gap-2 mt-1">
+   {/* Add New Link Inputs */}
+   <div className="flex items-center gap-2 mt-2">
                                         <input
                                             type="text"
-                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none'
-                                            placeholder="Link URL"
-                                            value={newLink}
-                                            onChange={e => setNewLink(e.target.value)}
+                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none flex-1'
+                                            placeholder="Link Title"
+                                            value={newLinkTitle}
+                                            onChange={e => setNewLinkTitle(e.target.value)}
                                         />
                                         <input
                                             type="text"
-                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none'
-                                            placeholder="Link Title (optional)"
-                                            value={newLinkTitle}
-                                            onChange={e => setNewLinkTitle(e.target.value)}
+                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none flex-1'
+                                            placeholder="Link URL"
+                                            value={newLink}
+                                            onChange={e => setNewLink(e.target.value)}
                                         />
                                         <button type="button" onClick={addLink} className='transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer' title="Add link">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
@@ -161,63 +125,48 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                             </svg>
                                         </button>
                                     </div>
-                                </div>
-
                                 {/* Note */}
                                 <textarea className='glass rounded-xl outline-none p-1 w-full min-h-20 text-xs' placeholder='Note' value={note} onChange={e => setNote(e.target.value)} />
                             </section>
                         </section>
 
-                        {/* Right Column: Todos */}
-                        <section className='w-1/2 h-full p-3 relative border-l border-zinc-500'>
-                            <div>Add To-Do</div>
-                            <div className="flex flex-col gap-1 w-full mt-2">
-                                {todos.map((todo, idx) => (
-                                    <div key={idx} className="flex items-center justify-between w-full">
-                                        <div className="text-xs px-2 py-1 text-light">
-                                            <label className={`flex flex-row items-center gap-1 tracking-widest cursor-pointer`}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={todo.done} // <-- use 'done'
-                                                    onChange={() => toggleTodo(idx)}
-                                                    className="peer hidden"
-                                                />
-                                                <div className="size-3 flex rounded border border-light bg-dark peer-checked:bg-light transition cursor-pointer">
-                                                    <svg fill="none" viewBox="0 0 24 24" className="size-3 stroke-dark peer-checked:stroke-dark" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M4 12.6111L8.92308 17.5L20 6.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        {/* Right Column: Links and Action Buttons */}
+                        <section className='w-1/2 h-full p-3 relative border-l border-zinc-500 flex flex-col justify-between'>
+                            <div className='flex flex-col gap-4 h-full'>                             
+                                {/* Links Section */}
+                                <div className="flex flex-col gap-1 w-full">
+                                    <p className='text-xs font-semibold tracking-widest'>Current Links: {links.length}</p>
+                                    {links.map((linkValue, linkIdx) => (
+                                        <div key={linkIdx} className="flex items-center justify-between w-full">
+                                            <div className="flex items-center gap-3 flex-1">
+                                                {linkValue.title && linkValue.link && linkValue.title !== linkValue.link && (
+                                                    <span className="text-xs text-gray-400 px-2">
+                                                        {linkValue.link}
+                                                    </span>
+                                                )}
+                                                <a href={linkValue.link} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500 hover:underline">
+                                                    {linkValue.title || linkValue.link}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                                                     </svg>
-                                                </div>
-                                                <input
-                                                    type="text"
-                                                    value={todo.title} // <-- use 'title'
-                                                    onChange={e => {
-                                                        const updated = [...todos];
-                                                        updated[idx].title = e.target.value;
-                                                        setTodos(updated);
-                                                    }}
-                                                    className="bg-transparent border-b border-light/20 px-1 min-w-32 text-xs outline-none"
-                                                    placeholder="To-Do"
-                                                />
-                                            </label>
+                                                </a>
+                                            </div>
+                                            <button type="button" onClick={() => removeLink(linkIdx)} className="text-xs px-1 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </button>   
                                         </div>
-                                        <button type="button" onClick={() => removeTodo(idx)} className="text-xs px-1 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer" title="Delete To-Do">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                ))}
-                                <div className="flex items-center gap-2 mt-1">
-                                    <input type="text" className='rounded-xl border border-light/50 text-xs px-2 outline-none' placeholder="Add new To-Do" value={newTodo} onChange={e => setNewTodo(e.target.value)} />
-                                    <button type="button" onClick={addTodo} className='transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer' title="Add To-Do">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32" />
-                                        </svg>
-                                    </button>
+                                    ))}
+                                    {links.length === 0 && (
+                                        <p className='text-xs text-gray-500 text-center'>No links added yet</p>
+                                    )}
+                                    
+                                 
                                 </div>
                             </div>
 
-                            <div className='absolute bottom-0 left-1 px-2 flex items-center justify-between w-full mt-2'>
+                            <div className='flex items-center justify-between w-full mt-2'>
                                 <button
                                     onClick={() => {
                                         if (typeof onDelete === 'function') onDelete();

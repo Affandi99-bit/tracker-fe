@@ -5,10 +5,12 @@ import Kanban from "./Kanban";
 import Report from "./Report";
 
 const calculateOverallProgress = ({ project }) => {
-  if (!Array.isArray(project.kanban)) return 0;
+  if (!Array.isArray(project.kanban) || project.kanban.length === 0) {
+    return 0;
+  }
 
-  let totalSteps = 0;
-  let completedSteps = 0;
+  let totalItems = 0;
+  let completedItems = 0;
 
   project.kanban.forEach(division => {
     if (!Array.isArray(division.steps)) return;
@@ -16,16 +18,18 @@ const calculateOverallProgress = ({ project }) => {
     division.steps.forEach(step => {
       if (!Array.isArray(step.items)) return;
 
-      totalSteps += 1;
-
-      const allItemsDone = step.items.length === 0
-        ? true
-        : step.items.every(item => item.done === true);
-      if (allItemsDone) completedSteps += 1;
+      step.items.forEach(item => {
+        totalItems += 1;
+        if (item.done === true) {
+          completedItems += 1;
+        }
+      });
     });
   });
 
-  return totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
+  const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+  
+  return progress;
 };
 
 const DeleteModal = ({ show, onCancel, onConfirm, loading }) => {
@@ -149,17 +153,24 @@ const DataTable = ({
               </td>
               <td className="text-xs text-start pl-2">
                 <div className="flex flex-col gap-1 justify-start items-start">
-                  <div className="w-28 rounded-full h-2.5 bg-gray-700/25">
-                    <div
-                      className="bg-light h-2.5 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${calculateOverallProgress({ project: row })}%`
-                      }}
-                    ></div>
-                  </div>
-                  <p className="text-[#269fc6] text-xs w-28 text-end">
-                    {Math.round(calculateOverallProgress({ project: row }))}%
-                  </p>
+                  {(() => {
+                    const progress = calculateOverallProgress({ project: row });
+                    return (
+                      <>
+                        <div className="w-28 rounded-full h-2.5 bg-gray-700/25">
+                          <div
+                            className="bg-light h-2.5 rounded-full transition-all duration-300"
+                            style={{
+                              width: `${progress}%`
+                            }}
+                          ></div>
+                        </div>
+                        <p className="text-[#269fc6] text-xs w-28 text-end">
+                          {Math.round(progress)}%
+                        </p>
+                      </>
+                    );
+                  })()}
                 </div>
               </td>
               <td className=" text-xs">
@@ -404,6 +415,10 @@ const MainTable = ({
           updateData={updateData}
           project={selectedKanbanProject}
           selectedTypes={selectedKanbanProject.type}
+          onProjectUpdate={(updatedProject) => {
+            // Update the selectedKanbanProject state when the project is updated
+            setSelectedKanbanProject(updatedProject);
+          }}
         />
       )}
       {showReadonlyModal && (

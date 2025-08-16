@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
-// import { roleProduction, roleGraphic } from "../constant/constant";
 import { useToast } from '../components/ToastContext';
 import { PrintLayout } from "../components";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
@@ -12,6 +12,369 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const [loading, setLoading] = useState(false);
   const [days, setDays] = useState([]);
   const printRef = useRef()
+
+  // Budget Overview Component
+  const BudgetOverview = ({ days, pro }) => {
+    const formatCurrency = (num) => {
+      if (!num || isNaN(num)) return "Rp. 0";
+      return `Rp. ${parseFloat(num).toLocaleString("id-ID")}`;
+    };
+
+    // Calculate expense categories for pie chart
+    const calculateExpenseCategories = () => {
+      const categories = {
+        'Rent': 0,
+        'Order List': 0
+      };
+      
+      // Operational expenses by subcategory
+      const operationalCategories = {
+        'Food': 0,
+        'Transport': 0,
+        'Acomodation': 0,
+        'Snack': 0,
+        'Equipment': 0,
+        'Materials': 0,
+        'Services': 0,
+        'Other': 0
+      };
+
+      days.forEach(day => {
+        // Rent expenses
+        if (day.expense?.rent && Array.isArray(day.expense.rent)) {
+          day.expense.rent.forEach(item => {
+            const price = parseFloat(item.price || 0);
+            const qty = parseInt(item.qty || 0);
+            if (!isNaN(price) && !isNaN(qty)) {
+              categories['Rent'] += (price * qty);
+            }
+          });
+        }
+
+        // Operational expenses by subcategory
+        if (day.expense?.operational && Array.isArray(day.expense.operational)) {
+          day.expense.operational.forEach(item => {
+            const price = parseFloat(item.price || 0);
+            const qty = parseInt(item.qty || 0);
+            if (!isNaN(price) && !isNaN(qty)) {
+              const category = item.category || 'Other';
+              if (operationalCategories.hasOwnProperty(category)) {
+                operationalCategories[category] += (price * qty);
+              } else {
+                operationalCategories['Other'] += (price * qty);
+              }
+            }
+          });
+        }
+
+        // Order list expenses
+        if (day.expense?.orderlist && Array.isArray(day.expense.orderlist)) {
+          day.expense.orderlist.forEach(item => {
+            const price = parseFloat(item.price || 0);
+            const qty = parseInt(item.qty || 0);
+            if (!isNaN(price) && !isNaN(qty)) {
+              categories['Order List'] += (price * qty);
+            }
+          });
+        }
+      });
+
+      // Combine all categories, filtering out zero values
+      const allCategories = {
+        ...categories,
+        ...operationalCategories
+      };
+
+      return Object.entries(allCategories)
+        .filter(([_, value]) => value > 0)
+        .map(([name, value]) => ({ name, value }));
+    };
+
+    const expenseData = calculateExpenseCategories();
+    const totalExpenses = days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0);
+
+    // Monochrome color palette
+    const COLORS = [
+      '#202020', '#404040', '#606060', '#808080', '#a0a0a0', 
+      '#c0c0c0', '#e0e0e0', '#303030', '#505050', '#707070'
+    ];
+
+    const CustomTooltip = ({ active, payload }) => {
+      if (active && payload && payload.length) {
+        const data = payload[0];
+        const percentage = totalExpenses > 0 ? ((data.value / totalExpenses) * 100).toFixed(1) : 0;
+        
+        return (
+          <div className="bg-dark border border-light/50 rounded-lg p-3 text-light shadow-lg">
+            <p className="font-semibold text-light mb-1">{data.name}</p>
+            <div className="space-y-1">
+              <p className="text-light/80 text-sm">
+                Amount: {formatCurrency(data.value)}
+              </p>
+              <p className="text-light/60 text-sm">
+                Percentage: {percentage}%
+              </p>
+              {data.name === 'Food' && (
+                <p className="text-light/50 text-xs">Daily meals and beverages</p>
+              )}
+              {data.name === 'Transport' && (
+                <p className="text-light/50 text-xs">Travel and transportation costs</p>
+              )}
+              {data.name === 'Acomodation' && (
+                <p className="text-light/50 text-xs">Lodging and accommodation</p>
+              )}
+              {data.name === 'Snack' && (
+                <p className="text-light/50 text-xs">Refreshments and snacks</p>
+              )}
+              {data.name === 'Equipment' && (
+                <p className="text-light/50 text-xs">Technical equipment and tools</p>
+              )}
+              {data.name === 'Materials' && (
+                <p className="text-light/50 text-xs">Production materials and supplies</p>
+              )}
+              {data.name === 'Services' && (
+                <p className="text-light/50 text-xs">External services and support</p>
+              )}
+              {data.name === 'Rent' && (
+                <p className="text-light/50 text-xs">Equipment and venue rentals</p>
+              )}
+              {data.name === 'Order List' && (
+                <p className="text-light/50 text-xs">Purchased items and orders</p>
+              )}
+            </div>
+          </div>
+        );
+      }
+      return null;
+    };
+
+    // If no expense data, show placeholder
+    if (expenseData.length === 0) {
+      return (
+        <section className="glass p-4 m-1 w-full h-full rounded-xl font-body text-sm tracking-wider border border-light/50">
+          <div className="flex items-start gap-1 h-full">
+            {/* Left Side - Placeholder */}
+            <div className="w-1/2 h-full flex flex-col">
+              <h2 className="text-xl font-semibold text-light mb-4 tracking-wider">Budget Overview</h2>
+              <div className="flex-1 flex items-center justify-center mb-4">
+                <div className="text-center text-light/60">
+                  <p className="text-lg font-medium mb-2">No expenses yet</p>
+                  <p className="text-sm">Add expenses to see budget breakdown</p>
+                </div>
+              </div>
+ {/* Total Expenses - Bottom Right */}
+ <div className="text-right">
+                <div className="bg-light/10 rounded-xl p-3 border border-light/20">
+                  <p className="text-light/80 text-sm font-medium mb-1">Total Project Expenses</p>
+                  <p className="text-2xl font-bold text-light">
+                    {formatCurrency(totalExpenses)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Project Data & Person in Charge */}
+            <div className="w-1/2 h-full flex flex-col justify-between">
+              {/* Project Information */}
+              <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold text-light mb-3 tracking-wider">Project Details</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-light/80 font-medium">Title:</span>
+                    <span className="text-light font-semibold">{pro?.title || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-light/80 font-medium">Client:</span>
+                    <span className="text-light font-semibold">{pro?.client || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-light/80 font-medium">PIC Client:</span>
+                    <span className="text-light font-semibold">{pro?.pic || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-light/80 font-medium">Categories:</span>
+                    <span className="text-light font-semibold">
+                      {pro?.categories?.join(", ") || "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Person in Charge */}
+              <div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-light/90 font-medium">Project Manager:</span>
+                    <span className="text-light font-semibold">
+                      {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
+                        ? pro.day[0].crew
+                          .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
+                          .map(c => c.name)
+                          .join(", ") || "No Project Manager"
+                        : "No Crew"}
+                    </span>
+                  </div>
+                  <div className="">
+                    <span className="text-light/90 font-medium">Crew:</span>
+                    <span className="text-light/60 font-semibold">
+                    {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew) ? (
+                    pro.day[0].crew.map((item, index) => (
+                      <div className="flex items-center justify-between w-full" key={index}>
+                        <p className="w-1/2 font-thin">{item.name}</p>
+                        <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-light/60">No crew assigned</p>
+                  )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    return (
+      <section className="glass p-4 m-1 w-full h-full rounded-xl font-body text-sm tracking-wider border border-light/50">
+        <div className="flex items-start gap-2 h-full">
+          {/* Left Side - Pie Chart */}
+          <div className="w-1/2 h-full flex flex-col">
+            <h2 className="text-xl font-semibold text-light mb-4 tracking-wider">Budget Overview</h2>
+            <div className="flex-1 flex items-center justify-center mb-4">
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={expenseData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {expenseData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36}
+                    formatter={(value, entry) => (
+                      <span className="text-light text-xs font-medium">
+                        {value}
+                      </span>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+             {/* Total Expenses - Bottom Right */}
+             <div className="text-right">
+              <div className="bg-light/10 rounded-xl p-3 border border-light/20">
+                <p className="text-light/80 text-sm font-medium mb-1">Total Project Expenses</p>
+                <p className="text-2xl font-bold text-light">
+                  {formatCurrency(totalExpenses)}
+                </p>
+              </div>
+            </div>
+            
+          </div>
+
+          {/* Right Side - Project Data & Person in Charge */}
+          <div className="w-1/2 h-full flex flex-col justify-between">
+            {/* Project Information */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold text-light mb-3 tracking-wider">Project Details</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-light/80 font-medium">Title:</span>
+                    <span className="text-light font-semibold">{pro?.title || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-light/80 font-medium">Client:</span>
+                    <span className="text-light font-semibold">{pro?.client || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-light/80 font-medium">PIC Client:</span>
+                    <span className="text-light font-semibold">{pro?.pic || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-light/80 font-medium">Categories:</span>
+                    <span className="text-light font-semibold">
+                      {pro?.categories?.join(", ") || "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Person in Charge */}
+              <div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-light/90 font-medium">Project Manager:</span>
+                    <span className="text-light font-semibold">
+                      {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
+                        ? pro.day[0].crew
+                          .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
+                          .map(c => c.name)
+                          .join(", ") || "No Project Manager"
+                        : "No Crew"}
+                    </span>
+                  </div>
+                  <div className="">
+                    <span className="text-light/90 font-medium">Crew:</span>
+                    <span className="text-light/60 font-semibold">
+                    {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew) ? (
+                    pro.day[0].crew.map((item, index) => (
+                      <div className="flex items-center justify-between w-full" key={index}>
+                        <p className="w-1/2 font-thin">{item.name}</p>
+                        <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-light/60">No crew assigned</p>
+                  )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {/* Export and Save Buttons */}
+          <div className="w-full flex items-end justify-between gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleExportPDF()}
+                      className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center border-light/50 text-light w-20 h-10 justify-center"
+                    >
+                      Export
+                    </button>
+                    {/* Save */}
+                    <button 
+                      type="submit" 
+                      onClick={handleSubmit} 
+                      className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center bg-light text-dark w-20 h-10 justify-center"
+                    >
+                      {loading ? (
+                        <span className="animate-spin">
+                          <svg width="100%" height="100%" viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                      ) : "Save"}
+                    </button>
+                  </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
 
   const handleExportPDF = async () => {
     const input = printRef.current;
@@ -51,39 +414,49 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   useEffect(() => {
     if (initialPro) {
       setPro(initialPro);
+      
+      // Determine template from project categories
+      const isProductionTemplate = initialPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat)) || false;
+      
       setDays(
-        initialPro.day?.map(day => ({
-          ...day,
-          id: Date.now() + Math.random(),
-          expense: {
-            rent: day.expense?.rent || [],
-            operational: day.expense?.operational || [],
-            orderlist: day.expense?.orderlist || [],
-          },
-          backup: day.backup || [],
-          crew: day.crew || [],
-          note: day.note || '',
-          totalExpenses: day.totalExpenses || 0,
-          template: day.template || false,
-          date: day.date || '',
-        })) || []
+        initialPro.day?.map(day => {
+          const dayTemplate = day.template !== undefined ? day.template : isProductionTemplate;
+          
+          return {
+            ...day,
+            id: Date.now() + Math.random(),
+            expense: {
+              rent: day.expense?.rent || [],
+              operational: day.expense?.operational || [],
+              orderlist: day.expense?.orderlist || [],
+            },
+            backup: day.backup || [],
+            crew: day.crew || [],
+            note: day.note || '',
+            totalExpenses: day.totalExpenses || 0,
+            template: dayTemplate, // Use the determined template
+            date: day.date || '',
+          };
+        }) || []
       );
     }
   }, [initialPro]);
 
+  // Monitor template changes to ensure they are preserved
   useEffect(() => {
-    if (pro.categories) {
-      setDays(prevDays =>
-        prevDays.map(day => ({
-          ...day,
-          template: pro.categories.some(cat =>
-            ["Produksi", "Dokumentasi"].includes(cat)
-          ),
-        }))
-      );
+    // Check if all days have the same template
+    if (days.length > 1) {
+      const templates = days.map(d => d.template);
+      const uniqueTemplates = [...new Set(templates)];
+      if (uniqueTemplates.length > 1) {
+        console.warn('Warning: Days have different templates:', templates);
+      }
     }
-  }, [pro.categories]);
+  }, [days]);
   const addDay = () => {
+    // Get the template from existing days or determine from project categories
+    const existingTemplate = days.length > 0 ? days[0].template : pro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat));
+    
     setDays([
       ...days,
       {
@@ -92,7 +465,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         expense: { rent: [], operational: [], orderlist: [] },
         note: '',
         totalExpenses: 0,
-        template: false,
+        template: existingTemplate,
         date: '',
         backup: [],
       },
@@ -179,8 +552,15 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             operational: day.expense.operational,
             orderlist: day.expense.orderlist,
           },
+          // Preserve the template field
+          template: day.template,
+          backup: day.backup,
+          crew: day.crew,
+          note: day.note,
+          date: day.date,
         })),
       };
+      
       await updateData(updatedPro);
       showToast("Project Report saved successfully", 'success');
       setPro(updatedPro);
@@ -191,7 +571,13 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           rent: day.expense.rent || [],
           operational: day.expense.operational || [],
           orderlist: day.expense.orderlist || [],
-        }
+        },
+        // Preserve the template field
+        template: day.template,
+        backup: day.backup || [],
+        crew: day.crew || [],
+        note: day.note || '',
+        date: day.date || '',
       })));
     } catch (error) {
       console.error('Save error:', error);
@@ -220,7 +606,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           </svg>
           Back
         </button>
-        <p className="text-light">{pro?.title || ''}</p>
         <main className="flex items-center gap-1">
           <div className="flex items-center gap-1">
             <p>Start :</p>
@@ -242,12 +627,16 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           </div>
         </main>
       </nav>
-      <main className="flex items-start justify-between h-screen w-full overflow-y-auto no-scrollbar">
-        {/* Content */}
-        <form ref={printRef} onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+      <main className="w-full overflow-y-auto no-scrollbar">
+          <div className="flex items-start justify-between h-screen w-full mb-3">
+            {/* Budget Overview */}
+            <BudgetOverview days={days} pro={pro} />
+          </div>
+                {/* Content */}
+                <form ref={printRef} onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
           {/* Data per Day */}
           {days.map((day, dayIndex) => (
-            <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">
+            <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">     
               {/* Expenses section */}
               <section className="relative rounded-xl glass p-5 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-full">
                 {day.template ? (
@@ -448,12 +837,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             });
                           }}
                         >
-                          <option value="">Categories</option>
-                          <option value="Acomodation">Acomodation</option>
-                          <option value="Transport">Transport</option>
-                          <option value="Food">Food</option>
-                          <option value="Snack">Snack</option>
-                          <option value="Other">Other</option>
+                          <option className="bg-dark text-light" value="">Categories</option>
+                          <option className="bg-dark text-light" value="Acomodation">Acomodation</option>
+                          <option className="bg-dark text-light" value="Transport">Transport</option>
+                          <option className="bg-dark text-light" value="Food">Food</option>
+                          <option className="bg-dark text-light" value="Snack">Snack</option>
+                          <option className="bg-dark text-light" value="Other">Other</option>
                         </select>
                         <button
                           type="button"
@@ -741,12 +1130,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             });
                           }}
                         >
-                          <option value="">Categories</option>
-                          <option value="Acomodation">Acomodation</option>
-                          <option value="Transport">Transport</option>
-                          <option value="Food">Food</option>
-                          <option value="Snack">Snack</option>
-                          <option value="Other">Other</option>
+                          <option className="bg-dark text-light" value="">Categories</option>
+                          <option className="bg-dark text-light" value="Acomodation">Acomodation</option>
+                          <option className="bg-dark text-light" value="Transport">Transport</option>
+                          <option className="bg-dark text-light" value="Food">Food</option>
+                          <option className="bg-dark text-light" value="Snack">Snack</option>
+                          <option className="bg-dark text-light" value="Other">Other</option>
                         </select>
 
                         <button
@@ -828,62 +1217,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             Add Day
           </button>
         </form>
-        {/* Aside */}
-        <aside className="glass p-2 m-1 w-1/3 h-full rounded-xl font-body font-thin text-sm tracking-wider border border-light/50">
-          <div className="flex flex-col w-full h-full items-start justify-evenly relative">
-            <section className="flex flex-col w-full">
-              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">PM</span> <span className="w-1/2">: {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
-                ? pro.day[0].crew
-                  .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
-                  .map(c => c.name)
-                  .join(", ") || "No Project Manager"
-                : "No Crew"}</span></p>
-              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">Client</span> <span className="w-1/2">: {pro.client}</span></p>
-              <p className="mb-2 text-xs w-full flex items-start justify start"><span className="w-1/2">PIC Client</span> <span className="w-1/2">: {pro.pic}</span></p>
-              {/* <p className="mb-2">Note</p> */}
-            </section>
-            {/* Crew section */}
-            <section className="px-2 h-full w-full flex flex-col gap-1 font-body text-xs font-thin ">
-              <p className="font-body text-xs tracking-widest my-1">Crew</p>
-              {pro.day[0].crew.map((item, index) => (
-                <div className="flex items-center justify-start w-full" key={index}>
-                  <p className="w-1/2">{item.name}</p>
-                  <p className="w-1/2">:&nbsp;{item.roles.join(", ")}</p>
-                </div>
-              ))}
-            </section>
-            <div className="flex flex-col items-end justify-end w-full gap-2">
-              <textarea placeholder="Note" readOnly value={pro?.note || ''} className="no-scrollbar glass rounded-xl text-xs p-2 w-full mt-1 outline-none h-full" />
-              {/* Total */}
-              <div className="w-full flex flex-col items-start justify-start">
-                <p className="mb-1 text-xs">Total Expenses</p>
-                <NumericFormat
-                  displayType="input"
-                  thousandSeparator
-                  prefix={"Rp. "}
-                  value={days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0) || pro?.total}
-                  placeholder="Rp. 0"
-                  className="glass text-xs rounded-xl p-2 w-full outline-none"
-                  disabled
-                />
-              </div>
-              {/* Export */}
-              <div className="w-full flex items-end justify-between gap-1">
-                <button
-                  type="button"
-                  onClick={() => handleExportPDF()}
-                  className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center border-light/50 text-light w-20 h-10 justify-center"
-                >
-                  Export
-                </button>
-                {/* Save */}
-                <button type="submit" onClick={handleSubmit} className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center bg-light text-dark w-20 h-10 justify-center">
-                  {loading ? <span className="animate-spin"><svg width="100%" height="100%" viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span> : "Save"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </aside>
       </main>
       <div style={{ position: "absolute", left: "-9999px", top: 0 }} ref={printRef}>
         <PrintLayout pro={pro} days={days} />
