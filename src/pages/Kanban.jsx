@@ -1,15 +1,26 @@
-import React, { useEffect, useState, } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { vidProd, design, motion, dokumentasi } from '../constant/constant';
 import { useToast } from '../components/ToastContext';
 import { KanbanModal } from '../components';
 
+const GOOGLE_API_KEY = "AIzaSyDc6sqyAKybW9hTzMylP3QHtSc78xUbRXI";
 const typeOptions = [
     { label: "Produksi", value: "Produksi", constant: vidProd },
     { label: "Design", value: "Design", constant: design },
     { label: "Motion", value: "Motion", constant: motion },
     { label: "Dokumentasi", value: "Dokumentasi", constant: dokumentasi },
 ];
-
+function getDefaultKanban(category) {
+    const constantsMap = { Produksi: vidProd, Dokumentasi: dokumentasi, Motion: motion, Design: design };
+    const base = constantsMap[category] || vidProd;
+    return [{
+        type: category,
+        steps: Object.keys(base).map(stepName => ({
+            name: stepName,
+            items: base[stepName]
+        }))
+    }];
+}
 const ResetModal = ({ onCancel, onReset }) => (
     <div className='fixed top-0 left-0 z-50 glass w-full h-full flex items-center justify-center'>
         <section className='bg-dark border border-light/50 rounded-lg p-5 text-light flex flex-col justify-center items-center w-xl h-48'>
@@ -33,9 +44,6 @@ const ResetModal = ({ onCancel, onReset }) => (
         </section>
     </div>
 );
-
-const GOOGLE_API_KEY = "AIzaSyDc6sqyAKybW9hTzMylP3QHtSc78xUbRXI";
-
 const DriveFolderPreview = ({ url }) => {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -84,13 +92,22 @@ const DriveFolderPreview = ({ url }) => {
         </div>
     );
 };
+function useDebouncedSave(updateData, delay = 500) {
+    const timeout = useRef(null);
+    return (updatedProject) => {
+        clearTimeout(timeout.current);
+        timeout.current = setTimeout(() => {
+            updateData(updatedProject);
+        }, delay);
+    };
+}
 
 const Kanban = ({ updateData, setKanban, project }) => {
     const selectedKanban = (() => {
         return Array.isArray(project.kanban)
             ? project.kanban.find(k => k.type === project.categories[0])
             : null;
-    })
+    })();
 
     function getCurrentConstant() {
         const opt = typeOptions.find(o => o.value === project.categories[0]);
@@ -114,6 +131,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
     const [modalItemIndex, setModalItemIndex] = useState(null);
 
     const { showToast } = useToast();
+    const debouncedSave = useDebouncedSave(updateData);
 
     useEffect(() => {
         const constant = getCurrentConstant();
@@ -168,60 +186,88 @@ const Kanban = ({ updateData, setKanban, project }) => {
     };
 
     const handleModalSave = (updatedItem) => {
-        if (modalStepIndex === null) return;
+        console.log('Saving item:', updatedItem);
+        if (modalStepIndex === null) {
+            console.error('No step index selected');
+            return;
+        }
+
+        // Get current step
         const step = stepList[modalStepIndex];
         let updatedData = [...step.data];
+
+        // Update or add new item
         if (modalItemIndex !== null) {
             updatedData[modalItemIndex] = updatedItem;
         } else {
             updatedData.push(updatedItem);
         }
+
+        // Update local state
         step.setData(updatedData);
 
+        // Create updated kanban structure
         let updatedKanban;
-        if (Array.isArray(project.kanban) && project.kanban.length > 0) {
-            updatedKanban = project.kanban.map((kanban) => {
-                if (kanban.type === project.categories[0]) {
-                    return {
-                        ...kanban,
-                        steps: kanban.steps.map((step, idx) => {
-                            if (idx === modalStepIndex) {
-                                return {
-                                    ...step,
-                                    items: updatedData,
-                                };
-                            }
-                            return step;
-                        }),
-                    };
-                }
-                return kanban;
-            });
-        } else {
-            updatedKanban = [{
-                type: project.categories[0],
-                steps: stepList.map((step, idx) => ({
-                    name: step.name,
-                    items: idx === modalStepIndex ? updatedData : step.data,
-                })),
-            }];
-        }
+        const currentKanban = project.kanban?.[0] || { type: project.categories[0], steps: [] };
 
+        // Map all steps with their current data
+        const updatedSteps = [
+            {
+                name: "praprod",
+                items: modalStepIndex === 0 ? updatedData : praprodData
+            },
+            {
+                name: "prod",
+                items: modalStepIndex === 1 ? updatedData : prodData
+            },
+            {
+                name: "postprod",
+                items: modalStepIndex === 2 ? updatedData : postprodData
+            },
+            {
+                name: "manafile",
+                items: modalStepIndex === 3 ? updatedData : manafileData
+            }
+        ];
+
+        // Create the kanban structure
+        updatedKanban = [{
+            type: project.categories[0],
+            steps: updatedSteps
+        }];
+
+        // Create the final project update
         const updatedProject = {
             ...project,
-            kanban: updatedKanban,
+            _id: project._id,
+            kanban: updatedKanban
         };
-        console.log(updatedProject);
-        updateData(updatedProject);
-        showToast("Kanban Updated", "success");
+
+        // Debug log
+        console.log('Updating project:', {
+            projectId: updatedProject._id,
+            kanbanType: updatedKanban[0].type,
+            steps: updatedKanban[0].steps.map(s => ({
+                name: s.name,
+                itemCount: s.items.length
+            }))
+        });
+
+        // Send update to database
+        updateData(updatedProject).catch(err => {
+            console.error('Error updating:', err);
+            showToast("Error updating kanban", "error");
+        });
+
         setKanbanModal(false);
-    };
+    }
 
     const handleResetKanban = async () => {
         setShowResetModal(false);
         const updatedKanban = (project.kanban || []).filter(k => k.type !== project.categories[0]);
         const updatedProject = {
             ...project,
+            _id: project._id,
             kanban: updatedKanban,
         };
         await updateData(updatedProject);
@@ -237,8 +283,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
     }
 
     const renderSection = (title, data, setData, stepIdx) => {
-        const checkedCount = data.filter(item => item.done === true).length;
-
+        const checkedCount = data.filter(item => item?.done ?? false).length;
         return (
             <section key={title} className='z-10 p-2 flex flex-col items-center justify-center text-start'>
                 <p className='p-2 font-bold tracking-widest text-lg'>{title}</p>
@@ -262,6 +307,30 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     const updated = [...data];
                                     updated[index].done = !isChecked;
                                     setData(updated);
+
+                                    const updatedKanban = (
+                                        Array.isArray(project.kanban) && project.kanban.length > 0
+                                            ? project.kanban
+                                            : getDefaultKanban(project.categories[0])
+                                    ).map(k => {
+                                        if (k.type === project.categories[0]) {
+                                            return {
+                                                ...k,
+                                                steps: stepList.map(step => ({
+                                                    name: step.name,
+                                                    items: step.name === stepList[stepIdx].name ? updated : step.data,
+                                                })),
+                                            };
+                                        }
+                                        return k;
+                                    });
+
+                                    const updatedProject = {
+                                        ...project,
+                                        _id: project._id,
+                                        kanban: updatedKanban,
+                                    };
+                                    debouncedSave(updatedProject);
                                 }}
                                 className={`bg-[#262626] relative overflow-hidden flex flex-col justify-between items-start p-4 w-72 rounded-xl mb-2.5 hover:opacity-65 cursor-pointer transition duration-200 ${isChecked ? 'ring ring-[#f8f8f88e]' : ''}`}
                             >
@@ -275,7 +344,6 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f8f8f8" className="size-3">
                                         <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32L19.513 8.2Z" />
                                     </svg>
-
                                 </button>
                                 {/* Title & PIC */}
                                 <div className='flex flex-col gap-1 mt-3 pb-5 border-b border-b-light/10 w-full'>
@@ -317,7 +385,7 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                                         <input
                                                             type="checkbox"
                                                             name="todo"
-                                                            checked={!!todo.done}
+                                                            checked={!!todo.done} // <-- use 'done'
                                                             onChange={e => {
                                                                 e.stopPropagation();
                                                                 const updated = [...data];
@@ -325,31 +393,40 @@ const Kanban = ({ updateData, setKanban, project }) => {
                                                                     idx === i ? { ...t, done: !t.done } : t
                                                                 );
                                                                 setData(updated);
+                                                                const updatedKanban = (project.kanban || []).map(k => {
+                                                                    if (k.type === project.categories[0]) {
+                                                                        return {
+                                                                            ...k,
+                                                                            steps: stepList.map(step => ({
+                                                                                name: step.name,
+                                                                                items: step.name === stepList[stepIdx].name ? updated : step.data,
+                                                                            })),
+                                                                        };
+                                                                    }
+                                                                    return k;
+                                                                });
+                                                                const updatedProject = {
+                                                                    ...project,
+                                                                    kanban: updatedKanban,
+                                                                };
+                                                                debouncedSave(updatedProject);
                                                             }}
                                                             className="peer hidden"
                                                         />
-                                                        <div className="size-3 flex rounded bg-dark peer-checked:bg-light">
-                                                            <svg
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                className="size-3 stroke-dark peer-checked:stroke-dark"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M4 12.6111L8.92308 17.5L20 6.5"
-                                                                    strokeWidth="2"
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                ></path>
-                                                            </svg>
-                                                        </div>
-                                                        {!todo.done ? (
-                                                            <span>{todo.title}</span>
-                                                        ) : (
-                                                            <span className="text-gray-500">{todo.title}</span>
-                                                        )}
+                                                        <input
+                                                            type="text"
+                                                            value={todo.title} // <-- use 'title'
+                                                            onChange={e => {
+                                                                const updated = [...data];
+                                                                updated[index].todo = updated[index].todo.map((t, idx) =>
+                                                                    idx === i ? { ...t, title: e.target.value } : t
+                                                                );
+                                                                setData(updated);
+                                                            }}
+                                                            className="bg-transparent border-b border-light/20 px-1 min-w-32 text-xs outline-none"
+                                                            placeholder="To-Do"
+                                                        />
                                                     </label>
-
                                                 </li>
                                             </React.Fragment>
                                         ))
@@ -402,11 +479,35 @@ const Kanban = ({ updateData, setKanban, project }) => {
         );
     }
 
-
     return (
         <div role='main' className='bg-[#181818] font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-40'>
             <section className='flex items-start justify-between gap-5 p-5'>
-                <button id='back' onClick={() => { setKanban(false) }} className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'>
+                <button
+                    id='back'
+                    onClick={() => {
+                        const updatedKanban = (project.kanban || []).map(k => {
+                            if (k.type === project.categories[0]) {
+                                return {
+                                    ...k,
+                                    steps: stepList.map(step => ({
+                                        name: step.name,
+                                        items: step.data,
+                                    })),
+                                };
+                            }
+                            return k;
+                        });
+                        const updatedProject = {
+                            ...project,
+                            kanban: updatedKanban,
+                        };
+                        updateData(updatedProject);
+                        console.log("Updated Project:", updatedProject);
+
+                        setKanban(false);
+                    }}
+                    className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'
+                >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                     </svg>
@@ -436,9 +537,55 @@ const Kanban = ({ updateData, setKanban, project }) => {
                     onSave={handleModalSave}
                     onDelete={() => {
                         if (modalStepIndex !== null && modalItemIndex !== null) {
+                            // Get current step
                             const step = stepList[modalStepIndex];
                             const updatedData = step.data.filter((_, idx) => idx !== modalItemIndex);
+
+                            // Update local state
                             step.setData(updatedData);
+
+                            // Create stepDataMap using the current data states
+                            const stepDataMap = {
+                                praprod: modalStepIndex === 0 ? updatedData : praprodData,
+                                prod: modalStepIndex === 1 ? updatedData : prodData,
+                                postprod: modalStepIndex === 2 ? updatedData : postprodData,
+                                manafile: modalStepIndex === 3 ? updatedData : manafileData
+                            };
+
+                            // Create updated kanban structure
+                            const updatedKanban = [{
+                                type: project.categories[0],
+                                steps: [
+                                    { name: "praprod", items: stepDataMap.praprod || [] },
+                                    { name: "prod", items: stepDataMap.prod || [] },
+                                    { name: "postprod", items: stepDataMap.postprod || [] },
+                                    { name: "manafile", items: stepDataMap.manafile || [] }
+                                ]
+                            }];
+
+                            // Create the final project update
+                            const updatedProject = {
+                                ...project,
+                                _id: project._id,
+                                kanban: updatedKanban
+                            };
+
+                            // Debug log
+                            console.log('Deleting item, updated project:', {
+                                projectId: project._id,
+                                kanbanType: updatedKanban[0].type,
+                                steps: updatedKanban[0].steps.map(s => ({
+                                    name: s.name,
+                                    itemCount: s.items?.length || 0
+                                }))
+                            });
+
+                            // Send update to database
+                            updateData(updatedProject).catch(err => {
+                                console.error('Error updating:', err);
+                                showToast("Error updating kanban", "error");
+                            });
+
                             setKanbanModal(false);
                         }
                     }}

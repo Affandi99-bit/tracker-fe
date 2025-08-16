@@ -4,7 +4,9 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const [title, setTitle] = useState(draft.title || '');
     const [pic, setPic] = useState(draft.pic || '');
     const [note, setNote] = useState(draft.note || '');
-    // Change links to array of objects
+    const [done, setDone] = useState(!!draft.done); // <-- matches schema
+
+    // Links → always array of { title, link }
     const [links, setLinks] = useState(
         Array.isArray(draft.link)
             ? draft.link.map(l =>
@@ -14,10 +16,18 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
             )
             : []
     );
-    const [todos, setTodos] = useState(Array.isArray(draft.todo) ? draft.todo : []);
+
+    // Todos → always array of { title, done }
+    const [todos, setTodos] = useState(
+        Array.isArray(draft.todo)
+            ? draft.todo.map(t => ({ title: t.title || "", done: !!t.done }))
+            : []
+    );
+
     const [newLink, setNewLink] = useState('');
     const [newLinkTitle, setNewLinkTitle] = useState('');
     const [newTodo, setNewTodo] = useState('');
+
     const roleProduction = useRoleProduction();
 
     const handleSave = () => {
@@ -26,21 +36,25 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
             title,
             pic,
             note,
+            done, // <-- matches schema field
             link: links,
             todo: todos.map(t => ({
-                title: t.text,
-                done: !!t.checked
+                title: t.title,
+                done: !!t.done
             })),
         };
         onSave(updated);
-        onClose()
+        console.log("Saved draft:", updated);
+        onClose();
     };
 
     const removeLink = (idx) => setLinks(links.filter((_, i) => i !== idx));
-    // Push as object
     const addLink = () => {
         if (newLink.trim()) {
-            setLinks([...links, { title: newLinkTitle.trim() || newLink.trim(), link: newLink.trim() }]);
+            setLinks([
+                ...links,
+                { title: newLinkTitle.trim() || newLink.trim(), link: newLink.trim() }
+            ]);
             setNewLink('');
             setNewLinkTitle('');
         }
@@ -49,27 +63,15 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const removeTodo = (idx) => setTodos(todos.filter((_, i) => i !== idx));
     const toggleTodo = (idx) => {
         const updated = [...todos];
-        updated[idx].checked = !updated[idx].checked;
+        updated[idx].done = !updated[idx].done; // matches schema
         setTodos(updated);
     };
     const addTodo = () => {
         if (newTodo.trim()) {
-            setTodos([...todos, { text: newTodo.trim(), checked: false }]);
+            setTodos([...todos, { title: newTodo.trim(), done: false }]);
             setNewTodo('');
         }
     };
-
-    useEffect(() => {
-        setTodos(
-            Array.isArray(draft.todo)
-                ? draft.todo.map(t => ({
-                    text: t.title || "",
-                    checked: !!t.done
-                }))
-                : []
-        );
-    }, [draft.todo]);
-
     return (
         <main
             onClick={onClose}
@@ -89,14 +91,12 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                             <section className='flex flex-col items-start justify-start gap-2 h-full'>
                                 <div className='flex items-center justify-between gap-2 w-full'>
                                     <input type="text" className='w-1/2 glass outline-none p-2 text-xs rounded-xl' placeholder='Title' value={title} onChange={e => setTitle(e.target.value)} />
-                                    {/* <input type="text" className='glass outline-none p-2 text-xs rounded-xl' placeholder='PIC' value={pic} onChange={e => setPic(e.target.value)} /> */}
                                     <select
                                         value={pic}
                                         onChange={e => setPic(e.target.value)}
                                         className='w-1/2 glass outline-none py-2 px-3 text-xs rounded-xl appearance-none' // <-- add appearance-none
                                         name="jobdesk select"
                                         id="jobselect"
-
                                     >
                                         <option value="" className="text-dark bg-light">Select PIC</option>
                                         {[...roleProduction]
@@ -108,7 +108,21 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                             ))}
                                     </select>
                                 </div>
-
+                                {/* Done Checkbox */}
+                                <label className={`flex flex-row items-center gap-1 tracking-widest cursor-pointer`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={done}
+                                        onChange={e => setDone(e.target.checked)}
+                                        className="peer hidden"
+                                    />
+                                    <div className="size-3 flex rounded border border-light bg-dark peer-checked:bg-light transition cursor-pointer">
+                                        <svg fill="none" viewBox="0 0 24 24" className="size-3 stroke-dark peer-checked:stroke-dark" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M4 12.6111L8.92308 17.5L20 6.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </div>
+                                    <p className='text-xs'>Set as Done</p>
+                                </label>
                                 {/* Links */}
                                 <div className="flex flex-col gap-1 w-full mt-2">
                                     {links.map((linkValue, linkIdx) => (
@@ -164,7 +178,7 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                             <label className={`flex flex-row items-center gap-1 tracking-widest cursor-pointer`}>
                                                 <input
                                                     type="checkbox"
-                                                    checked={todo.checked}
+                                                    checked={todo.done} // <-- use 'done'
                                                     onChange={() => toggleTodo(idx)}
                                                     className="peer hidden"
                                                 />
@@ -175,10 +189,10 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                                 </div>
                                                 <input
                                                     type="text"
-                                                    value={todo.text}
+                                                    value={todo.title} // <-- use 'title'
                                                     onChange={e => {
                                                         const updated = [...todos];
-                                                        updated[idx].text = e.target.value;
+                                                        updated[idx].title = e.target.value;
                                                         setTodos(updated);
                                                     }}
                                                     className="bg-transparent border-b border-light/20 px-1 min-w-32 text-xs outline-none"

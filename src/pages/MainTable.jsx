@@ -1,6 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { TableModal, Loader, ReadonlyModal, Tooltip } from "../components";
-import { useToast } from "../components/ToastContext";
 import { findTagColor } from "../utils/utils";
 import Kanban from "./Kanban";
 import Report from "./Report";
@@ -109,11 +108,14 @@ const DataTable = ({
               <td className="text-xs font-bold tracker-wider text-light text-start pl-7">{row.title}</td>
               <td className="text-xs font-semibold text-light text-start pl-2">{row.client}</td>
               <td className="text-xs font-semibold text-light text-start pl-2">{row.pic}</td>
-              <td className="text-xs font-semibold text-light text-start pl-2">{row.day[0].crew
-                .filter(member => member.roles && member.roles.includes("Project Manager"))
-                .map(member => member.name)
-                .join(", ")
-              }</td>
+              <td className="text-xs font-semibold text-light text-start pl-2">
+                {Array.isArray(row.day) && row.day.length > 0 && Array.isArray(row.day[0].crew)
+                  ? row.day[0].crew
+                    .filter(member => member.roles && member.roles.includes("Project Manager"))
+                    .map(member => member.name)
+                    .join(", ")
+                  : ""}
+              </td>
               <td className="text-xs font-bold text-start pl-2 text-[#269fc6]">
                 {new Date(row.deadline).toLocaleDateString("en-GB")}
               </td>
@@ -263,7 +265,6 @@ const MainTable = ({
   const [selectedRowData, setSelectedRowData] = useState(null);
   const [sortedData, setSortedDataLocal] = useState(tableData);
   const [isSorted, setIsSorted] = useState(false);
-
   const [kanban, setKanban] = useState(false);
   const [selectedKanbanProject, setSelectedKanbanProject] = useState(null);
   const [showReadonlyModal, setShowReadonlyModal] = useState(false);
@@ -279,10 +280,10 @@ const MainTable = ({
 
     const filteredTableData = tableData.filter((item) => {
       const matchesSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.pic.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.pm.toLowerCase().includes(searchQuery.toLowerCase());
+        (item.title?.toLowerCase() ?? "").includes(searchQuery.toLowerCase()) ||
+        (item.client?.toLowerCase() ?? "").includes(searchQuery.toLowerCase()) ||
+        (item.pic?.toLowerCase() ?? "").includes(searchQuery.toLowerCase()) ||
+        (item.pm?.toLowerCase() ?? "").includes(searchQuery.toLowerCase());
 
       const matchesTags =
         selectedTags.length === 0 ||
