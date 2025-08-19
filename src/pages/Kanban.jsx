@@ -10,22 +10,7 @@ const typeOptions = [
     { label: "Motion", value: "Motion", constant: motion },
     { label: "Dokumentasi", value: "Dokumentasi", constant: dokumentasi },
 ];
-function getDefaultKanban(category) {
-    const constantsMap = { Produksi: vidProd, Dokumentasi: dokumentasi, Motion: motion, Design: design };
-    const base = constantsMap[category] || vidProd;
-    return [{
-        type: category,
-        steps: Object.keys(base).map(stepName => ({
-            name: stepName,
-            items: base[stepName].map(item => ({
-                ...item,
-                done: false,
-                link: [],
-                note: ''
-            }))
-        }))
-    }];
-}
+
 const ResetModal = ({ onCancel, onReset }) => (
     <div className='fixed top-0 left-0 z-50 glass w-full h-full flex items-center justify-center'>
         <section className='bg-dark border border-light/50 rounded-lg p-5 text-light flex flex-col justify-center items-center w-xl h-48'>
@@ -111,7 +96,6 @@ function useDebouncedSave(updateData, delay = 500) {
 }
 
 const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
-    // Ensure project is not null and has required properties
     if (!project || !project._id || !project.categories || !project.categories.length) {
         console.error('Invalid project data:', project);
         return <div>Invalid project data</div>;
@@ -198,19 +182,19 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                     { name: "manafile", items: manafileItems }
                 ]
             }];
-            
+
             // Update project with initial kanban structure
             const updatedProject = {
                 ...project,
                 _id: project._id,
                 kanban: initialKanban
             };
-            
+
             // Save to database
             updateData(updatedProject).then(() => {
                 // Update the project state
                 Object.assign(project, updatedProject);
-                
+
                 // Notify parent component of the update
                 if (onProjectUpdate) {
                     onProjectUpdate(updatedProject);
@@ -221,6 +205,7 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
             });
         }
     }, [project.kanban, project.categories]);
+
 
     const isProduksi = project.categories[0] === "Produksi" || project.categories[0] === "Dokumentasi";
     const stepList = isProduksi
@@ -243,12 +228,12 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
         if (itemIdx !== null) {
             setDraft(stepList[stepIdx].data[itemIdx]);
         } else {
-            setDraft({ 
-                title: '', 
-                pic: '', 
-                note: '', 
-                link: [], 
-                done: false 
+            setDraft({
+                title: '',
+                pic: '',
+                note: '',
+                link: [],
+                done: false
             });
         }
         setKanbanModal(true);
@@ -304,24 +289,17 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                 ]
             }];
 
-            // Create the final project update
             const updatedProject = {
                 ...project,
                 _id: project._id,
                 kanban: updatedKanban
             };
-
-            // Send update to database
-            const result = await updateData(updatedProject);
-            
-            // Update the project state to reflect changes
             Object.assign(project, updatedProject);
-            
-            // Notify parent component of the update
+
             if (onProjectUpdate) {
                 onProjectUpdate(updatedProject);
             }
-            
+
             setKanbanModal(false);
             showToast("Kanban item saved successfully", "success");
         } catch (err) {
@@ -339,23 +317,23 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                 _id: project._id,
                 kanban: updatedKanban,
             };
-            
+
             await updateData(updatedProject);
-            
+
             // Update local state to reflect the reset
             setPraprodData([]);
             setProdData([]);
             setPostprodData([]);
             setManafileData([]);
-            
+
             // Update the project state
             Object.assign(project, updatedProject);
-            
+
             // Notify parent component of the update
             if (onProjectUpdate) {
                 onProjectUpdate(updatedProject);
             }
-            
+
             showToast("Kanban reset successfully", "success");
         } catch (err) {
             console.error('Error resetting kanban:', err);
@@ -412,15 +390,15 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                                         _id: project._id,
                                         kanban: updatedKanban,
                                     };
-                                    
+
                                     // Update the project state immediately
                                     Object.assign(project, updatedProject);
-                                    
+
                                     // Notify parent component of the update
                                     if (onProjectUpdate) {
                                         onProjectUpdate(updatedProject);
                                     }
-                                    
+
                                     // Save to database
                                     debouncedSave(updatedProject);
                                 }}
@@ -476,10 +454,10 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                                                             {l.link}
                                                         </span>
                                                     )}
-                                                    <a 
-                                                        href={l.link} 
-                                                        target='_blank' 
-                                                        rel="noreferrer" 
+                                                    <a
+                                                        href={l.link}
+                                                        target='_blank'
+                                                        rel="noreferrer"
                                                         className="text-xs px-2 py-1 text-blue-500 hover:underline truncate"
                                                     >
                                                         {l.title || l.link}
@@ -536,23 +514,23 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                                 items: step.data,
                             })),
                         }];
-                        
+
                         const updatedProject = {
                             ...project,
                             _id: project._id,
                             kanban: updatedKanban
                         };
-                        
+
                         // Save to database before closing
                         updateData(updatedProject).then(() => {
                             // Update the project state to reflect changes
                             Object.assign(project, updatedProject);
-                            
+
                             // Notify parent component of the update
                             if (onProjectUpdate) {
                                 onProjectUpdate(updatedProject);
                             }
-                            
+
                             setKanban(false);
                         }).catch(err => {
                             console.error('Error saving before closing:', err);
@@ -619,12 +597,12 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                             updateData(updatedProject).then(() => {
                                 // Update the project state to reflect changes
                                 Object.assign(project, updatedProject);
-                                
+
                                 // Notify parent component of the update
                                 if (onProjectUpdate) {
                                     onProjectUpdate(updatedProject);
                                 }
-                                
+
                                 showToast("Kanban item deleted successfully", "success");
                             }).catch(err => {
                                 console.error('Error updating:', err);
