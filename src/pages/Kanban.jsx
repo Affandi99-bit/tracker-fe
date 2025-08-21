@@ -96,33 +96,11 @@ function useDebouncedSave(updateData, delay = 500) {
 }
 
 const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
-    if (!project || !project._id || !project.categories || !project.categories.length) {
-        console.error('Invalid project data:', project);
-        return <div>Invalid project data</div>;
-    }
-
-    const selectedKanban = (() => {
-        return Array.isArray(project.kanban)
-            ? project.kanban.find(k => k.type === project.categories[0])
-            : null;
-    })();
-
-    function getCurrentConstant() {
-        const opt = typeOptions.find(o => o.value === project.categories[0]);
-        return opt ? opt.constant : vidProd;
-    }
-    const getStepData = (stepName) => {
-        if (selectedKanban && selectedKanban.steps) {
-            const step = selectedKanban.steps.find(s => s.name === stepName);
-            return step ? step.items : [];
-        }
-        return getCurrentConstant()[stepName] || [];
-    }
     const [showResetModal, setShowResetModal] = useState(false);
-    const [praprodData, setPraprodData] = useState(getStepData("praprod"));
-    const [prodData, setProdData] = useState(getStepData("prod"));
-    const [postprodData, setPostprodData] = useState(getStepData("postprod"));
-    const [manafileData, setManafileData] = useState(getStepData("manafile"));
+    const [praprodData, setPraprodData] = useState([]);
+    const [prodData, setProdData] = useState([]);
+    const [postprodData, setPostprodData] = useState([]);
+    const [manafileData, setManafileData] = useState([]);
     const [draft, setDraft] = useState(null);
     const [showKanbanModal, setKanbanModal] = useState(false);
     const [modalStepIndex, setModalStepIndex] = useState(null);
@@ -130,6 +108,50 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
 
     const { showToast } = useToast();
     const debouncedSave = useDebouncedSave(updateData);
+
+    if (!project || !project._id || !project.categories || !project.categories.length) {
+        console.error('Invalid project data:', project);
+        return <div>Invalid project data</div>;
+    }
+
+    // Check if all steps are complete and update project status
+    useEffect(() => {
+        // Only check if we have data and the arrays are not empty
+        const hasPraprodItems = praprodData.length > 0;
+        const hasProdItems = prodData.length > 0;
+        const hasPostprodItems = postprodData.length > 0;
+        const hasManafileItems = manafileData.length > 0;
+
+        // Check if all items in each step are done, but only if the step has items
+        const praprodComplete = hasPraprodItems ? praprodData.every(item => item?.done === true) : true;
+        const prodComplete = hasProdItems ? prodData.every(item => item?.done === true) : true;
+        const postprodComplete = hasPostprodItems ? postprodData.every(item => item?.done === true) : true;
+        const manafileComplete = hasManafileItems ? manafileData.every(item => item?.done === true) : true;
+
+        const allStepsComplete = praprodComplete && prodComplete && postprodComplete && manafileComplete;
+
+        if (allStepsComplete && project && !project.done && (hasPraprodItems || hasProdItems || hasPostprodItems || hasManafileItems)) {
+            const updatedProject = {
+                ...project,
+                _id: project._id,
+                done: true // Set project as done
+            };
+
+            updateData(updatedProject).then(() => {
+                Object.assign(project, updatedProject);
+                if (onProjectUpdate) {
+                    onProjectUpdate(updatedProject);
+                }
+            }).catch(err => {
+                console.error('Error updating project status:', err);
+            });
+        }
+    }, [praprodData, prodData, postprodData, manafileData, project, updateData, onProjectUpdate]);
+
+    function getCurrentConstant() {
+        const opt = typeOptions.find(o => o.value === project.categories[0]);
+        return opt ? opt.constant : vidProd;
+    }
 
     useEffect(() => {
         const constant = getCurrentConstant();
@@ -352,6 +374,7 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
 
     const renderSection = (title, data, setData, stepIdx) => {
         const checkedCount = data.filter(item => item?.done ?? false).length;
+
         return (
             <section key={title} className='z-10 p-2 flex flex-col items-center justify-center text-start'>
                 <p className='p-2 font-bold tracking-widest text-lg'>{title}</p>

@@ -11,6 +11,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const [pro, setPro] = useState(initialPro || {});
   const [loading, setLoading] = useState(false);
   const [days, setDays] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dayIndex: null });
   const printRef = useRef()
 
   // Budget Overview Component
@@ -26,7 +27,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         'Rent': 0,
         'Order List': 0
       };
-      
+
       // Operational expenses by subcategory
       const operationalCategories = {
         'Food': 0,
@@ -58,7 +59,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             const qty = parseInt(item.qty || 0);
             if (!isNaN(price) && !isNaN(qty)) {
               const category = item.category || 'Other';
-              if (operationalCategories.hasOwnProperty(category)) {
+              if (Object.prototype.hasOwnProperty.call(operationalCategories, category)) {
                 operationalCategories[category] += (price * qty);
               } else {
                 operationalCategories['Other'] += (price * qty);
@@ -86,7 +87,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       };
 
       return Object.entries(allCategories)
-        .filter(([_, value]) => value > 0)
+        .filter(([, value]) => value > 0)
         .map(([name, value]) => ({ name, value }));
     };
 
@@ -95,7 +96,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
 
     // Monochrome color palette
     const COLORS = [
-      '#202020', '#404040', '#606060', '#808080', '#a0a0a0', 
+      '#202020', '#404040', '#606060', '#808080', '#a0a0a0',
       '#c0c0c0', '#e0e0e0', '#303030', '#505050', '#707070'
     ];
 
@@ -103,7 +104,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       if (active && payload && payload.length) {
         const data = payload[0];
         const percentage = totalExpenses > 0 ? ((data.value / totalExpenses) * 100).toFixed(1) : 0;
-        
+
         return (
           <div className="bg-dark border border-light/50 rounded-lg p-3 text-light shadow-lg">
             <p className="font-semibold text-light mb-1">{data.name}</p>
@@ -162,8 +163,8 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   <p className="text-sm">Add expenses to see budget breakdown</p>
                 </div>
               </div>
- {/* Total Expenses - Bottom Right */}
- <div className="text-right">
+              {/* Total Expenses - Bottom Right */}
+              <div className="text-right">
                 <div className="bg-light/10 rounded-xl p-3 border border-light/20">
                   <p className="text-light/80 text-sm font-medium mb-1">Total Project Expenses</p>
                   <p className="text-2xl font-bold text-light">
@@ -177,62 +178,62 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             <div className="w-1/2 h-full flex flex-col justify-between">
               {/* Project Information */}
               <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-light mb-3 tracking-wider">Project Details</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-light/80 font-medium">Title:</span>
-                    <span className="text-light font-semibold">{pro?.title || "-"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-light/80 font-medium">Client:</span>
-                    <span className="text-light font-semibold">{pro?.client || "-"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-light/80 font-medium">PIC Client:</span>
-                    <span className="text-light font-semibold">{pro?.pic || "-"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-light/80 font-medium">Categories:</span>
-                    <span className="text-light font-semibold">
-                      {pro?.categories?.join(", ") || "-"}
-                    </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-light mb-3 tracking-wider">Project Details</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-light/80 font-medium">Title:</span>
+                      <span className="text-light font-semibold">{pro?.title || "-"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-light/80 font-medium">Client:</span>
+                      <span className="text-light font-semibold">{pro?.client || "-"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-light/80 font-medium">PIC Client:</span>
+                      <span className="text-light font-semibold">{pro?.pic || "-"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-light/80 font-medium">Categories:</span>
+                      <span className="text-light font-semibold">
+                        {pro?.categories?.join(", ") || "-"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Person in Charge */}
-              <div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-light/90 font-medium">Project Manager:</span>
-                    <span className="text-light font-semibold">
-                      {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
-                        ? pro.day[0].crew
-                          .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
-                          .map(c => c.name)
-                          .join(", ") || "No Project Manager"
-                        : "No Crew"}
-                    </span>
-                  </div>
-                  <div className="">
-                    <span className="text-light/90 font-medium">Crew:</span>
-                    <span className="text-light/60 font-semibold">
-                    {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew) ? (
-                    pro.day[0].crew.map((item, index) => (
-                      <div className="flex items-center justify-between w-full" key={index}>
-                        <p className="w-1/2 font-thin">{item.name}</p>
-                        <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-light/60">No crew assigned</p>
-                  )}
-                    </span>
+                {/* Person in Charge */}
+                <div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-light/90 font-medium">Project Manager:</span>
+                      <span className="text-light font-semibold">
+                        {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
+                          ? pro.day[0].crew
+                            .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
+                            .map(c => c.name)
+                            .join(", ") || "No Project Manager"
+                          : "No Crew"}
+                      </span>
+                    </div>
+                    <div className="">
+                      <span className="text-light/90 font-medium">Crew:</span>
+                      <span className="text-light/60 font-semibold">
+                        {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew) ? (
+                          pro.day[0].crew.map((item, index) => (
+                            <div className="flex items-center justify-between w-full" key={index}>
+                              <p className="w-1/2 font-thin">{item.name}</p>
+                              <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-light/60">No crew assigned</p>
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             </div>
           </div>
         </section>
@@ -262,10 +263,10 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend 
-                    verticalAlign="bottom" 
+                  <Legend
+                    verticalAlign="bottom"
                     height={36}
-                    formatter={(value, entry) => (
+                    formatter={(value) => (
                       <span className="text-light text-xs font-medium">
                         {value}
                       </span>
@@ -274,8 +275,8 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-             {/* Total Expenses - Bottom Right */}
-             <div className="text-right">
+            {/* Total Expenses - Bottom Right */}
+            <div className="text-right">
               <div className="bg-light/10 rounded-xl p-3 border border-light/20">
                 <p className="text-light/80 text-sm font-medium mb-1">Total Project Expenses</p>
                 <p className="text-2xl font-bold text-light">
@@ -283,7 +284,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                 </p>
               </div>
             </div>
-            
+
           </div>
 
           {/* Right Side - Project Data & Person in Charge */}
@@ -331,45 +332,45 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   <div className="">
                     <span className="text-light/90 font-medium">Crew:</span>
                     <span className="text-light/60 font-semibold">
-                    {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew) ? (
-                    pro.day[0].crew.map((item, index) => (
-                      <div className="flex items-center justify-between w-full" key={index}>
-                        <p className="w-1/2 font-thin">{item.name}</p>
-                        <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-light/60">No crew assigned</p>
-                  )}
+                      {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew) ? (
+                        pro.day[0].crew.map((item, index) => (
+                          <div className="flex items-center justify-between w-full" key={index}>
+                            <p className="w-1/2 font-thin">{item.name}</p>
+                            <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-light/60">No crew assigned</p>
+                      )}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-          {/* Export and Save Buttons */}
-          <div className="w-full flex items-end justify-between gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleExportPDF()}
-                      className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center border-light/50 text-light w-20 h-10 justify-center"
-                    >
-                      Export
-                    </button>
-                    {/* Save */}
-                    <button 
-                      type="submit" 
-                      onClick={handleSubmit} 
-                      className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center bg-light text-dark w-20 h-10 justify-center"
-                    >
-                      {loading ? (
-                        <span className="animate-spin">
-                          <svg width="100%" height="100%" viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </span>
-                      ) : "Save"}
-                    </button>
-                  </div>
+            {/* Export and Save Buttons */}
+            <div className="w-full flex items-end justify-between gap-1">
+              <button
+                type="button"
+                onClick={() => handleExportPDF()}
+                className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center border-light/50 text-light w-20 h-10 justify-center"
+              >
+                Export
+              </button>
+              {/* Save */}
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer border rounded-xl flex gap-2 items-center bg-light text-dark w-20 h-10 justify-center"
+              >
+                {loading ? (
+                  <span className="animate-spin">
+                    <svg width="100%" height="100%" viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                ) : "Save"}
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -414,31 +415,82 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   useEffect(() => {
     if (initialPro) {
       setPro(initialPro);
-      
+
       // Determine template from project categories
       const isProductionTemplate = initialPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat)) || false;
-      
-      setDays(
-        initialPro.day?.map(day => {
-          const dayTemplate = day.template !== undefined ? day.template : isProductionTemplate;
-          
-          return {
-            ...day,
-            id: Date.now() + Math.random(),
-            expense: {
-              rent: day.expense?.rent || [],
-              operational: day.expense?.operational || [],
-              orderlist: day.expense?.orderlist || [],
-            },
-            backup: day.backup || [],
-            crew: day.crew || [],
-            note: day.note || '',
-            totalExpenses: day.totalExpenses || 0,
-            template: dayTemplate, // Use the determined template
-            date: day.date || '',
-          };
-        }) || []
-      );
+
+      let projectDays = initialPro.day?.map(day => {
+        const dayTemplate = day.template !== undefined ? day.template : isProductionTemplate;
+
+        return {
+          ...day,
+          id: Date.now() + Math.random(),
+          expense: {
+            rent: day.expense?.rent || [],
+            operational: day.expense?.operational || [],
+            orderlist: day.expense?.orderlist || [],
+          },
+          backup: day.backup || [],
+          crew: day.crew || [],
+          note: day.note || '',
+          totalExpenses: day.totalExpenses || 0,
+          template: dayTemplate, // Use the determined template
+          date: day.date || '',
+          dayNumber: day.dayNumber || 1, // Preserve if exists (may be stripped by backend)
+          // Infer flags from note if present in DB
+          isPreProd: (day.note || '').toLowerCase().includes('pre-production'),
+          isPostProd: (day.note || '').toLowerCase().includes('post-production'),
+        };
+      }) || [];
+
+      // Add pre-production and post-production days if missing (avoid duplicates)
+      if (isProductionTemplate) {
+        const hasPre = projectDays.some(d => d.isPreProd);
+        const hasPost = projectDays.some(d => d.isPostProd);
+
+        if (projectDays.length > 0) {
+          if (!hasPre) {
+            projectDays = [
+              {
+                id: Date.now() + Math.random() + 1,
+                crew: [],
+                expense: { rent: [], operational: [], orderlist: [] },
+                note: 'Pre-production day',
+                totalExpenses: 0,
+                template: true,
+                date: '',
+                backup: [],
+                dayNumber: 0,
+                isPreProd: true,
+                isPostProd: false,
+              },
+              ...projectDays,
+            ];
+          }
+          if (!hasPost) {
+            projectDays = [
+              ...projectDays,
+              {
+                id: Date.now() + Math.random() + 2,
+                crew: [],
+                expense: { rent: [], operational: [], orderlist: [] },
+                note: 'Post-production day',
+                totalExpenses: 0,
+                template: true,
+                date: '',
+                backup: [],
+                // dayNumber will be set in ensureDayNumbering
+                isPreProd: false,
+                isPostProd: true,
+              },
+            ];
+          }
+        }
+      }
+
+      // Ensure proper day numbering
+      const numberedDays = ensureDayNumbering(projectDays);
+      setDays(numberedDays);
     }
   }, [initialPro]);
 
@@ -452,24 +504,90 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         console.warn('Warning: Days have different templates:', templates);
       }
     }
+
+    // Ensure day numbering is always correct
+    const numberedDays = ensureDayNumbering(days);
+    if (JSON.stringify(numberedDays) !== JSON.stringify(days)) {
+      setDays(numberedDays);
+    }
   }, [days]);
   const addDay = () => {
     // Get the template from existing days or determine from project categories
     const existingTemplate = days.length > 0 ? days[0].template : pro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat));
-    
-    setDays([
-      ...days,
-      {
-        id: Date.now() + Math.random(),
-        crew: [],
-        expense: { rent: [], operational: [], orderlist: [] },
-        note: '',
-        totalExpenses: 0,
-        template: existingTemplate,
-        date: '',
-        backup: [],
-      },
-    ]);
+
+    // Find the index of post-production day to insert before it
+    const postProdIndex = days.findIndex(day => day.isPostProd);
+    const insertIndex = postProdIndex !== -1 ? postProdIndex : days.length;
+
+    // Calculate the correct day number (excluding pre/post production days)
+    const productionDays = days.filter(day => !day.isPreProd && !day.isPostProd);
+    const newDayNumber = productionDays.length + 1;
+
+    const newDay = {
+      id: Date.now() + Math.random(),
+      crew: [],
+      expense: { rent: [], operational: [], orderlist: [] },
+      note: '',
+      totalExpenses: 0,
+      template: existingTemplate,
+      date: '',
+      backup: [],
+      dayNumber: newDayNumber,
+    };
+
+    // Insert the new day before post-production or at the end
+    const newDays = [...days];
+    newDays.splice(insertIndex, 0, newDay);
+
+    // Ensure proper day numbering for all days
+    const numberedDays = ensureDayNumbering(newDays);
+    setDays(numberedDays);
+  };
+
+  // Function to ensure proper day numbering
+  const ensureDayNumbering = (daysArray) => {
+    return daysArray.map((day) => {
+      if (day.isPreProd) {
+        return { ...day, dayNumber: 0 };
+      } else if (day.isPostProd) {
+        return { ...day, dayNumber: daysArray.filter(d => !d.isPreProd && !d.isPostProd).length + 1 };
+      } else {
+        // This is a production day, find its position among production days
+        const productionDays = daysArray.filter(d => !d.isPreProd && !d.isPostProd);
+        const productionIndex = productionDays.indexOf(day);
+        return { ...day, dayNumber: productionIndex + 1 };
+      }
+    });
+  };
+
+  // Function to show delete confirmation
+  const showDeleteConfirm = (dayIndex) => {
+    setDeleteConfirm({ show: true, dayIndex });
+  };
+
+  // Function to delete a day
+  const handleDeleteDay = () => {
+    const dayIndexToDelete = deleteConfirm.dayIndex;
+
+    // Don't allow deletion of pre-production or post-production days
+    const dayToDelete = days[dayIndexToDelete];
+    if (dayToDelete.isPreProd || dayToDelete.isPostProd) {
+      showToast("Cannot delete Pre-Production or Post-Production days", "error");
+      setDeleteConfirm({ show: false, dayIndex: null });
+      return;
+    }
+
+    // Remove the day
+    const updatedDays = days.filter((_, index) => index !== dayIndexToDelete);
+
+    // Ensure proper day numbering after deletion
+    const numberedDays = ensureDayNumbering(updatedDays);
+    setDays(numberedDays);
+
+    // Close confirmation dialog
+    setDeleteConfirm({ show: false, dayIndex: null });
+
+    showToast("Day deleted successfully", "success");
   };
 
   const calculateTotalExpenses = (day) => {
@@ -542,43 +660,134 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     event.preventDefault();
     setLoading(true);
     try {
+      // Identify pre/post via flags or notes
+      const isPreFn = (d) => d.isPreProd || ((d.note || '').toLowerCase().includes('pre-production'));
+      const isPostFn = (d) => d.isPostProd || ((d.note || '').toLowerCase().includes('post-production'));
+      // Identify production-only days for totals/numbering; but save all days including pre/post
+      const productionDays = days.filter(day => !isPreFn(day) && !isPostFn(day));
+      const preDay = days.find(isPreFn) || null;
+      const postDay = days.find(isPostFn) || null;
+      const productionDaysSorted = [...productionDays].sort((a, b) => {
+        const an = typeof a.dayNumber === 'number' ? a.dayNumber : 9999;
+        const bn = typeof b.dayNumber === 'number' ? b.dayNumber : 9999;
+        return an - bn;
+      });
+      const orderedDays = [
+        ...(preDay ? [{ ...preDay, note: 'Pre-production day' }] : []),
+        ...productionDaysSorted,
+        ...(postDay ? [{ ...postDay, note: 'Post-production day' }] : []),
+      ];
+
       const updatedPro = {
         ...pro,
-        total: days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0),
-        day: days.map(day => ({
-          ...day,
+        total: productionDays.reduce((acc, day) => acc + (day.totalExpenses || 0), 0),
+        day: orderedDays.map((day) => ({
+          // Persist all days, including pre/post
+          // Ensure expense arrays and allowed fields
           expense: {
-            rent: day.expense.rent,
-            operational: day.expense.operational,
-            orderlist: day.expense.orderlist,
+            rent: day.expense?.rent || [],
+            operational: day.expense?.operational || [],
+            orderlist: day.expense?.orderlist || [],
           },
-          // Preserve the template field
-          template: day.template,
-          backup: day.backup,
-          crew: day.crew,
-          note: day.note,
-          date: day.date,
+          backup: day.backup || [],
+          crew: day.crew || [],
+          note: day.note || '',
+          date: day.date || '',
+          template: day.template === undefined ? true : day.template,
+          // dayNumber and flags may be stripped by backend strict mode; harmless if present
+          dayNumber: day.dayNumber,
+          isPreProd: day.isPreProd,
+          isPostProd: day.isPostProd,
+          totalExpenses: day.totalExpenses || 0,
         })),
       };
-      
+
+      // Update kanban to mark "Berita acara" as done
+      if (updatedPro.kanban && Array.isArray(updatedPro.kanban)) {
+        updatedPro.kanban = updatedPro.kanban.map(division => {
+          if (division.steps) {
+            division.steps = division.steps.map(step => {
+              if (step.items) {
+                step.items = step.items.map(item => {
+                  // Check if item title contains "Berita acara" or similar
+                  if (item.title && (
+                    item.title.toLowerCase().includes('berita acara') ||
+                    item.title.toLowerCase().includes('laporan') ||
+                    item.title.toLowerCase().includes('report')
+                  )) {
+                    return { ...item, done: true };
+                  }
+                  return item;
+                });
+              }
+              return step;
+            });
+          }
+          return division;
+        });
+      }
+
       await updateData(updatedPro);
       showToast("Project Report saved successfully", 'success');
       setPro(updatedPro);
-      setDays(updatedPro.day.map(day => ({
-        ...day,
-        id: Date.now() + Math.random(),
-        expense: {
-          rent: day.expense.rent || [],
-          operational: day.expense.operational || [],
-          orderlist: day.expense.orderlist || [],
-        },
-        // Preserve the template field
-        template: day.template,
-        backup: day.backup || [],
-        crew: day.crew || [],
-        note: day.note || '',
-        date: day.date || '',
-      })));
+
+      // Recreate days with proper structure
+      const newDays = [];
+
+      // Add pre-production day if it's a production project
+      if (updatedPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat))) {
+        newDays.push({
+          id: Date.now() + Math.random() + 1,
+          crew: [],
+          expense: { rent: [], operational: [], orderlist: [] },
+          note: 'Pre-production day',
+          totalExpenses: 0,
+          template: true,
+          date: '',
+          backup: [],
+          dayNumber: 0,
+          isPreProd: true,
+        });
+      }
+
+      // Add production days
+      productionDays.forEach((day, index) => {
+        newDays.push({
+          ...day,
+          id: Date.now() + Math.random() + index + 2,
+          dayNumber: index + 1,
+          expense: {
+            rent: day.expense.rent || [],
+            operational: day.expense.operational || [],
+            orderlist: day.expense.orderlist || [],
+          },
+          template: day.template,
+          backup: day.backup || [],
+          crew: day.crew || [],
+          note: day.note || '',
+          date: day.date || '',
+        });
+      });
+
+      // Add post-production day if it's a production project
+      if (updatedPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat))) {
+        newDays.push({
+          id: Date.now() + Math.random() + productionDays.length + 2,
+          crew: [],
+          expense: { rent: [], operational: [], orderlist: [] },
+          note: 'Post-production day',
+          totalExpenses: 0,
+          template: true,
+          date: '',
+          backup: [],
+          dayNumber: productionDays.length + 1,
+          isPostProd: true,
+        });
+      }
+
+      // Ensure proper day numbering before setting state
+      const numberedDays = ensureDayNumbering(newDays);
+      setDays(numberedDays);
     } catch (error) {
       console.error('Save error:', error);
       showToast("Something went wrong! Failed to save report", 'error');
@@ -628,17 +837,50 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         </main>
       </nav>
       <main className="w-full overflow-y-auto no-scrollbar">
-          <div className="flex items-start justify-between h-screen w-full mb-3">
-            {/* Budget Overview */}
-            <BudgetOverview days={days} pro={pro} />
-          </div>
-                {/* Content */}
-                <form ref={printRef} onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+        <div className="flex items-start justify-between h-screen w-full mb-3">
+          {/* Budget Overview */}
+          <BudgetOverview days={days} pro={pro} />
+        </div>
+        {/* Content */}
+        <form ref={printRef} onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
           {/* Data per Day */}
           {days.map((day, dayIndex) => (
-            <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">     
+            <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">
+
               {/* Expenses section */}
               <section className="relative rounded-xl glass p-5 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-full">
+                {/* Day Header */}
+                <div className="w-full mb-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-light tracking-wider">
+                      {day.isPreProd
+                        ? 'Pre-Production'
+                        : day.isPostProd
+                          ? 'Post-Production'
+                          : `Day ${day.dayNumber || 'Unknown'}`}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      {day.date && (
+                        <span className="text-sm text-light/80 font-medium">
+                          {day.date}
+                        </span>
+                      )}
+                      {/* Delete Day Button - Only show for production days */}
+                      {!day.isPreProd && !day.isPostProd && (
+                        <button
+                          type="button"
+                          onClick={() => showDeleteConfirm(dayIndex)}
+                          className="text-light transition-colors duration-200 p-1"
+                          title="Delete Day"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
                 {day.template ? (
                   <div>
                     {/* Rent */}
@@ -1169,6 +1411,89 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     </button>
                   </div>
                 )}
+                {/* Crew Management - Commented out for now */}
+                {/* <div className="w-full mt-2">
+                  <p className="font-body text-xs font-thin tracking-widest mb-2">
+                    Crew & Job Descriptions
+                  </p>
+                  {day.crew?.map((crewMember, crewIndex) => (
+                    <div key={crewIndex} className="flex items-center gap-1 mb-2">
+                      <input
+                        className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
+                        type="text"
+                        placeholder="Name"
+                        value={crewMember.name || ''}
+                        onChange={(e) => {
+                          setDays(prevDays =>
+                            prevDays.map((d, idx) => {
+                              if (idx === dayIndex) {
+                                const updatedCrew = [...(d.crew || [])];
+                                updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], name: e.target.value };
+                                return { ...d, crew: updatedCrew };
+                              }
+                              return d;
+                            })
+                          );
+                        }}
+                      />
+                      <input
+                        className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
+                        type="text"
+                        placeholder="Roles (comma separated)"
+                        value={crewMember.roles?.join(', ') || ''}
+                        onChange={(e) => {
+                          const roles = e.target.value.split(',').map(role => role.trim()).filter(role => role);
+                          setDays(prevDays =>
+                            prevDays.map((d, idx) => {
+                              if (idx === dayIndex) {
+                                const updatedCrew = [...(d.crew || [])];
+                                updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles };
+                                return { ...d, crew: updatedCrew };
+                              }
+                              return d;
+                            })
+                          );
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDays(prevDays =>
+                            prevDays.map((d, idx) => {
+                              if (idx === dayIndex) {
+                                const updatedCrew = [...(d.crew || [])];
+                                updatedCrew.splice(crewIndex, 1);
+                                return { ...d, crew: updatedCrew };
+                              }
+                              return d;
+                            })
+                          );
+                        }}
+                        className="text-xs w-5 font-body text-red-400 hover:text-red-300"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDays(prevDays =>
+                        prevDays.map((d, idx) => {
+                          if (idx === dayIndex) {
+                            const updatedCrew = [...(d.crew || []), { name: '', roles: [] }];
+                            return { ...d, crew: updatedCrew };
+                          }
+                          return d;
+                        })
+                      );
+                    }}
+                    className="text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-xl p-px outline-none font-body text-xs font-thin w-20"
+                  >
+                    Add Crew
+                  </button>
+                </div> */}
+
                 {/* Note & Total */}
                 <main className="w-full mt-2">
                   <section className="flex items-center gap-1">
@@ -1218,6 +1543,31 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           </button>
         </form>
       </main>
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="fixed top-0 left-0 z-50 glass w-full h-full flex items-center justify-center">
+          <section className="bg-dark border border-light/50 rounded-lg p-5 text-light flex flex-col justify-center items-center w-xl h-48">
+            <p className="text-center font-body mb-4">
+              Are you sure you want to delete this day? This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-5 w-full">
+              <button
+                className="w-20 h-10 border border-light text-light rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer"
+                onClick={() => setDeleteConfirm({ show: false, dayIndex: null })}
+              >
+                Cancel
+              </button>
+              <button
+                className="w-20 h-10 bg-light text-dark rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer"
+                onClick={handleDeleteDay}
+              >
+                Delete
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
       <div style={{ position: "absolute", left: "-9999px", top: 0 }} ref={printRef}>
         <PrintLayout pro={pro} days={days} />
       </div>

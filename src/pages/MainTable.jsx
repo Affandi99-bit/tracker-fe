@@ -28,7 +28,7 @@ const calculateOverallProgress = ({ project }) => {
   });
 
   const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
-  
+
   return progress;
 };
 
@@ -96,6 +96,7 @@ const DataTable = ({
   const handleRowClick = (rowData) => {
     setSelectedRowData(rowData);
     setShowModal(true);
+    console.log("Row clicked:", rowData);
   };
 
   return (
