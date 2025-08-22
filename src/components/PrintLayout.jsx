@@ -544,7 +544,44 @@ const PrintLayout = ({ pro, days }) => {
                                 </table>
                             </div>
                         )}
-
+                        {/* images Grid */}
+                        {Array.isArray(day.images) && day.images.length > 0 && (
+                            <div style={{ marginBottom: "4mm" }}>
+                                <h4 style={{
+                                    fontSize: "11pt",
+                                    margin: "0 0 2mm 0",
+                                    color: "#000",
+                                    fontWeight: "bold"
+                                }}>
+                                    Images
+                                </h4>
+                                <div style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(3, 1fr)",
+                                    gap: "3mm"
+                                }}>
+                                    {day.images.map((src, idx) => (
+                                        <div key={idx} style={{
+                                            width: "100%",
+                                            height: "35mm",
+                                            overflow: "hidden",
+                                            border: "1px solid #000",
+                                            background: "#fff",
+                                        }}>
+                                            <img
+                                                src={src}
+                                                alt={`photo-${idx + 1}`}
+                                                style={{
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    objectFit: "contain"
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {/* Backup Information */}
                         {day.backup && day.backup.length > 0 && (
                             <div style={{ marginBottom: "4mm" }}>

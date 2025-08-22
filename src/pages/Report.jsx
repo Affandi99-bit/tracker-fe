@@ -430,6 +430,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
             operational: day.expense?.operational || [],
             orderlist: day.expense?.orderlist || [],
           },
+          images: Array.isArray(day.images) ? day.images : [],
           backup: day.backup || [],
           crew: day.crew || [],
           note: day.note || '',
@@ -455,6 +456,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                 id: Date.now() + Math.random() + 1,
                 crew: [],
                 expense: { rent: [], operational: [], orderlist: [] },
+                images: [],
                 note: 'Pre-production day',
                 totalExpenses: 0,
                 template: true,
@@ -474,6 +476,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                 id: Date.now() + Math.random() + 2,
                 crew: [],
                 expense: { rent: [], operational: [], orderlist: [] },
+                images: [],
                 note: 'Post-production day',
                 totalExpenses: 0,
                 template: true,
@@ -527,6 +530,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       id: Date.now() + Math.random(),
       crew: [],
       expense: { rent: [], operational: [], orderlist: [] },
+      images: [],
       note: '',
       totalExpenses: 0,
       template: existingTemplate,
@@ -600,6 +604,29 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       (total, expense) => total + parseNumber(expense.price) * (parseInt(expense.qty) || 0), 0
     );
     return rentTotal + operationalTotal;
+  };
+
+  // Add images helper (from FileList or array of Files)
+  const handleAddImages = (dayIndex, files) => {
+    const fileArray = Array.from(files || []);
+    if (fileArray.length === 0) return;
+    Promise.all(
+      fileArray.map((file) =>
+        new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        })
+      )
+    ).then((base64Images) => {
+      setDays((prev) =>
+        prev.map((d, idx) => {
+          if (idx !== dayIndex) return d;
+          const currentImages = Array.isArray(d.images) ? d.images : [];
+          return { ...d, images: [...currentImages, ...base64Images] };
+        })
+      );
+    });
   };
 
   // Add expense item
@@ -691,6 +718,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           },
           backup: day.backup || [],
           crew: day.crew || [],
+          images: Array.isArray(day.images) ? day.images : [],
           note: day.note || '',
           date: day.date || '',
           template: day.template === undefined ? true : day.template,
@@ -731,62 +759,23 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       showToast("Project Report saved successfully", 'success');
       setPro(updatedPro);
 
-      // Recreate days with proper structure
-      const newDays = [];
-
-      // Add pre-production day if it's a production project
-      if (updatedPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat))) {
-        newDays.push({
-          id: Date.now() + Math.random() + 1,
-          crew: [],
-          expense: { rent: [], operational: [], orderlist: [] },
-          note: 'Pre-production day',
-          totalExpenses: 0,
-          template: true,
-          date: '',
-          backup: [],
-          dayNumber: 0,
-          isPreProd: true,
-        });
-      }
-
-      // Add production days
-      productionDays.forEach((day, index) => {
-        newDays.push({
-          ...day,
-          id: Date.now() + Math.random() + index + 2,
-          dayNumber: index + 1,
-          expense: {
-            rent: day.expense.rent || [],
-            operational: day.expense.operational || [],
-            orderlist: day.expense.orderlist || [],
-          },
-          template: day.template,
-          backup: day.backup || [],
-          crew: day.crew || [],
-          note: day.note || '',
-          date: day.date || '',
-        });
-      });
-
-      // Add post-production day if it's a production project
-      if (updatedPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat))) {
-        newDays.push({
-          id: Date.now() + Math.random() + productionDays.length + 2,
-          crew: [],
-          expense: { rent: [], operational: [], orderlist: [] },
-          note: 'Post-production day',
-          totalExpenses: 0,
-          template: true,
-          date: '',
-          backup: [],
-          dayNumber: productionDays.length + 1,
-          isPostProd: true,
-        });
-      }
-
-      // Ensure proper day numbering before setting state
-      const numberedDays = ensureDayNumbering(newDays);
+      // Recreate days from saved payload to preserve pre/post inputs and images
+      const rebuiltDays = (updatedPro.day || []).map((d, idx) => ({
+        ...d,
+        id: Date.now() + Math.random() + idx,
+        expense: {
+          rent: d.expense?.rent || [],
+          operational: d.expense?.operational || [],
+          orderlist: d.expense?.orderlist || [],
+        },
+        images: Array.isArray(d.images) ? d.images : [],
+        backup: d.backup || [],
+        crew: d.crew || [],
+        note: d.note || '',
+        date: d.date || '',
+        template: d.template === undefined ? true : d.template,
+      }));
+      const numberedDays = ensureDayNumbering(rebuiltDays);
       setDays(numberedDays);
     } catch (error) {
       console.error('Save error:', error);
@@ -845,41 +834,65 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
         <form ref={printRef} onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
           {/* Data per Day */}
           {days.map((day, dayIndex) => (
-            <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center">
+            <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center gap-1 min-h-64">
 
               {/* Expenses section */}
-              <section className="relative rounded-xl glass p-5 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-full">
+              <section className="rounded-xl glass p-5 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-full">
                 {/* Day Header */}
-                <div className="w-full mb-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-light tracking-wider">
-                      {day.isPreProd
-                        ? 'Pre-Production'
-                        : day.isPostProd
-                          ? 'Post-Production'
-                          : `Day ${day.dayNumber || 'Unknown'}`}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      {day.date && (
-                        <span className="text-sm text-light/80 font-medium">
-                          {day.date}
-                        </span>
-                      )}
-                      {/* Delete Day Button - Only show for production days */}
-                      {!day.isPreProd && !day.isPostProd && (
-                        <button
-                          type="button"
-                          onClick={() => showDeleteConfirm(dayIndex)}
-                          className="text-light transition-colors duration-200 p-1"
-                          title="Delete Day"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
+                <div className="relative w-full flex items-start justify-between">
+                  <h3 className="text-sm font-semibold text-light tracking-wider">
+                    {day.isPreProd
+                      ? 'Pre-Production'
+                      : day.isPostProd
+                        ? 'Post-Production'
+                        : `Day ${day.dayNumber || 'Unknown'}`}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {day.date && (
+                      <span className="text-sm text-light/80 font-medium">
+                        {day.date}
+                      </span>
+                    )}
+                    <section
+                      className="absolute right-0 -bottom-40 w-40 h-40 rounded-xl border border-gray-400 glass flex justify-center items-center"
+                      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      onDrop={(e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        if (e.dataTransfer?.files?.length) {
+                          handleAddImages(dayIndex, e.dataTransfer.files);
+                        }
+                      }}
+                    >
+                      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-light/70">
+                        <span className="text-xs">Drag & drop images here</span>
+                        <span className="text-[10px]">or click to browse</span>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => {
+                          handleAddImages(dayIndex, e.target.files);
+                          e.target.value = "";
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                    </section>
+                    {/* Delete Day Button - Only show for production days */}
+                    {!day.isPreProd && !day.isPostProd && (
+                      <button
+                        type="button"
+                        onClick={() => showDeleteConfirm(dayIndex)}
+                        className="text-light transition-colors duration-200 p-1"
+                        title="Delete Day"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
+
                 </div>
                 {day.template ? (
                   <div>
@@ -1200,6 +1213,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   </div>
                 ) : (
                   <div>
+
                     {/* Design */}
                     <p className="font-body text-xs font-thin tracking-widest mt-2">Order List</p>
                     {(day.expense?.orderlist || []).map((order, index) => (
@@ -1494,6 +1508,33 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   </button>
                 </div> */}
 
+                <div className="relative w-full mb-2">
+                  {Array.isArray(day.images) && day.images.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {day.images.map((src, pIdx) => (
+                        <div key={pIdx} className="relative w-20 h-20 border border-gray-400 rounded-lg overflow-hidden">
+                          <img src={src} alt={`photo-${pIdx + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            className="absolute -top-2 -right-2 bg-light text-dark rounded-full w-5 h-5 text-xs"
+                            title="Remove"
+                            onClick={() => {
+                              setDays(prev => prev.map((d, idx) => {
+                                if (idx !== dayIndex) return d;
+                                const next = [...(d.images || [])];
+                                next.splice(pIdx, 1);
+                                return { ...d, images: next };
+                              }));
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Note & Total */}
                 <main className="w-full mt-2">
                   <section className="flex items-center gap-1">
@@ -1532,6 +1573,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   </section>
                 </main>
               </section>
+
             </main>
           ))}
           <button
