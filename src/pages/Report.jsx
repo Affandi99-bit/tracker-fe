@@ -409,7 +409,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
       heightLeft -= pdf.internal.pageSize.getHeight();
     }
 
-    pdf.save(`${pro?.title || "report"}.pdf`);
+    pdf.save(`Berita Acara ${pro?.title}.pdf`);
   };
 
   useEffect(() => {

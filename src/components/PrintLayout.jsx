@@ -48,7 +48,7 @@ const PrintLayout = ({ pro, days }) => {
         <div style={{
             width: "210mm",
             minHeight: "297mm",
-            padding: "20mm",
+            padding: "10mm",
             fontFamily: "Arial, sans-serif",
             fontSize: "10pt",
             color: "#000",
@@ -60,11 +60,11 @@ const PrintLayout = ({ pro, days }) => {
             <div
                 style={{
                     display: "flex",
-                    alignItems: "center",
+                    alignItems: "end",
                     justifyContent: "start",
-                    borderBottom: "2px solid #000",
-                    paddingBottom: "5mm",
-                    marginBottom: "8mm",
+                    borderBottom: "1px solid #000",
+                    paddingBottom: "4mm",
+                    marginBottom: "4mm",
                     gap: "10mm", // space between image and text
                 }}
             >
@@ -73,10 +73,9 @@ const PrintLayout = ({ pro, days }) => {
                     src="/logoalt.webp"
                     alt="Logo"
                     style={{
-                        width: "40mm",
+                        width: "20mm",
                         height: "auto",
                         objectFit: "contain",
-                        filter: "invert(1)",
                     }}
                 />
 
@@ -90,29 +89,20 @@ const PrintLayout = ({ pro, days }) => {
                             fontWeight: "bold",
                         }}
                     >
-                        PROJECT REPORT
-                    </h1>
-                    <p style={{ fontSize: "12pt", margin: "0", color: "#000" }}>
+                        BERITA ACARA</h1>
+                    <p style={{ fontSize: "12pt", margin: "0", color: "#000", paddingBottom: "2mm" }}>
                         {pro?.title || "Untitled Project"}
                     </p>
+                    <p style={{ fontSize: "7pt", margin: "0", color: "#000" }}>CV. Kreasi Rumah Hitam | Jl. Suropati Gang 9 Desa Pesanggrahan, Kota Batu | Telp. +62 811-3577-793 | Email: blackstudio.id@gmail.com</p>
                 </div>
             </div>
 
             {/* Project Information */}
-            <div style={{ marginBottom: "8mm" }}>
-                <h2 style={{
-                    fontSize: "14pt",
-                    margin: "0 0 4mm 0",
-                    color: "#000",
-                    borderBottom: "1px solid #000",
-                    paddingBottom: "2mm"
-                }}>
-                    Project Details
-                </h2>
+            <div style={{ marginBottom: "4mm" }}>
                 <table style={{
                     width: "100%",
                     borderCollapse: "collapse",
-                    fontSize: "10pt"
+                    fontSize: "7pt"
                 }}>
                     <tbody>
                         <tr>
@@ -120,22 +110,20 @@ const PrintLayout = ({ pro, days }) => {
                                 width: "25%",
                                 padding: "2mm",
                                 fontWeight: "bold",
-                                backgroundColor: "#fff"
                             }}>
                                 Project Title
                             </td>
-                            <td style={{ padding: "2mm", borderBottom: "1px solid #000" }}>
+                            <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {pro?.title || "-"}
                             </td>
                             <td style={{
                                 width: "25%",
                                 padding: "2mm",
                                 fontWeight: "bold",
-                                backgroundColor: "#fff"
                             }}>
                                 Client
                             </td>
-                            <td style={{ padding: "2mm", borderBottom: "1px solid #000" }}>
+                            <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {pro?.client || "-"}
                             </td>
                         </tr>
@@ -143,21 +131,19 @@ const PrintLayout = ({ pro, days }) => {
                             <td style={{
                                 padding: "2mm",
                                 fontWeight: "bold",
-                                backgroundColor: "#fff"
                             }}>
                                 PIC Client
                             </td>
-                            <td style={{ padding: "2mm", borderBottom: "1px solid #000" }}>
+                            <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {pro?.pic || "-"}
                             </td>
                             <td style={{
                                 padding: "2mm",
                                 fontWeight: "bold",
-                                backgroundColor: "#fff"
                             }}>
                                 Event Date
                             </td>
-                            <td style={{ padding: "2mm", borderBottom: "1px solid #000" }}>
+                            <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {formatDate(pro?.deadline)}
                             </td>
                         </tr>
@@ -165,21 +151,19 @@ const PrintLayout = ({ pro, days }) => {
                             <td style={{
                                 padding: "2mm",
                                 fontWeight: "bold",
-                                backgroundColor: "#fff"
                             }}>
                                 Project Categories
                             </td>
-                            <td style={{ padding: "2mm", borderBottom: "1px solid #000" }}>
+                            <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {pro?.categories?.join(", ") || "-"}
                             </td>
                             <td style={{
                                 padding: "2mm",
                                 fontWeight: "bold",
-                                backgroundColor: "#fff"
                             }}>
                                 Project Types
                             </td>
-                            <td style={{ padding: "2mm", borderBottom: "1px solid #000" }}>
+                            <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {pro?.type?.join(", ") || "-"}
                             </td>
                         </tr>
@@ -191,34 +175,36 @@ const PrintLayout = ({ pro, days }) => {
             {firstCrewDay?.crew && firstCrewDay.crew.length > 0 && (
                 <div style={{ marginBottom: "8mm" }}>
                     <h2 style={{
-                        fontSize: "14pt",
+                        fontSize: "10pt",
                         margin: "0 0 4mm 0",
                         color: "#000",
-                        borderBottom: "1px solid #000",
-                        paddingBottom: "2mm"
+                        borderBottom: ".5px solid #000",
+                        paddingBottom: "1mm"
                     }}>
                         Crew Assignment
                     </h2>
                     <table style={{
                         width: "100%",
                         borderCollapse: "collapse",
-                        border: "1px solid #000"
+                        border: ".5px solid #000"
                     }}>
                         <thead>
-                            <tr style={{ backgroundColor: "#fff" }}>
+                            <tr style={{ backgroundColor: "#000", fontSize: "9pt" }}>
                                 <th style={{
                                     border: "1px solid #000",
-                                    padding: "3mm",
+                                    padding: "1mm",
                                     textAlign: "left",
-                                    fontWeight: "bold"
+                                    fontWeight: "bold",
+                                    color: "#fff"
                                 }}>
                                     Name
                                 </th>
                                 <th style={{
                                     border: "1px solid #000",
-                                    padding: "3mm",
+                                    padding: "1mm",
                                     textAlign: "left",
-                                    fontWeight: "bold"
+                                    fontWeight: "bold",
+                                    color: "#fff"
                                 }}>
                                     Roles
                                 </th>
@@ -228,15 +214,17 @@ const PrintLayout = ({ pro, days }) => {
                             {firstCrewDay.crew.map((member, index) => (
                                 <tr key={index}>
                                     <td style={{
-                                        border: "1px solid #000",
-                                        padding: "3mm",
-                                        fontWeight: "500"
+                                        border: "1px solid rgba(0, 0, 0, 0.5)",
+                                        padding: "2mm",
+                                        fontWeight: "500",
+                                        fontSize: "7pt"
                                     }}>
                                         {member.name}
                                     </td>
                                     <td style={{
-                                        border: "1px solid #000",
-                                        padding: "3mm"
+                                        border: "1px solid rgba(0, 0, 0, 0.5)",
+                                        padding: "2mm",
+                                        fontSize: "7pt"
                                     }}>
                                         {member.roles?.join(", ") || "-"}
                                     </td>
@@ -248,10 +236,10 @@ const PrintLayout = ({ pro, days }) => {
             )}
 
             {/* Daily Expenses */}
-            <div style={{ marginBottom: "8mm" }}>
+            <div style={{ marginBottom: "4mm" }}>
                 <h2 style={{
-                    fontSize: "14pt",
-                    margin: "0 0 4mm 0",
+                    fontSize: "10pt",
+                    margin: "0 0 2mm 0",
                     color: "#000",
                     borderBottom: "1px solid #000",
                     paddingBottom: "2mm"
@@ -261,16 +249,15 @@ const PrintLayout = ({ pro, days }) => {
 
                 {days.map((day, dayIndex) => (
                     <div key={dayIndex} style={{
-                        marginBottom: "6mm",
+                        marginBottom: "3mm",
                         pageBreakInside: "avoid",
                         border: "1px solid #000",
-                        // borderRadius: "3mm",
-                        padding: "4mm",
+                        padding: "2mm",
                         backgroundColor: "#fff"
                     }}>
                         <h3 style={{
-                            fontSize: "12pt",
-                            margin: "0 0 3mm 0",
+                            fontSize: "9pt",
+                            margin: "0 0 1.5mm 0",
                             color: "#000",
                             borderBottom: "1px solid #000",
                             paddingBottom: "2mm"
@@ -282,8 +269,8 @@ const PrintLayout = ({ pro, days }) => {
                         {day.expense.rent && day.expense.rent.length > 0 && (
                             <div style={{ marginBottom: "4mm" }}>
                                 <h4 style={{
-                                    fontSize: "11pt",
-                                    margin: "0 0 2mm 0",
+                                    fontSize: "9pt",
+                                    margin: "0 0 1mm 0",
                                     color: "#000",
                                     fontWeight: "bold"
                                 }}>
@@ -292,37 +279,42 @@ const PrintLayout = ({ pro, days }) => {
                                 <table style={{
                                     width: "100%",
                                     borderCollapse: "collapse",
-                                    fontSize: "9pt"
+                                    fontSize: "7pt"
                                 }}>
                                     <thead>
-                                        <tr style={{ backgroundColor: "#fff" }}>
+                                        <tr style={{ backgroundColor: "#000" }}>
                                             <th style={{
-                                                border: "1px solid #000",
-                                                padding: "2mm",
+                                                border: ".5px solid #000",
+                                                color: "#fff",
+                                                padding: "1.5mm",
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Item</th>
                                             <th style={{
-                                                border: "1px solid #000",
-                                                padding: "2mm",
-                                                textAlign: "center",
+                                                border: ".5px solid #000",
+                                                color: "#fff",
+                                                padding: "1.5mm",
+                                                textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Qty</th>
                                             <th style={{
-                                                border: "1px solid #000",
-                                                padding: "2mm",
-                                                textAlign: "right",
+                                                border: ".5px solid #000",
+                                                color: "#fff",
+                                                padding: "1.5mm",
+                                                textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Price</th>
                                             <th style={{
-                                                border: "1px solid #000",
-                                                padding: "2mm",
-                                                textAlign: "right",
+                                                border: ".5px solid #000",
+                                                color: "#fff",
+                                                padding: "1.5mm",
+                                                textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Total</th>
                                             <th style={{
-                                                border: "1px solid #000",
-                                                padding: "2mm",
+                                                border: ".5px solid #000",
+                                                color: "#fff",
+                                                padding: "1.5mm",
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Note</th>
@@ -333,35 +325,40 @@ const PrintLayout = ({ pro, days }) => {
                                             <tr key={idx}>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm"
+                                                    fontSize: "7pt",
+                                                    padding: "1.5mm"
                                                 }}>
                                                     {item.name || "-"}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm",
-                                                    textAlign: "center"
+                                                    fontSize: "7pt",
+                                                    padding: "1.5mm",
+                                                    textAlign: "left"
                                                 }}>
                                                     {item.qty || "0"}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm",
-                                                    textAlign: "right"
+                                                    fontSize: "7pt",
+                                                    padding: "1.5mm",
+                                                    textAlign: "left"
                                                 }}>
                                                     {formatCurrency(item.price)}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm",
-                                                    textAlign: "right",
+                                                    fontSize: "7pt",
+                                                    padding: "1.5mm",
+                                                    textAlign: "left",
                                                     fontWeight: "bold"
                                                 }}>
                                                     {formatCurrency((item.qty || 0) * (item.price || 0))}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm"
+                                                    fontSize: "7pt",
+                                                    padding: "1.5mm"
                                                 }}>
                                                     {item.note || "-"}
                                                 </td>
@@ -374,10 +371,10 @@ const PrintLayout = ({ pro, days }) => {
 
                         {/* Operational Expenses */}
                         {day.expense.operational && day.expense.operational.length > 0 && (
-                            <div style={{ marginBottom: "4mm" }}>
+                            <div style={{ marginBottom: "2mm" }}>
                                 <h4 style={{
-                                    fontSize: "11pt",
-                                    margin: "0 0 2mm 0",
+                                    fontSize: "9pt",
+                                    margin: "0 0 1mm 0",
                                     color: "#000",
                                     fontWeight: "bold"
                                 }}>
@@ -386,43 +383,49 @@ const PrintLayout = ({ pro, days }) => {
                                 <table style={{
                                     width: "100%",
                                     borderCollapse: "collapse",
-                                    fontSize: "9pt"
+                                    fontSize: "7pt"
                                 }}>
                                     <thead>
-                                        <tr style={{ backgroundColor: "#fff" }}>
+                                        <tr style={{ backgroundColor: "#000" }}>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
+                                                padding: "1.5mm",
+                                                color: "#fff",
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Item</th>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
-                                                textAlign: "center",
+                                                padding: "1.5mm",
+                                                color: "#fff",
+                                                textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Qty</th>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
-                                                textAlign: "right",
+                                                padding: "1.5mm",
+                                                color: "#fff",
+                                                textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Price</th>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
-                                                textAlign: "right",
+                                                padding: "1.5mm",
+                                                color: "#fff",
+                                                textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Total</th>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
+                                                padding: "1.5mm",
+                                                color: "#fff",
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Category</th>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
+                                                padding: "1.5mm",
+                                                color: "#fff",
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Note</th>
@@ -433,41 +436,41 @@ const PrintLayout = ({ pro, days }) => {
                                             <tr key={idx}>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm"
+                                                    padding: "1.5mm"
                                                 }}>
                                                     {item.name || "-"}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm",
-                                                    textAlign: "center"
+                                                    padding: "1.5mm",
+                                                    textAlign: "left"
                                                 }}>
                                                     {item.qty || "0"}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm",
-                                                    textAlign: "right"
+                                                    padding: "1.5mm",
+                                                    textAlign: "left"
                                                 }}>
                                                     {formatCurrency(item.price)}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm",
-                                                    textAlign: "right",
+                                                    padding: "1.5mm",
+                                                    textAlign: "left",
                                                     fontWeight: "bold"
                                                 }}>
                                                     {formatCurrency((item.qty || 0) * (item.price || 0))}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm"
+                                                    padding: "1.5mm"
                                                 }}>
                                                     {item.category || "-"}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm"
+                                                    padding: "1.5mm"
                                                 }}>
                                                     {item.note || "-"}
                                                 </td>
@@ -480,10 +483,10 @@ const PrintLayout = ({ pro, days }) => {
 
                         {/* Order List */}
                         {day.expense.orderlist && day.expense.orderlist.length > 0 && (
-                            <div style={{ marginBottom: "4mm" }}>
+                            <div style={{ marginBottom: "2mm" }}>
                                 <h4 style={{
-                                    fontSize: "11pt",
-                                    margin: "0 0 2mm 0",
+                                    fontSize: "9pt",
+                                    margin: "0 0 1mm 0",
                                     color: "#000",
                                     fontWeight: "bold"
                                 }}>
@@ -495,22 +498,25 @@ const PrintLayout = ({ pro, days }) => {
                                     fontSize: "9pt"
                                 }}>
                                     <thead>
-                                        <tr style={{ backgroundColor: "#fff" }}>
+                                        <tr style={{ backgroundColor: "#000" }}>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
+                                                color: "#fff",
+                                                padding: "1.5mm",
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Item</th>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
-                                                textAlign: "center",
+                                                color: "#fff",
+                                                padding: "1.5mm",
+                                                textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Qty</th>
                                             <th style={{
                                                 border: "1px solid #000",
-                                                padding: "2mm",
+                                                color: "#fff",
+                                                padding: "1.5mm",
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Note</th>
@@ -521,20 +527,20 @@ const PrintLayout = ({ pro, days }) => {
                                             <tr key={idx}>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm"
+                                                    padding: "1.5mm"
                                                 }}>
                                                     {item.name || "-"}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm",
-                                                    textAlign: "center"
+                                                    padding: "1.5mm",
+                                                    textAlign: "left"
                                                 }}>
                                                     {item.qty || "0"}
                                                 </td>
                                                 <td style={{
                                                     border: "1px solid #000",
-                                                    padding: "2mm"
+                                                    padding: "1.5mm"
                                                 }}>
                                                     {item.note || "-"}
                                                 </td>
@@ -546,10 +552,10 @@ const PrintLayout = ({ pro, days }) => {
                         )}
                         {/* images Grid */}
                         {Array.isArray(day.images) && day.images.length > 0 && (
-                            <div style={{ marginBottom: "4mm" }}>
+                            <div style={{ marginBottom: "2mm" }}>
                                 <h4 style={{
-                                    fontSize: "11pt",
-                                    margin: "0 0 2mm 0",
+                                    fontSize: "9pt",
+                                    margin: "0 0 1mm 0",
                                     color: "#000",
                                     fontWeight: "bold"
                                 }}>
@@ -558,14 +564,13 @@ const PrintLayout = ({ pro, days }) => {
                                 <div style={{
                                     display: "grid",
                                     gridTemplateColumns: "repeat(3, 1fr)",
-                                    gap: "3mm"
+                                    gap: "1mm"
                                 }}>
                                     {day.images.map((src, idx) => (
                                         <div key={idx} style={{
                                             width: "100%",
                                             height: "35mm",
                                             overflow: "hidden",
-                                            border: "1px solid #000",
                                             background: "#fff",
                                         }}>
                                             <img
@@ -584,10 +589,10 @@ const PrintLayout = ({ pro, days }) => {
                         )}
                         {/* Backup Information */}
                         {day.backup && day.backup.length > 0 && (
-                            <div style={{ marginBottom: "4mm" }}>
+                            <div style={{ marginBottom: "2mm" }}>
                                 <h4 style={{
-                                    fontSize: "11pt",
-                                    margin: "0 0 2mm 0",
+                                    fontSize: "9pt",
+                                    margin: "0 0 1mm 0",
                                     color: "#000",
                                     fontWeight: "bold"
                                 }}>
@@ -599,7 +604,7 @@ const PrintLayout = ({ pro, days }) => {
                                     listStyleType: "disc"
                                 }}>
                                     {day.backup.map((backup, idx) => (
-                                        <li key={idx} style={{ marginBottom: "1mm" }}>
+                                        <li key={idx} style={{ marginBottom: "1mm", fontSize: "7pt" }}>
                                             <strong>{backup.source || "Unknown"}</strong> → {backup.target || "Unknown"}
                                         </li>
                                     ))}
@@ -611,7 +616,7 @@ const PrintLayout = ({ pro, days }) => {
                         {day.note && (
                             <div style={{ marginBottom: "4mm" }}>
                                 <h4 style={{
-                                    fontSize: "11pt",
+                                    fontSize: "9pt",
                                     margin: "0 0 2mm 0",
                                     color: "#000",
                                     fontWeight: "bold"
@@ -620,7 +625,7 @@ const PrintLayout = ({ pro, days }) => {
                                 </h4>
                                 <p style={{
                                     margin: "0",
-                                    padding: "2mm",
+                                    padding: "1mm",
                                     backgroundColor: "#f8f8f8",
                                     borderRadius: "2mm",
                                     border: "1px solid #ddd"
@@ -633,12 +638,10 @@ const PrintLayout = ({ pro, days }) => {
                         {/* Day Total */}
                         <div style={{
                             textAlign: "right",
-                            padding: "3mm",
+                            padding: "1.5mm",
                             backgroundColor: "#fff",
-                            // borderRadius: "2mm",
-                            border: "1px solid #000"
                         }}>
-                            <strong style={{ fontSize: "11pt", color: "#000" }}>
+                            <strong style={{ fontSize: "9pt", color: "#000" }}>
                                 {getDayLabel(day)} Total: {formatCurrency(calculateDayTotal(day))}
                             </strong>
                         </div>
@@ -648,14 +651,13 @@ const PrintLayout = ({ pro, days }) => {
 
             {/* Project Summary */}
             <div style={{
-                marginTop: "8mm",
-                padding: "4mm",
+                marginTop: "4mm",
+                padding: "2mm",
                 backgroundColor: "#fff",
-                // borderRadius: "3mm",
-                border: "2px solid #000"
+                border: "1px solid #000"
             }}>
                 <h2 style={{
-                    fontSize: "14pt",
+                    fontSize: "10pt",
                     margin: "0 0 3mm 0",
                     color: "#000",
                     textAlign: "center"
@@ -669,16 +671,16 @@ const PrintLayout = ({ pro, days }) => {
                     <tbody>
                         <tr>
                             <td style={{
-                                padding: "3mm",
+                                padding: "1mm",
                                 fontWeight: "bold",
-                                fontSize: "11pt"
+                                fontSize: "9pt"
                             }}>
                                 Total Project Expenses:
                             </td>
                             <td style={{
-                                padding: "3mm",
+                                padding: "1.5mm",
                                 textAlign: "right",
-                                fontSize: "14pt",
+                                fontSize: "10pt",
                                 fontWeight: "bold",
                                 color: "#000"
                             }}>
@@ -692,18 +694,17 @@ const PrintLayout = ({ pro, days }) => {
             {/* Project Note */}
             {pro.note && (
                 <div style={{
-                    marginTop: "6mm",
-                    padding: "4mm",
+                    marginTop: "3mm",
+                    padding: "2mm",
                     backgroundColor: "#fff",
-                    // borderRadius: "3mm",
                     border: "1px solid #000"
                 }}>
                     <h3 style={{
-                        fontSize: "12pt",
-                        margin: "0 0 3mm 0",
+                        fontSize: "9pt",
+                        margin: "0 0 1.5mm 0",
                         color: "#000",
                         borderBottom: "1px solid #000",
-                        paddingBottom: "2mm"
+                        paddingBottom: "1mm"
                     }}>
                         Project Notes
                     </h3>
