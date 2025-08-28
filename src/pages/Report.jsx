@@ -5,12 +5,34 @@ import { PrintLayout } from "../components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
-
+const ImageZoomModal = ({ src, onClose }) => {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+      onClick={onClose}
+    >
+      <div className="relative max-w-[90vw] max-h-[90vh]">
+        <img
+          src={src}
+          alt="Zoomed"
+          className="object-contain max-w-full max-h-[90vh]"
+        />
+        <button
+          className="absolute -top-4 -right-4 bg-light text-dark rounded-full w-8 h-8 text-xl font-bold hover:scale-110 transition-transform"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+};
 const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const { showToast } = useToast();
   const [pro, setPro] = useState(initialPro || {});
   const [loading, setLoading] = useState(false);
   const [days, setDays] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dayIndex: null });
   const printRef = useRef()
 
@@ -1507,18 +1529,24 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                     Add Crew
                   </button>
                 </div> */}
-
+                {/* Images */}
                 <div className="relative w-full mb-2">
                   {Array.isArray(day.images) && day.images.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {day.images.map((src, pIdx) => (
                         <div key={pIdx} className="relative w-20 h-20 border border-gray-400 rounded-lg overflow-hidden">
-                          <img src={src} alt={`photo-${pIdx + 1}`} className="w-full h-full object-cover" />
+                          <img
+                            src={src}
+                            alt={`photo-${pIdx + 1}`}
+                            className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setSelectedImage(src)}
+                          />
                           <button
                             type="button"
                             className="absolute -top-2 -right-2 bg-light text-dark rounded-full w-5 h-5 text-xs"
                             title="Remove"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent image zoom when clicking delete
                               setDays(prev => prev.map((d, idx) => {
                                 if (idx !== dayIndex) return d;
                                 const next = [...(d.images || [])];
@@ -1609,7 +1637,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           </section>
         </div>
       )}
-
+      {selectedImage && (
+        <ImageZoomModal
+          src={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
       <div style={{ position: "absolute", left: "-9999px", top: 0 }} ref={printRef}>
         <PrintLayout pro={pro} days={days} />
       </div>
