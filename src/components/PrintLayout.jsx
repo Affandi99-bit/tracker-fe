@@ -569,7 +569,7 @@ const PrintLayout = ({ pro, days }) => {
                                     {day.images.map((src, idx) => (
                                         <div key={idx} style={{
                                             width: "100%",
-                                            height: "35mm",
+                                            minHeight: "35mm",
                                             overflow: "hidden",
                                             background: "#fff",
                                         }}>
