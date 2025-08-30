@@ -96,6 +96,7 @@ function useDebouncedSave(updateData, delay = 500) {
 }
 
 const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
+    const [loading, setLoading] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
     const [praprodData, setPraprodData] = useState([]);
     const [prodData, setProdData] = useState([]);
@@ -394,10 +395,18 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                         return (
                             <div
                                 key={index}
-                                onClick={() => {
+                                onClick={async () => {
                                     const updated = [...data];
                                     updated[index].done = !isChecked;
                                     setData(updated);
+
+                                    // Check if all items are complete after this change
+                                    const praprodComplete = praprodData.every(item => item?.done === true);
+                                    const prodComplete = prodData.every(item => item?.done === true);
+                                    const postprodComplete = postprodData.every(item => item?.done === true);
+                                    const manafileComplete = manafileData.every(item => item?.done === true);
+
+                                    const allStepsComplete = praprodComplete && prodComplete && postprodComplete && manafileComplete;
 
                                     // Create updated kanban structure
                                     const updatedKanban = [{
@@ -412,6 +421,7 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                                         ...project,
                                         _id: project._id,
                                         kanban: updatedKanban,
+                                        done: allStepsComplete // Update done status based on completion
                                     };
 
                                     // Update the project state immediately
@@ -523,49 +533,54 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
         );
     }
 
+    const handleBack = async () => {
+        setLoading(true);
+        try {
+            const updatedKanban = [{
+                type: project.categories[0],
+                steps: stepList.map(step => ({
+                    name: step.name,
+                    items: step.data,
+                })),
+            }];
+
+            const updatedProject = {
+                ...project,
+                _id: project._id,
+                kanban: updatedKanban
+            };
+
+            await updateData(updatedProject);
+            Object.assign(project, updatedProject);
+            if (onProjectUpdate) {
+                onProjectUpdate(updatedProject);
+            }
+            setKanban(false);
+        } catch (err) {
+            console.error('Error saving before closing:', err);
+            showToast("Error saving changes", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div role='main' className='bg-[#181818] font-body text-light w-full h-screen overflow-y-auto fixed top-0 left-0 z-40'>
             <section className='flex items-start justify-between gap-5 p-5'>
                 <button
                     id='back'
-                    onClick={() => {
-                        // Create updated kanban structure with current state
-                        const updatedKanban = [{
-                            type: project.categories[0],
-                            steps: stepList.map(step => ({
-                                name: step.name,
-                                items: step.data,
-                            })),
-                        }];
-
-                        const updatedProject = {
-                            ...project,
-                            _id: project._id,
-                            kanban: updatedKanban
-                        };
-
-                        // Save to database before closing
-                        updateData(updatedProject).then(() => {
-                            // Update the project state to reflect changes
-                            Object.assign(project, updatedProject);
-
-                            // Notify parent component of the update
-                            if (onProjectUpdate) {
-                                onProjectUpdate(updatedProject);
-                            }
-
-                            setKanban(false);
-                        }).catch(err => {
-                            console.error('Error saving before closing:', err);
-                            showToast("Error saving changes", "error");
-                        });
-                    }}
+                    onClick={handleBack}
                     className='w-32 transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center items-center gap-2 text-xs'
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                     </svg>
                     Back
+                    {loading && (
+                        <svg className="animate-spin size-3" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="#f8f8f8" strokeWidth="4" fill="none" />
+                        </svg>
+                    )}
                 </button>
                 {/* Category Tag */}
                 <div className='flex flex-col gap-1 justify-end items-end mx-1'>

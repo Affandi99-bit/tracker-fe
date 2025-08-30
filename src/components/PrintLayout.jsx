@@ -44,6 +44,9 @@ const PrintLayout = ({ pro, days }) => {
             || days.find(d => Array.isArray(d.crew) && d.crew.length > 0))
         : null;
 
+    // Check if there are any images in the project
+    const hasAnyImages = days.some(day => Array.isArray(day.images) && day.images.length > 0);
+
     return (
         <div style={{
             width: "210mm",
@@ -104,8 +107,8 @@ const PrintLayout = ({ pro, days }) => {
                     borderCollapse: "collapse",
                     fontSize: "7pt"
                 }}>
-                    <tbody>
-                        <tr>
+                <tbody>
+                    <tr>
                             <td style={{
                                 width: "25%",
                                 padding: "2mm",
@@ -126,8 +129,8 @@ const PrintLayout = ({ pro, days }) => {
                             <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {pro?.client || "-"}
                             </td>
-                        </tr>
-                        <tr>
+                    </tr>
+                    <tr>
                             <td style={{
                                 padding: "2mm",
                                 fontWeight: "bold",
@@ -146,8 +149,8 @@ const PrintLayout = ({ pro, days }) => {
                             <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {formatDate(pro?.deadline)}
                             </td>
-                        </tr>
-                        <tr>
+                    </tr>
+                    <tr>
                             <td style={{
                                 padding: "2mm",
                                 fontWeight: "bold",
@@ -166,9 +169,9 @@ const PrintLayout = ({ pro, days }) => {
                             <td style={{ padding: "2mm", borderBottom: ".5px solid #000" }}>
                                 {pro?.type?.join(", ") || "-"}
                             </td>
-                        </tr>
-                    </tbody>
-                </table>
+                    </tr>
+                </tbody>
+            </table>
             </div>
 
             {/* Crew Information */}
@@ -188,7 +191,7 @@ const PrintLayout = ({ pro, days }) => {
                         borderCollapse: "collapse",
                         border: ".5px solid #000"
                     }}>
-                        <thead>
+                <thead>
                             <tr style={{ backgroundColor: "#000", fontSize: "9pt" }}>
                                 <th style={{
                                     border: "1px solid #000",
@@ -208,9 +211,9 @@ const PrintLayout = ({ pro, days }) => {
                                 }}>
                                     Roles
                                 </th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    </tr>
+                </thead>
+                <tbody>
                             {firstCrewDay.crew.map((member, index) => (
                                 <tr key={index}>
                                     <td style={{
@@ -228,11 +231,11 @@ const PrintLayout = ({ pro, days }) => {
                                     }}>
                                         {member.roles?.join(", ") || "-"}
                                     </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            </div>
             )}
 
             {/* Daily Expenses */}
@@ -281,7 +284,7 @@ const PrintLayout = ({ pro, days }) => {
                                     borderCollapse: "collapse",
                                     fontSize: "7pt"
                                 }}>
-                                    <thead>
+                                <thead>
                                         <tr style={{ backgroundColor: "#000" }}>
                                             <th style={{
                                                 border: ".5px solid #000",
@@ -318,11 +321,11 @@ const PrintLayout = ({ pro, days }) => {
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Note</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {day.expense.rent.map((item, idx) => (
-                                            <tr key={idx}>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {day.expense.rent.map((item, idx) => (
+                                        <tr key={idx}>
                                                 <td style={{
                                                     border: "1px solid #000",
                                                     fontSize: "7pt",
@@ -362,10 +365,10 @@ const PrintLayout = ({ pro, days }) => {
                                                 }}>
                                                     {item.note || "-"}
                                                 </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                             </div>
                         )}
 
@@ -385,7 +388,7 @@ const PrintLayout = ({ pro, days }) => {
                                     borderCollapse: "collapse",
                                     fontSize: "7pt"
                                 }}>
-                                    <thead>
+                                <thead>
                                         <tr style={{ backgroundColor: "#000" }}>
                                             <th style={{
                                                 border: "1px solid #000",
@@ -429,11 +432,11 @@ const PrintLayout = ({ pro, days }) => {
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Note</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {day.expense.operational.map((item, idx) => (
-                                            <tr key={idx}>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {day.expense.operational.map((item, idx) => (
+                                        <tr key={idx}>
                                                 <td style={{
                                                     border: "1px solid #000",
                                                     padding: "1.5mm"
@@ -474,14 +477,14 @@ const PrintLayout = ({ pro, days }) => {
                                                 }}>
                                                     {item.note || "-"}
                                                 </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                             </div>
-                        )}
+                    )}
 
-                        {/* Order List */}
+                    {/* Order List */}
                         {day.expense.orderlist && day.expense.orderlist.length > 0 && (
                             <div style={{ marginBottom: "2mm" }}>
                                 <h4 style={{
@@ -497,7 +500,7 @@ const PrintLayout = ({ pro, days }) => {
                                     borderCollapse: "collapse",
                                     fontSize: "9pt"
                                 }}>
-                                    <thead>
+                                <thead>
                                         <tr style={{ backgroundColor: "#000" }}>
                                             <th style={{
                                                 border: "1px solid #000",
@@ -520,11 +523,11 @@ const PrintLayout = ({ pro, days }) => {
                                                 textAlign: "left",
                                                 fontWeight: "bold"
                                             }}>Note</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {day.expense.orderlist.map((item, idx) => (
-                                            <tr key={idx}>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {day.expense.orderlist.map((item, idx) => (
+                                        <tr key={idx}>
                                                 <td style={{
                                                     border: "1px solid #000",
                                                     padding: "1.5mm"
@@ -544,49 +547,13 @@ const PrintLayout = ({ pro, days }) => {
                                                 }}>
                                                     {item.note || "-"}
                                                 </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                        {/* images Grid */}
-                        {Array.isArray(day.images) && day.images.length > 0 && (
-                            <div style={{ marginBottom: "2mm" }}>
-                                <h4 style={{
-                                    fontSize: "9pt",
-                                    margin: "0 0 1mm 0",
-                                    color: "#000",
-                                    fontWeight: "bold"
-                                }}>
-                                    Images
-                                </h4>
-                                <div style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "repeat(3, 1fr)",
-                                    gap: "1mm"
-                                }}>
-                                    {day.images.map((src, idx) => (
-                                        <div key={idx} style={{
-                                            width: "100%",
-                                            minHeight: "35mm",
-                                            overflow: "hidden",
-                                            background: "#fff",
-                                        }}>
-                                            <img
-                                                src={src}
-                                                alt={`photo-${idx + 1}`}
-                                                style={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    objectFit: "contain"
-                                                }}
-                                            />
-                                        </div>
+                                        </tr>
                                     ))}
-                                </div>
+                                </tbody>
+                            </table>
                             </div>
                         )}
+
                         {/* Backup Information */}
                         {day.backup && day.backup.length > 0 && (
                             <div style={{ marginBottom: "2mm" }}>
@@ -606,14 +573,14 @@ const PrintLayout = ({ pro, days }) => {
                                     {day.backup.map((backup, idx) => (
                                         <li key={idx} style={{ marginBottom: "1mm", fontSize: "7pt" }}>
                                             <strong>{backup.source || "Unknown"}</strong> → {backup.target || "Unknown"}
-                                        </li>
-                                    ))}
-                                </ul>
+                                    </li>
+                                ))}
+                            </ul>
                             </div>
-                        )}
+                    )}
 
-                        {/* Day Note */}
-                        {day.note && (
+                    {/* Day Note */}
+                    {day.note && (
                             <div style={{ marginBottom: "4mm" }}>
                                 <h4 style={{
                                     fontSize: "9pt",
@@ -645,8 +612,8 @@ const PrintLayout = ({ pro, days }) => {
                                 {getDayLabel(day)} Total: {formatCurrency(calculateDayTotal(day))}
                             </strong>
                         </div>
-                    </div>
-                ))}
+                </div>
+            ))}
             </div>
 
             {/* Project Summary */}
@@ -715,6 +682,90 @@ const PrintLayout = ({ pro, days }) => {
                     }}>
                         {pro.note}
                     </p>
+                </div>
+            )}
+
+            {/* Images Section - All images organized by day */}
+            {hasAnyImages && (
+                <div style={{
+                    marginTop: "6mm",
+                    pageBreakBefore: "always"
+                }}>
+                    <h2 style={{
+                        fontSize: "12pt",
+                        margin: "0 0 4mm 0",
+                        color: "#000",
+                        textAlign: "center",
+                        borderBottom: "2px solid #000",
+                        paddingBottom: "2mm"
+                    }}>
+                        Project Documentation Images
+                    </h2>
+                    
+                    {days.map((day, dayIndex) => {
+                        if (!Array.isArray(day.images) || day.images.length === 0) return null;
+                        
+                        return (
+                            <div key={dayIndex} style={{
+                                marginBottom: "6mm",
+                                pageBreakInside: "avoid"
+                            }}>
+                                <h3 style={{
+                                    fontSize: "10pt",
+                                    margin: "0 0 3mm 0",
+                                    color: "#000",
+                                    borderBottom: "1px solid #000",
+                                    paddingBottom: "1mm",
+                                    fontWeight: "bold"
+                                }}>
+                                    {getDayLabel(day)}{day.date ? ` - ${formatDate(day.date)}` : ""}
+                                </h3>
+                                
+                                <div style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(4, 1fr)",
+                                    gap: "2mm",
+                                    marginBottom: "2mm"
+                                }}>
+                                    {day.images.map((src, imgIdx) => (
+                                        <div key={imgIdx} style={{
+                                            width: "100%",
+                                            minHeight: "40mm",
+                                            border: "1px solid #ccc",
+                                            borderRadius: "2mm",
+                                            overflow: "hidden",
+                                            backgroundColor: "#fff",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center"
+                                        }}>
+                                            <img
+                                                src={src}
+                                                alt={`${getDayLabel(day)} - Image ${imgIdx + 1}`}
+                                                style={{
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    objectFit: "contain",
+                                                    maxWidth: "100%",
+                                                    maxHeight: "100%"
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                <p style={{
+                                    fontSize: "8pt",
+                                    color: "#666",
+                                    textAlign: "center",
+                                    margin: "1mm 0",
+                                    fontStyle: "italic"
+                                }}>
+                                    {day.images.length} image{day.images.length !== 1 ? 's' : ''} from {getDayLabel(day)}
+                                </p>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 

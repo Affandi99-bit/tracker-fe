@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { NumericFormat } from "react-number-format";
 import { useToast } from '../components/ToastContext';
-import { PrintLayout } from "../components";
+import { ErrorBoundary, PDFDocument } from "../components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
+import { pdf } from '@react-pdf/renderer';
+
 const ImageZoomModal = ({ src, onClose }) => {
   return (
     <div
@@ -27,14 +27,14 @@ const ImageZoomModal = ({ src, onClose }) => {
     </div>
   );
 };
-const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
+const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const { showToast } = useToast();
   const [pro, setPro] = useState(initialPro || {});
   const [loading, setLoading] = useState(false);
   const [days, setDays] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dayIndex: null });
-  const printRef = useRef()
+
 
   // Budget Overview Component
   const BudgetOverview = ({ days, pro }) => {
@@ -114,7 +114,11 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     };
 
     const expenseData = calculateExpenseCategories();
-    const totalExpenses = days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0);
+    const totalExpenses = days.reduce((acc, day) => {
+      // Calculate expenses for each day including pre/post production
+      const dayExpenses = calculateTotalExpenses(day);
+      return acc + dayExpenses;
+    }, 0);
 
     // Monochrome color palette
     const COLORS = [
@@ -400,40 +404,38 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   };
 
   const handleExportPDF = async () => {
-    const input = printRef.current;
-    if (!input) {
-      showToast("Export failed: nothing to export", "error");
-      return;
+    try {
+      // Generate PDF using react-pdf
+      const blob = await pdf(<PDFDocument pro={pro} days={days} />).toBlob();
+
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Berita Acara ${pro?.title || "Project"}.pdf`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast("PDF exported successfully", "success");
+    } catch (error) {
+      console.error("PDF export error:", error);
+      showToast("Failed to export PDF", "error");
     }
-    const canvas = await html2canvas(input, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-    let position = 0;
-    let heightLeft = pdfHeight;
-
-    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-    heightLeft -= pdf.internal.pageSize.getHeight();
-
-    while (heightLeft > 0) {
-      position = heightLeft - pdfHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pdf.internal.pageSize.getHeight();
-    }
-
-    pdf.save(`Berita Acara ${pro?.title}.pdf`);
   };
 
+
+  //   pdf.save(`Berita Acara ${pro?.title || "Project"}.pdf`);
+  //   showToast("PDF exported successfully", "success");
+  // } catch (error) {
+  //   console.error("PDF export error:", error);
+  //   showToast("Failed to export PDF", "error");
+  // }
   useEffect(() => {
     if (initialPro) {
       setPro(initialPro);
@@ -525,17 +527,26 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     if (days.length > 1) {
       const templates = days.map(d => d.template);
       const uniqueTemplates = [...new Set(templates)];
-      if (uniqueTemplates.length > 1) {
+      if (uniqueTemplates.length > 1 && process.env.NODE_ENV === 'development') {
         console.warn('Warning: Days have different templates:', templates);
       }
     }
-
-    // Ensure day numbering is always correct
-    const numberedDays = ensureDayNumbering(days);
-    if (JSON.stringify(numberedDays) !== JSON.stringify(days)) {
-      setDays(numberedDays);
-    }
   }, [days]);
+
+  // Ensure day numbering is always correct - only when days array changes length
+  useEffect(() => {
+    if (days.length > 0) {
+      const numberedDays = ensureDayNumbering(days);
+      // Only update if there are actual differences in day numbers
+      const hasNumberingChanges = numberedDays.some((day, index) =>
+        day.dayNumber !== days[index]?.dayNumber
+      );
+
+      if (hasNumberingChanges) {
+        setDays(numberedDays);
+      }
+    }
+  }, [days.length]); // Only depend on array length, not the entire array
   const addDay = () => {
     // Get the template from existing days or determine from project categories
     const existingTemplate = days.length > 0 ? days[0].template : pro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat));
@@ -625,6 +636,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
     const operationalTotal = day.expense.operational.reduce(
       (total, expense) => total + parseNumber(expense.price) * (parseInt(expense.qty) || 0), 0
     );
+
     return rentTotal + operationalTotal;
   };
 
@@ -632,11 +644,13 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
   const handleAddImages = (dayIndex, files) => {
     const fileArray = Array.from(files || []);
     if (fileArray.length === 0) return;
+
     Promise.all(
       fileArray.map((file) =>
-        new Promise((resolve) => {
+        new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
           reader.readAsDataURL(file);
         })
       )
@@ -648,6 +662,9 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           return { ...d, images: [...currentImages, ...base64Images] };
         })
       );
+    }).catch((error) => {
+      console.error('Error processing images:', error);
+      showToast(`Failed to process some images: ${error.message}`, "error");
     });
   };
 
@@ -853,7 +870,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           <BudgetOverview days={days} pro={pro} />
         </div>
         {/* Content */}
-        <form ref={printRef} onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
           {/* Data per Day */}
           {days.map((day, dayIndex) => (
             <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center gap-1 min-h-64">
@@ -870,11 +887,12 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                         : `Day ${day.dayNumber || 'Unknown'}`}
                   </h3>
                   <div className="flex items-center gap-2">
-                    {day.date && (
-                      <span className="text-sm text-light/80 font-medium">
-                        {day.date}
-                      </span>
-                    )}
+                    <input type="date" value={day.date}
+                      onChange={(e) => {
+                        setDays(prevDays => prevDays.map((d, idx) =>
+                          idx === dayIndex ? { ...d, date: e.target.value } : d
+                        ));
+                      }} className="text-xs text-light/80 font-medium outline-none" />
                     <section
                       className="absolute right-0 -bottom-40 w-40 h-40 rounded-xl border border-gray-400 glass flex justify-center items-center"
                       onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -1237,7 +1255,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                   <div>
 
                     {/* Design */}
-                    <p className="font-body text-xs font-thin tracking-widest mt-2">Order List</p>
+                    <p className="font-body text-xs font-thin tracking-widest mt-2">Shoplist</p>
                     {(day.expense?.orderlist || []).map((order, index) => (
                       <div className="flex items-center gap-1" key={index}>
                         <input
@@ -1256,7 +1274,6 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                             });
                           }}
                         />
-
                         <input
                           className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
                           type="number"
@@ -1585,16 +1602,7 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
                         readOnly
                         thousandSeparator
                         prefix={"Rp. "}
-                        value={
-                          day.expense.rent.reduce(
-                            (acc, exp) => acc + (exp.price * exp.qty || 0),
-                            0
-                          ) +
-                          day.expense.operational.reduce(
-                            (acc, exp) => acc + (exp.price * exp.qty || 0),
-                            0
-                          )
-                        }
+                        value={calculateTotalExpenses(day)}
                         className="outline-none pt-2 select-none"
                       />
                     </div>
@@ -1643,10 +1651,20 @@ const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
           onClose={() => setSelectedImage(null)}
         />
       )}
-      <div style={{ position: "absolute", left: "-9999px", top: 0 }} ref={printRef}>
-        <PrintLayout pro={pro} days={days} />
-      </div>
+
     </main>
+  );
+};
+
+const Report = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
+  return (
+    <ErrorBoundary>
+      <ReportComponent
+        setShowReportGenerator={setShowReportGenerator}
+        pro={initialPro}
+        updateData={updateData}
+      />
+    </ErrorBoundary>
   );
 };
 

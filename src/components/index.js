@@ -11,10 +11,14 @@ import KanbanModal from "./KanbanModal.jsx";
 import Maintenance from "./Maintenance.jsx";
 import PrintLayout from "./PrintLayout.jsx";
 import Tooltip from "./Tooltip.jsx";
+import PDFDocument from "./PDFDocument.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 export {
   Navbar,
   Tooltip,
+  PDFDocument,
   PrintLayout,
+  ErrorBoundary,
   Maintenance,
   KanbanModal,
   FullscreenButton,

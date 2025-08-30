@@ -88,9 +88,9 @@ const DriveFolderPreview = ({ folderId, list, search, files, setFiles, loading, 
                     // Grid View
                     <React.Fragment>
                         {filteredFiles.map((file) => (
-                            <a key={file.id} href={file.webViewLink} target='_blank' rel="noopener noreferrer" className='relative select-none rounded-xl glass w-56 h-48 p-5 cursor-pointer hover:scale-105 hover:border-light/50 hover:border transition ease-in-out duration-300 active:scale-95'>
+                            <a key={file.id} href={file.webViewLink} target='_blank' rel="noopener noreferrer" className='relative overflow-hidden select-none rounded-xl glass w-56 h-48 p-5 cursor-pointer hover:scale-105 hover:border-light/50 hover:border transition ease-in-out duration-300 active:scale-95'>
                                 <span className='text-sm text-start font-bold w-full'>{file.name}</span>
-                                <span className='absolute bottom-0 left-0 text-xs w-full flex justify-between items-center p-2 border-t border-t-light/50'>Read More...
+                                <span className='absolute bottom-0 left-0 text-xs w-full flex justify-between items-center p-2 bg-zinc-900 border-t border-t-light/50'>Read More...
                                     <svg xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
@@ -146,20 +146,20 @@ const SOP = () => {
                 <p className='w-full text-center text-5xl'>SOP Lists</p>
                 <main className="flex flex-col items-center justify-center gap-3 mt-10 px-5">
                     <section className='w-full flex items-center justify-center gap-3'>
-                        <div className='h-40 w-1/3 glass rounded-xl p-2 flex flex-col items-center justify-center'>
+                        <div className='overflow-hidden h-40 w-1/3 glass rounded-xl p-2 flex flex-col items-center justify-center'>
                             <p className='text-5xl font-bold'>{totalDocuments}</p>
                             <p className='text-xs text-center'>Total Documents</p>
                         </div>
-                        <div className='h-40 w-1/3 glass rounded-xl p-2 flex flex-col items-center justify-center'>
-                            <p className='text-5xl font-bold'>{filteredFiles.length}</p>
-                            <p className='text-xs text-center'>Most Active (Search Result)</p>
+                        <div className='overflow-hidden h-40 w-1/3 glass rounded-xl p-2 flex flex-col items-center justify-center'>
+                            <p className='text-5xl font-bold'>3</p>
+                            <p className='text-xs text-center'>Departements</p>
                         </div>
-                        <div className='h-40 w-1/3 glass rounded-xl p-2 flex flex-col items-center justify-center'>
-                            <p className='text-lg font-bold'>{recentlyAdded}</p>
+                        <div className='overflow-hidden h-40 w-1/3 glass rounded-xl p-2 flex flex-col items-center justify-center'>
+                            <p className='text-sm font-bold'>{recentlyAdded}</p>
                             <p className='text-xs text-center'>Recently added</p>
                         </div>
                     </section>
-                    <section className='w-full flex items-center justify-center gap-3'>
+                    {/* <section className='w-full flex items-center justify-center gap-3'>
                         <div className='h-40 w-1/4 glass rounded-xl p-2 flex flex-col items-center justify-center'>
                             <p className='text-5xl font-bold'>4</p>
                             <p className='text-xs text-center'>Categories</p>
@@ -176,7 +176,7 @@ const SOP = () => {
                             <p className='text-5xl font-bold'>{search ? search : "-"}</p>
                             <p className='text-xs text-center'>Most Searched</p>
                         </div>
-                    </section>
+                    </section> */}
                 </main>
                 <section className="py-10 px-4 w-1/2 ">
                     <p className='text-xl font-bold tracking-wider'>Knowledge Repository</p>
