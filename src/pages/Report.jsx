@@ -770,6 +770,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
 
       const updatedPro = {
         ...pro,
+        start: pro.start,
         total: productionDays.reduce((acc, day) => acc + (day.totalExpenses || 0), 0),
         day: orderedDays.map((day) => ({
           // Persist all days, including pre/post
@@ -872,8 +873,8 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
             <p>Start :</p>
             <input
               type="date"
-              value={formatDate(pro?.createdAt)}
-              onChange={e => handleInputChange('createdAt', e.target.value)}
+              value={formatDate(pro?.start)}
+              onChange={e => handleInputChange('start', e.target.value)}
               className="border border-gray-400 glass rounded-xl px-1 p-px outline-none m-1 font-body text-light text-xs font-thin"
             />
           </div>

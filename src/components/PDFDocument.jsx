@@ -329,10 +329,28 @@ const PDFDocument = ({ pro, days }) => {
                 <Text style={styles.infotitle}>PIC Client</Text>
                 <Text style={styles.infodata}>{pro?.pic || "-"}</Text>
               </View>
+              <View style={styles.infocontainer}>
+                <Text style={styles.infotitle}>Project Manager</Text>
+                <Text style={styles.infodata}>
+                  {Array.isArray(pro.day) && pro.day[0] && Array.isArray(pro.day[0].crew)
+                    ? pro.day[0].crew
+                      .filter(member =>
+                        Array.isArray(member.roles) &&
+                        member.roles.some(role => role.toLowerCase() === "project manager")
+                      )
+                      .map(member => member.name)
+                      .join(", ") || "-"
+                    : "-"}
+                </Text>
+              </View>
             </View>
             <View style={{ flex: 1 }}>
               <View style={styles.infocontainer}>
-                <Text style={styles.infotitle}>Event Date</Text>
+                <Text style={styles.infotitle}>Event Start</Text>
+                <Text style={styles.infodata}>{formatDate(pro?.start)}</Text>
+              </View>
+              <View style={styles.infocontainer}>
+                <Text style={styles.infotitle}>Event Deadline</Text>
                 <Text style={styles.infodata}>{formatDate(pro?.deadline)}</Text>
               </View>
               <View style={styles.infocontainer}>
