@@ -114,23 +114,36 @@ const SOP = () => {
     const [search, setSearch] = useState("");
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [sortType, setSortType] = useState(""); // Default: show all
 
     const handleInput = (e) => {
         setSearch(e.target.value);
     };
 
+    // Button click handler: toggles sortType, resets to default if already active
+    const handleSortClick = (type) => {
+        setSortType(prev => prev === type ? "" : type);
+    };
+
+    // Sorting function
+    const getSortedFiles = () => {
+        let sorted = [...files];
+        if (sortType === "SOP") {
+            sorted = sorted.filter(f => f.name.toLowerCase().includes("sop"));
+        } else if (sortType === "Jobdesk") {
+            sorted = sorted.filter(f => f.name.toLowerCase().includes("job"));
+        } else if (sortType === "Flowchart") {
+            sorted = sorted.filter(f => f.name.toLowerCase().includes("flow"));
+        }
+        return sorted;
+    };
+
     // Stats
     const totalDocuments = files.length;
-    const filteredFiles = search
-        ? files.filter(file =>
-            file.name.toLowerCase().includes(search.toLowerCase())
-        )
-        : files;
     const recentlyAdded = files
         .slice()
         .sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime))
         .slice(0, 1)[0]?.name || "-";
-    // You can customize mostActive, categories, departments, activeUsers, mostSearched as needed
 
     return (
         <main className='bg-dark font-body text-light overflow-auto h-screen'>
@@ -159,52 +172,65 @@ const SOP = () => {
                             <p className='text-xs text-center'>Recently added</p>
                         </div>
                     </section>
-                    {/* <section className='w-full flex items-center justify-center gap-3'>
-                        <div className='h-40 w-1/4 glass rounded-xl p-2 flex flex-col items-center justify-center'>
-                            <p className='text-5xl font-bold'>4</p>
-                            <p className='text-xs text-center'>Categories</p>
-                        </div>
-                        <div className='h-40 w-1/4 glass rounded-xl p-2 flex flex-col items-center justify-center'>
-                            <p className='text-5xl font-bold'>3</p>
-                            <p className='text-xs text-center'>Departements</p>
-                        </div>
-                        <div className='h-40 w-1/4 glass rounded-xl p-2 flex flex-col items-center justify-center'>
-                            <p className='text-5xl font-bold'>15</p>
-                            <p className='text-xs text-center'>Active Users</p>
-                        </div>
-                        <div className='h-40 w-1/4 glass rounded-xl p-2 flex flex-col items-center justify-center'>
-                            <p className='text-5xl font-bold'>{search ? search : "-"}</p>
-                            <p className='text-xs text-center'>Most Searched</p>
-                        </div>
-                    </section> */}
                 </main>
                 <section className="py-10 px-4 w-1/2 ">
                     <p className='text-xl font-bold tracking-wider'>Knowledge Repository</p>
                     <p className='text-xs mt-5'>Di sini kamu akan menemukan seluruh dokumentasi penting yang menjadi fondasi kerja di Blackstudio. Mulai dari SOP, jobdesk tiap divisi, hingga workflow & sistem kerja yang dirancang untuk memastikan efisiensi, kolaborasi, dan kualitas terbaik di setiap project. Semua file tersinkron langsung dari sistem kami dan selalu update secara real-time. Gunakan fitur pencarian untuk menemukan dokumen yang kamu butuhkan secara cepat dan tepat.</p>
                 </section>
                 <main className="p-10 border-t border-light/50">
-                    <nav className="relative flex items-center gap-2 w-full justify-end pb-10">
-                        <input
-                            type="text"
-                            onChange={handleInput}
-                            value={search}
-                            className="border text-light border-light/25 glass rounded-xl px-2 py-1 w-40 outline-none scale-95"
-                            placeholder="Search..."
-                        />
-                        <button onClick={() => { setBox(!box); setList(!list) }} className='transition ease-in-out hover:scale-110  duration-300 active:scale-90 cursor-pointer '>
-                            {box ? <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
-                            </svg> : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
-                            </svg>}
-                        </button>
+                    <nav className="relative flex items-center gap-2 w-full justify-between pb-10">
+                        <div className='flex items-center gap-2'>
+                            <button
+                                onClick={() => handleSortClick("SOP")}
+                                className={`transition border border-light/80 rounded-xl w-18 h-7 flex justify-center items-center text-xs ease-in hover:scale-110 duration-300 active:scale-90 cursor-pointer ${sortType === "SOP" ? "bg-light/10" : ""}`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                </svg>
+                                SOP
+                            </button>
+                            <button
+                                onClick={() => handleSortClick("Jobdesk")}
+                                className={`transition border border-light/80 rounded-xl w-18 h-7 flex justify-center items-center text-xs ease-in hover:scale-110 duration-300 active:scale-90 cursor-pointer ${sortType === "Jobdesk" ? "bg-light/10" : ""}`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                </svg>
+                                Jobdesk
+                            </button>
+                            <button
+                                onClick={() => handleSortClick("Flowchart")}
+                                className={`transition border border-light/80 rounded-xl w-18 h-7 flex justify-center items-center text-xs ease-in hover:scale-110 duration-300 active:scale-90 cursor-pointer ${sortType === "Flowchart" ? "bg-light/10" : ""}`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0 1 16.5 7.605" />
+                                </svg>
+                                Flowchart
+                            </button>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <input
+                                type="text"
+                                onChange={handleInput}
+                                value={search}
+                                className="border text-light border-light/25 glass rounded-xl px-2 py-1 w-40 outline-none scale-95"
+                                placeholder="Search..."
+                            />
+                            <button onClick={() => { setBox(!box); setList(!list) }} className='transition ease-in-out hover:scale-110  duration-300 active:scale-95 cursor-pointer '>
+                                {box ? <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
+                                </svg> : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                                </svg>}
+                            </button>
+                        </div>
                     </nav>
                     <section className='p-5'>
                         <DriveFolderPreview
                             folderId="1VsQh_5aFLt8Fjxx8BtNqPZERmx9587oB"
                             list={list}
                             search={search}
-                            files={files}
+                            files={getSortedFiles()}
                             setFiles={setFiles}
                             loading={loading}
                             setLoading={setLoading}
