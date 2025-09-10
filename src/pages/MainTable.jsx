@@ -177,7 +177,7 @@ const DataTable = ({
               <td className=" text-xs">
                 <div className="w-full flex px-2 gap-3 justify-start items-center">
                   {/* Track */}
-                  <Tooltip position="bottom" content={"Kanban"}>
+                  <Tooltip position="bottom" content={"Tracker"}>
                     <button
                       id="track-button"
                       onClick={e => {
@@ -193,7 +193,7 @@ const DataTable = ({
                     </button>
                   </Tooltip>
                   {/* Report */}
-                  <Tooltip position="bottom" content={"BA Generator"}>
+                  <Tooltip position="bottom" content={"Berita Acara"}>
                     <button
                       onClick={e => {
                         e.stopPropagation();
