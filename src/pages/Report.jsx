@@ -1299,8 +1299,34 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                             });
                           }}
                         />
-                        <input
+                        {/* Crew select */}
+                        <select
+                          value={order.crew || ""}
+                          onChange={(e) =>
+                            handleExpenseChange(
+                              dayIndex,
+                              "orderlist",
+                              index,
+                              "crew",
+                              e.target.value
+                            )
+                          }
                           className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
+                          disabled={!(Array.isArray(day.crew) && day.crew.length)}
+                        >
+                          <option className="bg-dark text-light" value="">
+                            {Array.isArray(day.crew) && day.crew.length ? "Select Crew" : "No crew"}
+                          </option>
+                          {Array.isArray(day.crew) && day.crew
+                            .filter((c) => c && c.name)
+                            .map((c, i) => (
+                              <option key={i} className="bg-dark text-light" value={c.name}>
+                                {c.name}
+                              </option>
+                            ))}
+                        </select>
+                        <input
+                          className="border w-28 border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
                           type="number"
                           placeholder="Qty"
                           required
