@@ -452,12 +452,14 @@ const PDFDocument = ({ pro, days }) => {
                     <View style={[styles.tableRow, styles.tableHeader]}>
                       <Text style={styles.tableCellHeader}>Item</Text>
                       <Text style={styles.tableCellHeader}>Qty</Text>
+                      <Text style={styles.tableCellHeader}>Crew</Text>
                       <Text style={styles.tableCellHeader}>Note</Text>
                     </View>
                     {day.expense.orderlist.map((item, idx) => (
                       <View key={idx} style={styles.tableRow}>
                         <Text style={styles.tableCell}>{item.name || "-"}</Text>
                         <Text style={styles.tableCell}>{item.qty || "0"}</Text>
+                        <Text style={styles.tableCell}>{item.crew || "0"}</Text>
                         <Text style={styles.tableCell}>{item.note || "-"}</Text>
                       </View>
                     ))}
