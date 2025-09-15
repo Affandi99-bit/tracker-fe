@@ -4,6 +4,7 @@ import { useToast } from '../components/ToastContext';
 import { ErrorBoundary, PDFDocument } from "../components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { pdf } from '@react-pdf/renderer';
+import { useRoleProduction } from '../constant/constant';
 
 const ImageZoomModal = ({ src, onClose }) => {
   return (
@@ -34,6 +35,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
   const [days, setDays] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dayIndex: null });
+  const roleProduction = useRoleProduction();
 
 
   // Budget Overview Component
@@ -47,7 +49,6 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
     const calculateExpenseCategories = () => {
       const categories = {
         'Rent': 0,
-        'Order List': 0
       };
 
       // Operational expenses by subcategory
@@ -90,16 +91,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
           });
         }
 
-        // Order list expenses
-        if (day.expense?.orderlist && Array.isArray(day.expense.orderlist)) {
-          day.expense.orderlist.forEach(item => {
-            const price = parseFloat(item.price || 0);
-            const qty = parseInt(item.qty || 0);
-            if (!isNaN(price) && !isNaN(qty)) {
-              categories['Order List'] += (price * qty);
-            }
-          });
-        }
+        // Note: Order list does not contribute to budget chart (no price field in model)
       });
 
       // Combine all categories, filtering out zero values
@@ -165,9 +157,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
               {data.name === 'Rent' && (
                 <p className="text-light/50 text-xs">Equipment and venue rentals</p>
               )}
-              {data.name === 'Order List' && (
-                <p className="text-light/50 text-xs">Purchased items and orders</p>
-              )}
+              {/* Order List removed from chart */}
             </div>
           </div>
         );
@@ -697,18 +687,21 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
     setDays(prevDays =>
       prevDays.map((day, idx) => {
         if (idx === dayIndex) {
-          const newExpense = {
-            name: "",
-            price: "",
-            qty: "",
-            ...(type === "operational" && { category: "" }),
-            note: "",
-          };
+          let newItem;
+          if (type === "operational") {
+            newItem = { name: "", price: "", qty: "", category: "", note: "" };
+          } else if (type === "rent") {
+            newItem = { name: "", price: "", qty: "", note: "" };
+          } else if (type === "orderlist") {
+            newItem = { name: "", qty: "", crew: { name: "", role: "" }, note: "" };
+          } else {
+            newItem = { name: "" };
+          }
           return {
             ...day,
             expense: {
               ...day.expense,
-              [type]: [...day.expense[type], newExpense],
+              [type]: [...day.expense[type], newItem],
             },
           };
         }
@@ -722,9 +715,21 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
     setDays(prevDays =>
       prevDays.map((day, idx) => {
         if (idx === dayIndex) {
-          const updatedExpenses = day.expense[type].map((expense, i) =>
-            i === expenseIndex ? { ...expense, [field]: value } : expense
-          );
+          const updatedExpenses = day.expense[type].map((expense, i) => {
+            if (i !== expenseIndex) return expense;
+            // Special handling for nested crew fields in orderlist
+            if (type === "orderlist") {
+              if (field === "crewName") {
+                const nextCrew = { ...(expense.crew || { name: "", role: "" }), name: value };
+                return { ...expense, crew: nextCrew };
+              }
+              if (field === "crewRole") {
+                const nextCrew = { ...(expense.crew || { name: "", role: "" }), role: value };
+                return { ...expense, crew: nextCrew };
+              }
+            }
+            return { ...expense, [field]: value };
+          });
           const updatedExpense = { ...day.expense, [type]: updatedExpenses };
           return {
             ...day,
@@ -1299,15 +1304,15 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                             });
                           }}
                         />
-                        {/* Crew select */}
+                        {/* Crew name select */}
                         <select
-                          value={order.crew || ""}
+                          value={order.crew?.name || ""}
                           onChange={(e) =>
                             handleExpenseChange(
                               dayIndex,
                               "orderlist",
                               index,
-                              "crew",
+                              "crewName",
                               e.target.value
                             )
                           }
@@ -1322,6 +1327,32 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                             .map((c, i) => (
                               <option key={i} className="bg-dark text-light" value={c.name}>
                                 {c.name}
+                              </option>
+                            ))}
+                        </select>
+                        {/* Crew roles */}
+                        <select
+                          value={order.crew?.role || ""}
+                          onChange={(e) =>
+                            handleExpenseChange(
+                              dayIndex,
+                              "orderlist",
+                              index,
+                              "crewRole",
+                              e.target.value
+                            )
+                          }
+                          className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
+                          disabled={!(Array.isArray(day.crew) && day.crew.length)}
+                        >
+                          <option className="bg-dark text-light" value="">
+                            {Array.isArray(day.crew) && day.crew.length ? "Select Jobdesk" : "No Jobdesk"}
+                          </option>
+                          {[...roleProduction]
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                            .map(roleOption => (
+                              <option key={roleOption.id} value={roleOption.name} className="text-light bg-dark">
+                                {roleOption.name}
                               </option>
                             ))}
                         </select>
