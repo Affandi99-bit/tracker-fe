@@ -4,7 +4,7 @@ import { useToast } from '../components/ToastContext';
 import { ErrorBoundary, PDFDocument } from "../components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { pdf } from '@react-pdf/renderer';
-import { useRoleProduction, crew } from '../constant/constant';
+import { useRoleProduction, useRoleMotion, crew } from '../constant/constant';
 
 const ImageZoomModal = ({ src, onClose }) => {
   return (
@@ -37,6 +37,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dayIndex: null });
   const [crewDeleteConfirm, setCrewDeleteConfirm] = useState({ show: false, dayIndex: null, crewIndex: null });
   const roleProduction = useRoleProduction();
+  const roleMotion = useRoleMotion();
 
 
   // Budget Overview Component
@@ -1445,7 +1446,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                           <option className="bg-dark text-light" value="">
                             {Array.isArray(day.crew) && day.crew.length ? "Select Jobdesk" : "No Jobdesk"}
                           </option>
-                          {[...roleProduction]
+                          {[...roleMotion]
                             .sort((a, b) => a.name.localeCompare(b.name))
                             .map(roleOption => (
                               <option key={roleOption.id} value={roleOption.name} className="text-light bg-dark">

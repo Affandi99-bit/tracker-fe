@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
-import { TableModal, Loader, ReadonlyModal, Tooltip } from "../components";
+import { Loader, ReadonlyModal, CreateModal, Tooltip } from "../components";
 import { findTagColor } from "../utils/utils";
 import Kanban from "./Kanban";
 import Report from "./Report";
@@ -82,22 +82,17 @@ const DeleteModal = ({ show, onCancel, onConfirm, loading }) => {
 
 const DataTable = ({
   tableData,
-  setSelectedRowData,
-  setShowModal,
   setSelectedKanbanProject,
+  setShowEditModal,
   setKanban,
   setShowReadonlyModal,
   setReadonlyRow,
   setShowReport,
   setReportRow,
   handleDeleteClick, // Receive from props
-  loadingId // Receive from props
+  loadingId, // Receive from props
+  setSelectedRowData // Add this prop
 }) => {
-  const handleRowClick = (rowData) => {
-    setSelectedRowData(rowData);
-    setShowModal(true);
-    console.log("Row clicked:", rowData);
-  };
 
   return (
     <>
@@ -105,7 +100,6 @@ const DataTable = ({
         {tableData.map((row, index) => {
           return (
             <tr
-              onClick={() => handleRowClick(row)}
               className={`h-20 w-screen font-body tracking-widest focus:outline-none focus:brightness-75 ${index % 2 === 0 ? "bg-[#262626]" : "bg-[#303030]"
                 } hover:brightness-90`}
               key={row._id}
@@ -176,6 +170,22 @@ const DataTable = ({
               </td>
               <td className=" text-xs">
                 <div className="w-full flex px-2 gap-3 justify-start items-center">
+                  {/* Edit */}
+                  <Tooltip position="bottom" content={"Edit"}>
+                    <button
+                      id="edit-button"
+                      onClick={() => {
+                        setSelectedRowData(row);
+                        setShowEditModal(true);
+                      }}
+                      className=""
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#f8f8f8" className="size-4 hover:size-5 hover:scale-105 duration-300 active:scale-95 cursor-pointer">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                      </svg>
+
+                    </button>
+                  </Tooltip>
                   {/* Track */}
                   <Tooltip position="bottom" content={"Tracker"}>
                     <button
@@ -273,7 +283,6 @@ const MainTable = ({
   setSortedData,
   showHidden,
 }) => {
-  const [showModal, setShowModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
   const [sortedData, setSortedDataLocal] = useState(tableData);
   const [isSorted, setIsSorted] = useState(false);
@@ -286,6 +295,7 @@ const MainTable = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     if (!tableData) return;
@@ -387,14 +397,14 @@ const MainTable = ({
               </th>
               <th className="text-start px-2 w-32 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark">Type</th>
               <th className="text-start px-2 w-28 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark">Progress</th>
-              <th className="text-start px-2 w-20 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark rounded-tr-2xl">Action</th>
+              <th className="text-start px-2 w-28 sticky top-0 border-none text-sm z-10 h-10 bg-light text-dark rounded-tr-2xl">Action</th>
             </tr>
           </thead>
           <Suspense fallback={<Loader />}>
             <DataTable
               tableData={sortedData}
               setSelectedRowData={setSelectedRowData}
-              setShowModal={setShowModal}
+              setShowEditModal={setShowEditModal}
               deleteData={deleteData}
               updateData={updateData}
               setSelectedKanbanProject={setSelectedKanbanProject}
@@ -409,7 +419,17 @@ const MainTable = ({
           </Suspense>
         </table>
       </section>
-
+      {showEditModal && (
+        <CreateModal
+          showModal={showEditModal}
+          setShowModal={setShowEditModal}
+          initialData={selectedRowData}
+          updateData={updateData}
+          isEditing={true}
+          deleteData={deleteData}
+          setTableModal={setShowEditModal}
+        />
+      )}
       {kanban && selectedKanbanProject && (
         <Kanban
           setKanban={setKanban}
@@ -427,15 +447,6 @@ const MainTable = ({
           key={readonlyRow?._id}
           link={`${window.location.origin}/readonly/${readonlyRow._id}`}
           onClose={() => setShowReadonlyModal(false)}
-        />
-      )}
-      {showModal && (
-        <TableModal
-          pro={selectedRowData}
-          showModal={showModal}
-          setShowModal={setShowModal}
-          updateData={updateData}
-          deleteData={deleteData}
         />
       )}
       {showReport && (
