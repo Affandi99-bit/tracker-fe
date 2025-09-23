@@ -4,7 +4,7 @@ import { useToast } from '../components/ToastContext';
 import { ErrorBoundary, PDFDocument } from "../components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { pdf } from '@react-pdf/renderer';
-import { useRoleProduction } from '../constant/constant';
+import { useRoleProduction, crew } from '../constant/constant';
 
 const ImageZoomModal = ({ src, onClose }) => {
   return (
@@ -35,6 +35,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
   const [days, setDays] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dayIndex: null });
+  const [crewDeleteConfirm, setCrewDeleteConfirm] = useState({ show: false, dayIndex: null, crewIndex: null });
   const roleProduction = useRoleProduction();
 
 
@@ -220,34 +221,50 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
 
                 {/* Person in Charge */}
                 <div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-light/90 font-medium">Project Manager:</span>
-                      <span className="text-light font-semibold">
-                        {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
-                          ? pro.day[0].crew
-                            .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
-                            .map(c => c.name)
-                            .join(", ") || "No Project Manager"
-                          : "No Crew"}
-                      </span>
-                    </div>
-                    <div className="">
-                      <span className="text-light/90 font-medium">Crew:</span>
-                      <span className="text-light/60 font-semibold">
-                        {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew) ? (
-                          pro.day[0].crew.map((item, index) => (
-                            <div className="flex items-center justify-between w-full" key={index}>
-                              <p className="w-1/2 font-thin">{item.name}</p>
-                              <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-light/60">No crew assigned</p>
-                        )}
-                      </span>
-                    </div>
-                  </div>
+                  {(() => {
+                    const allCrew = (Array.isArray(days) ? days : [])
+                      .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+                    // Group crew by name and merge roles across all days
+                    const groupedByName = allCrew.reduce((acc, member) => {
+                      if (!member || !member.name) return acc;
+                      const key = member.name;
+                      const roles = Array.isArray(member.roles) ? member.roles.filter(Boolean) : [];
+                      if (!acc[key]) acc[key] = new Set();
+                      roles.forEach(r => acc[key].add(r));
+                      return acc;
+                    }, {});
+                    const crewListDisplay = Object.entries(groupedByName)
+                      .map(([name, roleSet]) => ({ name, roles: Array.from(roleSet) }))
+                      .sort((a, b) => a.name.localeCompare(b.name));
+                    const pmNames = crewListDisplay
+                      .filter(c => (c.roles || []).some(r => (r || '').toLowerCase() === 'project manager'))
+                      .map(c => c.name);
+                    return (
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-light/90 font-medium">Project Manager:</span>
+                          <span className="text-light font-semibold">
+                            {pmNames.length ? pmNames.join(", ") : "No Project Manager"}
+                          </span>
+                        </div>
+                        <div className="">
+                          <span className="text-light/90 font-medium">Crew:</span>
+                          <span className="text-light/60 font-semibold">
+                            {crewListDisplay.length ? (
+                              crewListDisplay.map((item, index) => (
+                                <div className="flex items-center justify-between w-full" key={index}>
+                                  <p className="w-1/2 font-thin">{item.name}</p>
+                                  <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-light/60">No crew assigned</p>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
               {/* Export and Save Buttons */}
@@ -357,34 +374,50 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
 
               {/* Person in Charge */}
               <div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-light/90 font-medium">Project Manager:</span>
-                    <span className="text-light font-semibold">
-                      {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew)
-                        ? pro.day[0].crew
-                          .filter(c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === "project manager"))
-                          .map(c => c.name)
-                          .join(", ") || "No Project Manager"
-                        : "No Crew"}
-                    </span>
-                  </div>
-                  <div className="">
-                    <span className="text-light/90 font-medium">Crew:</span>
-                    <span className="text-light/60 font-semibold">
-                      {pro.day && pro.day[0] && Array.isArray(pro.day[0].crew) ? (
-                        pro.day[0].crew.map((item, index) => (
-                          <div className="flex items-center justify-between w-full" key={index}>
-                            <p className="w-1/2 font-thin">{item.name}</p>
-                            <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-light/60">No crew assigned</p>
-                      )}
-                    </span>
-                  </div>
-                </div>
+                {(() => {
+                  const allCrew = (Array.isArray(days) ? days : [])
+                    .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+                  // Group crew by name and merge roles across all days
+                  const groupedByName = allCrew.reduce((acc, member) => {
+                    if (!member || !member.name) return acc;
+                    const key = member.name;
+                    const roles = Array.isArray(member.roles) ? member.roles.filter(Boolean) : [];
+                    if (!acc[key]) acc[key] = new Set();
+                    roles.forEach(r => acc[key].add(r));
+                    return acc;
+                  }, {});
+                  const crewListDisplay = Object.entries(groupedByName)
+                    .map(([name, roleSet]) => ({ name, roles: Array.from(roleSet) }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
+                  const pmNames = crewListDisplay
+                    .filter(c => (c.roles || []).some(r => (r || '').toLowerCase() === 'project manager'))
+                    .map(c => c.name);
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-light/90 font-medium">Project Manager:</span>
+                        <span className="text-light font-semibold">
+                          {pmNames.length ? pmNames.join(", ") : "No Project Manager"}
+                        </span>
+                      </div>
+                      <div className="">
+                        <span className="text-light/90 font-medium">Crew:</span>
+                        <span className="text-light/60 font-semibold">
+                          {crewListDisplay.length ? (
+                            crewListDisplay.map((item, index) => (
+                              <div className="flex items-center justify-between w-full" key={index}>
+                                <p className="w-1/2 font-thin">{item.name}</p>
+                                <p className="w-1/2 font-medium text-end">{item.roles.join(", ")}</p>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-light/60">No crew assigned</p>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
             {/* Export and Save Buttons */}
@@ -452,7 +485,8 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
   // }
   useEffect(() => {
     if (initialPro) {
-      setPro(initialPro);
+      // Use createdAt as start when available
+      setPro({ ...initialPro, start: initialPro.createdAt || initialPro.start });
 
       // Determine template from project categories
       const isProductionTemplate = initialPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat)) || false;
@@ -473,65 +507,18 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
           crew: day.crew || [],
           note: day.note || '',
           totalExpenses: day.totalExpenses || 0,
-          template: dayTemplate, // Use the determined template
+          template: dayTemplate,
           date: day.date || '',
-          dayNumber: day.dayNumber || 1, // Preserve if exists (may be stripped by backend)
-          // Infer flags from note if present in DB
-          isPreProd: (day.note || '').toLowerCase().includes('pre-production'),
-          isPostProd: (day.note || '').toLowerCase().includes('post-production'),
+          dayNumber: day.dayNumber || 1,
         };
       }) || [];
 
-      // Add pre-production and post-production days if missing (avoid duplicates)
-      if (isProductionTemplate) {
-        const hasPre = projectDays.some(d => d.isPreProd);
-        const hasPost = projectDays.some(d => d.isPostProd);
-
-        if (projectDays.length > 0) {
-          if (!hasPre) {
-            projectDays = [
-              {
-                id: Date.now() + Math.random() + 1,
-                crew: [],
-                expense: { rent: [], operational: [], orderlist: [] },
-                images: [],
-                note: '',
-                totalExpenses: 0,
-                template: true,
-                date: '',
-                backup: [],
-                dayNumber: 0,
-                isPreProd: true,
-                isPostProd: false,
-              },
-              ...projectDays,
-            ];
-          }
-          if (!hasPost) {
-            projectDays = [
-              ...projectDays,
-              {
-                id: Date.now() + Math.random() + 2,
-                crew: [],
-                expense: { rent: [], operational: [], orderlist: [] },
-                images: [],
-                note: '',
-                totalExpenses: 0,
-                template: true,
-                date: '',
-                backup: [],
-                // dayNumber will be set in ensureDayNumbering
-                isPreProd: false,
-                isPostProd: true,
-              },
-            ];
-          }
-        }
-      }
-
       // Ensure proper day numbering
       const numberedDays = ensureDayNumbering(projectDays);
-      setDays(numberedDays);
+      // Assign dates only for missing ones, starting from start/createdAt
+      const baseDateStr = (initialPro.createdAt || initialPro.start) || '';
+      const withDates = assignSequentialDates(numberedDays, baseDateStr);
+      setDays(withDates);
     }
   }, [initialPro]);
 
@@ -561,21 +548,21 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
       }
     }
   }, [days.length]); // Only depend on array length, not the entire array
+
+  // Note: Day 0 crew is a reference only; do not auto-sync other days.
+
+  // Recompute sequential dates when start changes or number of days changes
+  useEffect(() => {
+    if (!pro?.start || !days.length) return;
+    setDays(prev => assignSequentialDates(prev, formatDate(pro.start)));
+  }, [pro?.start, days.length]);
   const addDay = () => {
     // Get the template from existing days or determine from project categories
     const existingTemplate = days.length > 0 ? days[0].template : pro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat));
 
-    // Find the index of post-production day to insert before it
-    const postProdIndex = days.findIndex(day => day.isPostProd);
-    const insertIndex = postProdIndex !== -1 ? postProdIndex : days.length;
-
-    // Calculate the correct day number (excluding pre/post production days)
-    const productionDays = days.filter(day => !day.isPreProd && !day.isPostProd);
-    const newDayNumber = productionDays.length + 1;
-
     const newDay = {
       id: Date.now() + Math.random(),
-      crew: [],
+      crew: (Array.isArray(days[0]?.crew) ? days[0].crew.map(c => ({ name: c?.name || '', roles: Array.isArray(c?.roles) ? [...c.roles] : [] })) : []),
       expense: { rent: [], operational: [], orderlist: [] },
       images: [],
       note: '',
@@ -583,31 +570,35 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
       template: existingTemplate,
       date: '',
       backup: [],
-      dayNumber: newDayNumber,
     };
 
-    // Insert the new day before post-production or at the end
-    const newDays = [...days];
-    newDays.splice(insertIndex, 0, newDay);
+    // Append the new day at the end
+    const newDays = [...days, newDay];
 
     // Ensure proper day numbering for all days
     const numberedDays = ensureDayNumbering(newDays);
-    setDays(numberedDays);
+    const withDates = assignSequentialDates(numberedDays, formatDate(pro?.start));
+    setDays(withDates);
   };
 
   // Function to ensure proper day numbering
   const ensureDayNumbering = (daysArray) => {
-    return daysArray.map((day) => {
-      if (day.isPreProd) {
-        return { ...day, dayNumber: 0 };
-      } else if (day.isPostProd) {
-        return { ...day, dayNumber: daysArray.filter(d => !d.isPreProd && !d.isPostProd).length + 1 };
-      } else {
-        // This is a production day, find its position among production days
-        const productionDays = daysArray.filter(d => !d.isPreProd && !d.isPostProd);
-        const productionIndex = productionDays.indexOf(day);
-        return { ...day, dayNumber: productionIndex + 1 };
-      }
+    return daysArray.map((day, index) => ({ ...day, dayNumber: index + 1 }));
+  };
+
+  // Assign sequential dates starting from startDateStr (YYYY-MM-DD) for days with empty date only
+  const assignSequentialDates = (daysArray, startDateStr) => {
+    if (!startDateStr) return daysArray;
+    const startDate = new Date(startDateStr);
+    if (isNaN(startDate)) return daysArray;
+    return daysArray.map((day, index) => {
+      if (day?.date) return day; // keep user edits
+      const nextDate = new Date(startDate);
+      nextDate.setDate(startDate.getDate() + index);
+      const yyyy = nextDate.getFullYear();
+      const mm = String(nextDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(nextDate.getDate()).padStart(2, '0');
+      return { ...day, date: `${yyyy}-${mm}-${dd}` };
     });
   };
 
@@ -619,14 +610,6 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
   // Function to delete a day
   const handleDeleteDay = () => {
     const dayIndexToDelete = deleteConfirm.dayIndex;
-
-    // Don't allow deletion of pre-production or post-production days
-    const dayToDelete = days[dayIndexToDelete];
-    if (dayToDelete.isPreProd || dayToDelete.isPostProd) {
-      showToast("Cannot delete Pre-Production or Post-Production days", "error");
-      setDeleteConfirm({ show: false, dayIndex: null });
-      return;
-    }
 
     // Remove the day
     const updatedDays = days.filter((_, index) => index !== dayIndexToDelete);
@@ -755,29 +738,11 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
     event.preventDefault();
     setLoading(true);
     try {
-      // Identify pre/post via flags or notes
-      const isPreFn = (d) => d.isPreProd || ((d.note || '').toLowerCase().includes('pre-production'));
-      const isPostFn = (d) => d.isPostProd || ((d.note || '').toLowerCase().includes('post-production'));
-      // Identify production-only days for totals/numbering; but save all days including pre/post
-      const productionDays = days.filter(day => !isPreFn(day) && !isPostFn(day));
-      const preDay = days.find(isPreFn) || null;
-      const postDay = days.find(isPostFn) || null;
-      const productionDaysSorted = [...productionDays].sort((a, b) => {
-        const an = typeof a.dayNumber === 'number' ? a.dayNumber : 9999;
-        const bn = typeof b.dayNumber === 'number' ? b.dayNumber : 9999;
-        return an - bn;
-      });
-      const orderedDays = [
-        ...(preDay ? [{ ...preDay, note: 'Pre-production day' }] : []),
-        ...productionDaysSorted,
-        ...(postDay ? [{ ...postDay, note: 'Post-production day' }] : []),
-      ];
-
       const updatedPro = {
         ...pro,
         start: pro.start,
-        total: productionDays.reduce((acc, day) => acc + (day.totalExpenses || 0), 0),
-        day: orderedDays.map((day) => ({
+        total: days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0),
+        day: days.map((day) => ({
           // Persist all days, including pre/post
           // Ensure expense arrays and allowed fields
           expense: {
@@ -910,11 +875,11 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                 {/* Day Header */}
                 <div className="relative w-full flex items-start justify-between">
                   <h3 className="text-sm font-semibold text-light tracking-wider">
-                    {day.isPreProd
+                    {dayIndex === 0
                       ? 'Pre-Production'
-                      : day.isPostProd
+                      : dayIndex === days.length - 1
                         ? 'Post-Production'
-                        : `Day ${day.dayNumber || 'Unknown'}`}
+                        : `Day ${dayIndex}`}
                   </h3>
                   <div className="flex items-center gap-2">
                     <input type="date" value={day.date}
@@ -948,19 +913,17 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
                     </section>
-                    {/* Delete Day Button - Only show for production days */}
-                    {!day.isPreProd && !day.isPostProd && (
-                      <button
-                        type="button"
-                        onClick={() => showDeleteConfirm(dayIndex)}
-                        className="text-light transition-colors duration-200 p-1"
-                        title="Delete Day"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                        </svg>
-                      </button>
-                    )}
+                    {/* Delete Day Button */}
+                    <button
+                      type="button"
+                      onClick={() => showDeleteConfirm(dayIndex)}
+                      className="text-light transition-colors duration-200 p-1"
+                      title="Delete Day"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      </svg>
+                    </button>
                   </div>
 
                 </div>
@@ -1198,6 +1161,143 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                     >
                       Add
                     </button>
+                    {/* Crew Management */}
+                    <div className="w-full mt-2">
+                      <p className="font-body text-xs font-thin tracking-widest">
+                        Crew & Jobdesk
+                      </p>
+                      {day.crew?.map((crewMember, crewIndex) => (
+                        <div key={crewIndex} className="flex items-center gap-1 mb-2">
+                          <select
+                            value={crewMember.name || ''}
+                            onChange={(e) => {
+                              setDays(prevDays =>
+                                prevDays.map((d, idx) => {
+                                  if (idx === dayIndex) {
+                                    const updatedCrew = [...(d.crew || [])];
+                                    updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], name: e.target.value };
+                                    return { ...d, crew: updatedCrew };
+                                  }
+                                  return d;
+                                })
+                              );
+                            }}
+                            className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
+                          >
+                            <option className="bg-dark text-light" value="">Select Crew</option>
+                            {Array.isArray(crew) && crew
+                              .filter((c) => c && c.name)
+                              .map((c, i) => (
+                                <option key={i} className="bg-dark text-light" value={c.name}>
+                                  {c.name}
+                                </option>
+                              ))}
+                          </select>
+                          <p className="font-body text-xs font-thin tracking-widest mb-2">as</p>
+                          {/* Crew roles - multiple rows with +/- controls */}
+                          <div className="flex flex-row gap-1">
+                            {(Array.isArray(crewMember.roles) && crewMember.roles.length ? crewMember.roles : ['']).map((roleValue, roleIdx) => (
+                              <div key={roleIdx} className="flex items-center gap-1">
+                                <select
+                                  value={roleValue || ''}
+                                  onChange={(e) => {
+                                    const selectedRole = e.target.value;
+                                    setDays(prevDays =>
+                                      prevDays.map((d, idx) => {
+                                        if (idx === dayIndex) {
+                                          const updatedCrew = [...(d.crew || [])];
+                                          const currentRoles = Array.isArray(updatedCrew[crewIndex].roles) ? [...updatedCrew[crewIndex].roles] : [];
+                                          currentRoles[roleIdx] = selectedRole;
+                                          updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles: currentRoles };
+                                          return { ...d, crew: updatedCrew };
+                                        }
+                                        return d;
+                                      })
+                                    );
+                                  }}
+                                  className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
+                                >
+                                  <option className="bg-dark text-light" value="">Select Jobdesk</option>
+                                  {[...roleProduction]
+                                    .sort((a, b) => a.name.localeCompare(b.name))
+                                    .map(roleOption => (
+                                      <option key={roleOption.id} value={roleOption.name} className="text-light bg-dark">
+                                        {roleOption.name}
+                                      </option>
+                                    ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDays(prevDays =>
+                                      prevDays.map((d, idx) => {
+                                        if (idx === dayIndex) {
+                                          const updatedCrew = [...(d.crew || [])];
+                                          const currentRoles = Array.isArray(updatedCrew[crewIndex].roles) ? [...updatedCrew[crewIndex].roles] : [];
+                                          currentRoles.splice(roleIdx, 1);
+                                          updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles: currentRoles };
+                                          return { ...d, crew: updatedCrew };
+                                        }
+                                        return d;
+                                      })
+                                    );
+                                  }}
+                                  className="text-xs font-body text-red-400 hover:text-red-300"
+                                >
+                                  -
+                                </button>
+                              </div>
+                            ))}
+                            <div className="flex flex-col">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setDays(prevDays =>
+                                    prevDays.map((d, idx) => {
+                                      if (idx === dayIndex) {
+                                        const updatedCrew = [...(d.crew || [])];
+                                        const currentRoles = Array.isArray(updatedCrew[crewIndex].roles) ? [...updatedCrew[crewIndex].roles] : [];
+                                        currentRoles.push('');
+                                        updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles: currentRoles };
+                                        return { ...d, crew: updatedCrew };
+                                      }
+                                      return d;
+                                    })
+                                  );
+                                }}
+                                className="text-xs w-5 rounded-t-md bg-zinc-800 hover:bg-zinc-900 text-light"
+                              >
+                                +
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCrewDeleteConfirm({ show: true, dayIndex, crewIndex })}
+                                className="text-xs w-5 rounded-b-md bg-zinc-800 hover:bg-zinc-900 text-light"
+                              >
+                                x
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDays(prevDays =>
+                            prevDays.map((d, idx) => {
+                              if (idx === dayIndex) {
+                                const updatedCrew = [...(d.crew || []), { name: '', roles: [] }];
+                                return { ...d, crew: updatedCrew };
+                              }
+                              return d;
+                            })
+                          );
+                        }}
+                        className="text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-xl p-px outline-none font-body text-xs font-thin w-20"
+                      >
+                        Add
+                      </button>
+                    </div>
                     {/* Backup */}
                     <p className="font-body text-xs font-thin tracking-widest mt-2">Backup</p>
                     {day.backup?.map((backupItem, backupIndex) => (
@@ -1317,12 +1417,9 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                             )
                           }
                           className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
-                          disabled={!(Array.isArray(day.crew) && day.crew.length)}
                         >
-                          <option className="bg-dark text-light" value="">
-                            {Array.isArray(day.crew) && day.crew.length ? "Select Crew" : "No crew"}
-                          </option>
-                          {Array.isArray(day.crew) && day.crew
+                          <option className="bg-dark text-light" value="">Select Crew</option>
+                          {Array.isArray(crew) && crew
                             .filter((c) => c && c.name)
                             .map((c, i) => (
                               <option key={i} className="bg-dark text-light" value={c.name}>
@@ -1546,88 +1643,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                     </button>
                   </div>
                 )}
-                {/* Crew Management - Commented out for now */}
-                {/* <div className="w-full mt-2">
-                  <p className="font-body text-xs font-thin tracking-widest mb-2">
-                    Crew & Job Descriptions
-                  </p>
-                  {day.crew?.map((crewMember, crewIndex) => (
-                    <div key={crewIndex} className="flex items-center gap-1 mb-2">
-                      <input
-                        className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
-                        type="text"
-                        placeholder="Name"
-                        value={crewMember.name || ''}
-                        onChange={(e) => {
-                          setDays(prevDays =>
-                            prevDays.map((d, idx) => {
-                              if (idx === dayIndex) {
-                                const updatedCrew = [...(d.crew || [])];
-                                updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], name: e.target.value };
-                                return { ...d, crew: updatedCrew };
-                              }
-                              return d;
-                            })
-                          );
-                        }}
-                      />
-                      <input
-                        className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
-                        type="text"
-                        placeholder="Roles (comma separated)"
-                        value={crewMember.roles?.join(', ') || ''}
-                        onChange={(e) => {
-                          const roles = e.target.value.split(',').map(role => role.trim()).filter(role => role);
-                          setDays(prevDays =>
-                            prevDays.map((d, idx) => {
-                              if (idx === dayIndex) {
-                                const updatedCrew = [...(d.crew || [])];
-                                updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles };
-                                return { ...d, crew: updatedCrew };
-                              }
-                              return d;
-                            })
-                          );
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDays(prevDays =>
-                            prevDays.map((d, idx) => {
-                              if (idx === dayIndex) {
-                                const updatedCrew = [...(d.crew || [])];
-                                updatedCrew.splice(crewIndex, 1);
-                                return { ...d, crew: updatedCrew };
-                              }
-                              return d;
-                            })
-                          );
-                        }}
-                        className="text-xs w-5 font-body text-red-400 hover:text-red-300"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDays(prevDays =>
-                        prevDays.map((d, idx) => {
-                          if (idx === dayIndex) {
-                            const updatedCrew = [...(d.crew || []), { name: '', roles: [] }];
-                            return { ...d, crew: updatedCrew };
-                          }
-                          return d;
-                        })
-                      );
-                    }}
-                    className="text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer rounded-xl p-px outline-none font-body text-xs font-thin w-20"
-                  >
-                    Add Crew
-                  </button>
-                </div> */}
+
                 {/* Images */}
                 <div className="relative w-full mb-2">
                   {Array.isArray(day.images) && day.images.length > 0 && (
@@ -1720,6 +1736,41 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
               <button
                 className="w-20 h-10 bg-light text-dark rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer"
                 onClick={handleDeleteDay}
+              >
+                Delete
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {crewDeleteConfirm.show && (
+        <div className="fixed top-0 left-0 z-50 glass w-full h-full flex items-center justify-center">
+          <section className="bg-dark border border-light/50 rounded-lg p-5 text-light flex flex-col justify-center items-center w-xl h-48">
+            <p className="text-center font-body mb-4">
+              Are you sure you want to delete this crew? This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-5 w-full">
+              <button
+                className="w-20 h-10 border border-light text-light rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer"
+                onClick={() => setCrewDeleteConfirm({ show: false, dayIndex: null, crewIndex: null })}
+              >
+                Cancel
+              </button>
+              <button
+                className="w-20 h-10 bg-light text-dark rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer"
+                onClick={() => {
+                  const { dayIndex, crewIndex } = crewDeleteConfirm;
+                  setDays(prevDays => prevDays.map((d, idx) => {
+                    if (idx === dayIndex) {
+                      const updatedCrew = [...(d.crew || [])];
+                      updatedCrew.splice(crewIndex, 1);
+                      return { ...d, crew: updatedCrew };
+                    }
+                    return d;
+                  }));
+                  setCrewDeleteConfirm({ show: false, dayIndex: null, crewIndex: null });
+                  showToast("Crew deleted successfully", "success");
+                }}
               >
                 Delete
               </button>

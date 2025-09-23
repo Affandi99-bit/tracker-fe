@@ -254,10 +254,10 @@ const PDFDocument = ({ pro, days }) => {
     }
   };
 
-  const getDayLabel = (day) => {
-    if (day.isPreProd) return "Pre-Production";
-    if (day.isPostProd) return "Post-Production";
-    return `Day ${day.dayNumber || '-'}`;
+  const getDayLabel = (day, index, total) => {
+    if (index === 0) return "Pre-Production";
+    if (index === total - 1) return "Post-Production";
+    return `Day ${index}`;
   };
 
   const calculateDayTotal = (day) => {
@@ -270,8 +270,20 @@ const PDFDocument = ({ pro, days }) => {
     return rentTotal + operationalTotal;
   };
 
-  const firstCrewDay = days.find(d => !d.isPreProd && !d.isPostProd && Array.isArray(d.crew) && d.crew.length > 0) ||
-    days.find(d => Array.isArray(d.crew) && d.crew.length > 0);
+  // Aggregate all crew from all days
+  const allCrew = (Array.isArray(days) ? days : [])
+    .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+  const groupedByName = allCrew.reduce((acc, member) => {
+    if (!member || !member.name) return acc;
+    const key = member.name;
+    const roles = Array.isArray(member.roles) ? member.roles.filter(Boolean) : [];
+    if (!acc[key]) acc[key] = new Set();
+    roles.forEach(r => acc[key].add(r));
+    return acc;
+  }, {});
+  const mergedCrew = Object.entries(groupedByName)
+    .map(([name, roleSet]) => ({ name, roles: Array.from(roleSet) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const projectTotal = days.reduce((acc, day) => acc + calculateDayTotal(day), 0);
 
@@ -332,15 +344,10 @@ const PDFDocument = ({ pro, days }) => {
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Project Manager</Text>
                 <Text style={styles.infodata}>
-                  {Array.isArray(pro.day) && pro.day[0] && Array.isArray(pro.day[0].crew)
-                    ? pro.day[0].crew
-                      .filter(member =>
-                        Array.isArray(member.roles) &&
-                        member.roles.some(role => role.toLowerCase() === "project manager")
-                      )
-                      .map(member => member.name)
-                      .join(", ") || "-"
-                    : "-"}
+                  {mergedCrew
+                    .filter(member => (member.roles || []).some(role => (role || '').toLowerCase() === 'project manager'))
+                    .map(member => member.name)
+                    .join(', ') || '-'}
                 </Text>
               </View>
             </View>
@@ -365,16 +372,16 @@ const PDFDocument = ({ pro, days }) => {
           </View>
         </View>
 
-        {/* Crew Information */}
-        {firstCrewDay?.crew && firstCrewDay.crew.length > 0 && (
+        {/* Crew Information (grouped by name with comma-separated roles) */}
+        {mergedCrew.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Crew Assignment</Text>
+            <Text style={styles.sectionTitle}>Overall Crew Assignment</Text>
             <View style={styles.table}>
               <View style={[styles.tableRow, styles.tableHeader]}>
                 <Text style={styles.tableCellHeader}>Name</Text>
                 <Text style={styles.tableCellHeader}>Roles</Text>
               </View>
-              {firstCrewDay.crew.map((member, index) => (
+              {mergedCrew.map((member, index) => (
                 <View key={index} style={styles.tableRow}>
                   <Text style={styles.tableCell}>{member.name || "-"}</Text>
                   <Text style={styles.tableCell}>{member.roles?.join(", ") || "-"}</Text>
@@ -386,12 +393,41 @@ const PDFDocument = ({ pro, days }) => {
 
         {/* Daily Expenses */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Daily Expenses Breakdown</Text>
+          <Text style={styles.sectionTitle}>Daily Breakdown</Text>
           {days.map((day, dayIndex) => (
             <View key={dayIndex} style={styles.dayHeader}>
               <Text style={styles.dayTitle}>
-                {getDayLabel(day)}{day.date ? ` - ${formatDate(day.date)}` : ""}
+                {getDayLabel(day, dayIndex, days.length)}{day.date ? ` - ${formatDate(day.date)}` : ""}
               </Text>
+              {/* Per-day Crew Assignment before expenses */}
+              {Array.isArray(day.crew) && day.crew.length > 0 && (() => {
+                const grouped = day.crew.reduce((acc, member) => {
+                  if (!member || !member.name) return acc;
+                  const key = member.name;
+                  const roles = Array.isArray(member.roles) ? member.roles.filter(Boolean) : [];
+                  if (!acc[key]) acc[key] = new Set();
+                  roles.forEach(r => acc[key].add(r));
+                  return acc;
+                }, {});
+                const mergedCrew = Object.entries(grouped).map(([name, roles]) => ({ name, roles: Array.from(roles) }));
+                return (
+                  <View style={styles.expenseSection}>
+                    <Text style={styles.expenseTitle}>Overall Crew Assignment</Text>
+                    <View style={styles.table}>
+                      <View style={[styles.tableRow, styles.tableHeader]}>
+                        <Text style={styles.tableCellHeader}>Name</Text>
+                        <Text style={styles.tableCellHeader}>Roles</Text>
+                      </View>
+                      {mergedCrew.map((member, index) => (
+                        <View key={index} style={styles.tableRow}>
+                          <Text style={styles.tableCell}>{member.name || '-'}</Text>
+                          <Text style={styles.tableCell}>{member.roles?.join(', ') || '-'}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                );
+              })()}
               {/* Rent Expenses */}
               {day.expense.rent && day.expense.rent.length > 0 && (
                 <View style={styles.expenseSection}>
@@ -547,7 +583,7 @@ const PDFDocument = ({ pro, days }) => {
                   </View>
 
                   <Text style={styles.imageCaption}>
-                    {day.images.length} image{day.images.length !== 1 ? 's' : ''} from {getDayLabel(day)}
+                    {day.images.length} image{day.images.length !== 1 ? 's' : ''} from {getDayLabel(day, dayIndex, days.length)}
                   </Text>
                 </View>
               );

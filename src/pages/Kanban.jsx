@@ -365,9 +365,25 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
     };
 
     function getCrewByRole(role) {
-        if (!project.day || !project.day[0] || !project.day[0].crew) return null;
-        const crewList = project.day[0].crew;
-        return crewList.find(c =>
+        // Aggregate all crew from all days
+        const allCrew = (Array.isArray(project.day) ? project.day : [])
+            .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+
+        // Group crew by name and merge roles across all days
+        const groupedByName = allCrew.reduce((acc, member) => {
+            if (!member || !member.name) return acc;
+            const key = member.name;
+            const roles = Array.isArray(member.roles) ? member.roles.filter(Boolean) : [];
+            if (!acc[key]) acc[key] = new Set();
+            roles.forEach(r => acc[key].add(r));
+            return acc;
+        }, {});
+
+        const mergedCrew = Object.entries(groupedByName)
+            .map(([name, roleSet]) => ({ name, roles: Array.from(roleSet) }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        return mergedCrew.find(c =>
             (Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === role.toLowerCase())) ||
             (c.name && c.name.toLowerCase() === role.toLowerCase())
         );
@@ -454,15 +470,35 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                                     <div className='flex w-full items-center justify-between'>
                                         {(() => {
                                             const firstRole = item.pic?.split('/')[0]?.trim();
-                                            if (firstRole === "Crew" && project.day && project.day[0] && Array.isArray(project.day[0].crew)) {
-                                                return (
-                                                    <div className="flex flex-col gap-1">
-                                                        <p className='text-xs font-medium'>Crew Produksi</p>
-                                                        {project.day[0].crew.map((c, idx) => (
-                                                            <p key={idx} className='text-xs text-gray-400'>{c.name}  ·  {c.roles.join(', ')}</p>
-                                                        ))}
-                                                    </div>
-                                                );
+                                            if (firstRole === "Crew") {
+                                                // Aggregate all crew from all days
+                                                const allCrew = (Array.isArray(project.day) ? project.day : [])
+                                                    .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+
+                                                // Group crew by name and merge roles across all days
+                                                const groupedByName = allCrew.reduce((acc, member) => {
+                                                    if (!member || !member.name) return acc;
+                                                    const key = member.name;
+                                                    const roles = Array.isArray(member.roles) ? member.roles.filter(Boolean) : [];
+                                                    if (!acc[key]) acc[key] = new Set();
+                                                    roles.forEach(r => acc[key].add(r));
+                                                    return acc;
+                                                }, {});
+
+                                                const mergedCrew = Object.entries(groupedByName)
+                                                    .map(([name, roleSet]) => ({ name, roles: Array.from(roleSet) }))
+                                                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                                                if (mergedCrew.length > 0) {
+                                                    return (
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className='text-xs font-medium'>Crew Produksi</p>
+                                                            {mergedCrew.map((c, idx) => (
+                                                                <p key={idx} className='text-xs text-gray-400'>{c.name}  ·  {c.roles.join(', ')}</p>
+                                                            ))}
+                                                        </div>
+                                                    );
+                                                }
                                             }
                                             const crew = getCrewByRole(firstRole);
                                             if (crew) {
