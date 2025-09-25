@@ -1186,7 +1186,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                             className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
                           >
                             <option className="bg-dark text-light" value="">Select Crew</option>
-                            {Array.isArray(crew) && crew
+                            {Array.isArray(day.crew) && day.crew
                               .filter((c) => c && c.name)
                               .map((c, i) => (
                                 <option key={i} className="bg-dark text-light" value={c.name}>
@@ -1420,7 +1420,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                           className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
                         >
                           <option className="bg-dark text-light" value="">Select Crew</option>
-                          {Array.isArray(crew) && crew
+                          {Array.isArray(day.crew) && day.crew
                             .filter((c) => c && c.name)
                             .map((c, i) => (
                               <option key={i} className="bg-dark text-light" value={c.name}>

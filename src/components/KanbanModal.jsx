@@ -40,11 +40,11 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
         if (newLink.trim() || newLinkTitle.trim()) {
             const linkTitle = newLinkTitle.trim() || newLink.trim();
             const linkUrl = newLink.trim() || newLinkTitle.trim();
-            
+
             setLinks([
                 ...links,
-                { 
-                    title: linkTitle, 
+                {
+                    title: linkTitle,
                     link: linkUrl
                 }
             ]);
@@ -103,28 +103,28 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                     </div>
                                     <p className='text-xs'>Set as Done</p>
                                 </label>
-   {/* Add New Link Inputs */}
-   <div className="flex items-center gap-2 mt-2">
-                                        <input
-                                            type="text"
-                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none flex-1'
-                                            placeholder="Link Title"
-                                            value={newLinkTitle}
-                                            onChange={e => setNewLinkTitle(e.target.value)}
-                                        />
-                                        <input
-                                            type="text"
-                                            className='rounded-xl border border-light/50 text-xs px-2 outline-none flex-1'
-                                            placeholder="Link URL"
-                                            value={newLink}
-                                            onChange={e => setNewLink(e.target.value)}
-                                        />
-                                        <button type="button" onClick={addLink} className='transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer' title="Add link">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-                                            </svg>
-                                        </button>
-                                    </div>
+                                {/* Add New Link Inputs */}
+                                <div className="flex items-center gap-2 mt-2">
+                                    <input
+                                        type="text"
+                                        className='rounded-xl border border-light/50 text-xs px-2 outline-none flex-1'
+                                        placeholder="Link Title"
+                                        value={newLinkTitle}
+                                        onChange={e => setNewLinkTitle(e.target.value)}
+                                    />
+                                    <input
+                                        type="text"
+                                        className='rounded-xl border border-light/50 text-xs px-2 outline-none flex-1'
+                                        placeholder="Link URL"
+                                        value={newLink}
+                                        onChange={e => setNewLink(e.target.value)}
+                                    />
+                                    <button type="button" onClick={addLink} className='transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer' title="Add link">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {/* Note */}
                                 <textarea className='glass rounded-xl outline-none p-1 w-full min-h-20 text-xs' placeholder='Note' value={note} onChange={e => setNote(e.target.value)} />
                             </section>
@@ -132,19 +132,19 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
 
                         {/* Right Column: Links and Action Buttons */}
                         <section className='w-1/2 h-full p-3 relative border-l border-zinc-500 flex flex-col justify-between'>
-                            <div className='flex flex-col gap-4 h-full'>                             
+                            <div className='flex flex-col gap-4 h-full'>
                                 {/* Links Section */}
                                 <div className="flex flex-col gap-1 w-full">
                                     <p className='text-xs font-semibold tracking-widest'>Current Links: {links.length}</p>
                                     {links.map((linkValue, linkIdx) => (
-                                        <div key={linkIdx} className="flex items-center justify-between w-full">
-                                            <div className="flex items-center gap-3 flex-1">
+                                        <div key={linkIdx} className="flex items-center gap-1 w-full">
+                                            <div className="w-full flex items-center gap-1">
                                                 {linkValue.title && linkValue.link && linkValue.title !== linkValue.link && (
                                                     <span className="text-xs text-gray-400 px-2">
                                                         {linkValue.link}
                                                     </span>
                                                 )}
-                                                <a href={linkValue.link} target='_blank' rel="noreferrer" className="truncate text-xs px-2 py-1 text-blue-500 hover:underline">
+                                                <a href={linkValue.link} target='_blank' rel="noreferrer" className="w-2/3 text-xs px-2 py-1 text-blue-500 hover:underline truncate">
                                                     {linkValue.title || linkValue.link}
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3 inline-block ml-1">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
@@ -155,14 +155,14 @@ const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-3">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                                 </svg>
-                                            </button>   
+                                            </button>
                                         </div>
                                     ))}
                                     {links.length === 0 && (
                                         <p className='text-xs text-gray-500 text-center'>No links added yet</p>
                                     )}
-                                    
-                                 
+
+
                                 </div>
                             </div>
 
