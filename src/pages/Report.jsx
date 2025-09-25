@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { NumericFormat } from "react-number-format";
 import { useToast } from '../components/ToastContext';
 import { ErrorBoundary, PDFDocument } from "../components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { pdf } from '@react-pdf/renderer';
-import { useRoleProduction, useRoleMotion, crew } from '../constant/constant';
+import { useRoleProduction, useRoleMotion, crew as baseCrew } from '../constant/constant';
 
 const ImageZoomModal = ({ src, onClose }) => {
   return (
@@ -38,6 +38,22 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
   const [crewDeleteConfirm, setCrewDeleteConfirm] = useState({ show: false, dayIndex: null, crewIndex: null });
   const roleProduction = useRoleProduction();
   const roleMotion = useRoleMotion();
+
+  // Merge global crew list with any custom crew names found in the project's days (from CreateModal)
+  const crewOptions = useMemo(() => {
+    const base = Array.isArray(baseCrew) ? baseCrew : [];
+    const baseNames = new Set(base.map(c => c?.name).filter(Boolean));
+    const customNames = new Set(
+      (Array.isArray(days) ? days : [])
+        .flatMap(d => Array.isArray(d?.crew) ? d.crew : [])
+        .map(c => c?.name)
+        .filter(Boolean)
+    );
+    const allNames = new Set([...baseNames, ...customNames]);
+    return Array.from(allNames)
+      .map(name => ({ name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [days]);
 
 
   // Budget Overview Component
@@ -572,9 +588,13 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
       date: '',
       backup: [],
     };
-
-    // Append the new day at the end
-    const newDays = [...days, newDay];
+    // Insert the new day BEFORE the final day to keep last as Post-Production
+    const insertIndex = Math.max(0, days.length - 1);
+    const newDays = [
+      ...days.slice(0, insertIndex),
+      newDay,
+      ...days.slice(insertIndex)
+    ];
 
     // Ensure proper day numbering for all days
     const numberedDays = ensureDayNumbering(newDays);
@@ -1172,11 +1192,17 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                           <select
                             value={crewMember.name || ''}
                             onChange={(e) => {
+                              const selectedName = e.target.value;
                               setDays(prevDays =>
                                 prevDays.map((d, idx) => {
                                   if (idx === dayIndex) {
                                     const updatedCrew = [...(d.crew || [])];
-                                    updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], name: e.target.value };
+                                    const isDuplicate = updatedCrew.some((c, i) => i !== crewIndex && (c?.name || '') === selectedName);
+                                    if (isDuplicate) {
+                                      showToast("Crew name already selected on this day", "error");
+                                      return d;
+                                    }
+                                    updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], name: selectedName };
                                     return { ...d, crew: updatedCrew };
                                   }
                                   return d;
@@ -1186,7 +1212,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                             className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
                           >
                             <option className="bg-dark text-light" value="">Select Crew</option>
-                            {Array.isArray(day.crew) && day.crew
+                            {(Array.isArray(crewOptions) ? crewOptions : [])
                               .filter((c) => c && c.name)
                               .map((c, i) => (
                                 <option key={i} className="bg-dark text-light" value={c.name}>
@@ -1203,6 +1229,22 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                                   value={roleValue || ''}
                                   onChange={(e) => {
                                     const selectedRole = e.target.value;
+                                    // Enforce single Project Manager across the whole project
+                                    if ((selectedRole || '').toLowerCase() === 'project manager') {
+                                      const hasPmElsewhere = (Array.isArray(days) ? days : []).some((d, dIdx) =>
+                                        Array.isArray(d?.crew) && d.crew.some((m, mIdx) => {
+                                          if (!m) return false;
+                                          // allow if the same member already has PM
+                                          const sameMember = dIdx === dayIndex && mIdx === crewIndex;
+                                          const roles = Array.isArray(m.roles) ? m.roles : [];
+                                          return roles.some(r => (r || '').toLowerCase() === 'project manager') && !sameMember;
+                                        })
+                                      );
+                                      if (hasPmElsewhere) {
+                                        showToast('Project Manager already selected', 'error');
+                                        return;
+                                      }
+                                    }
                                     setDays(prevDays =>
                                       prevDays.map((d, idx) => {
                                         if (idx === dayIndex) {
@@ -1420,7 +1462,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                           className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
                         >
                           <option className="bg-dark text-light" value="">Select Crew</option>
-                          {Array.isArray(day.crew) && day.crew
+                          {(Array.isArray(crewOptions) ? crewOptions : [])
                             .filter((c) => c && c.name)
                             .map((c, i) => (
                               <option key={i} className="bg-dark text-light" value={c.name}>

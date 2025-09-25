@@ -37,6 +37,7 @@ const CreateModal = ({
         },
         note: "",
         totalExpenses: 0,
+        images: []
       },
     ],
     status: false,
@@ -75,11 +76,12 @@ const CreateModal = ({
       const additional = additionalCrewMembers.map((m) => ({
         id: m.id,
         name: m.value,
-        roles: m.value ? (prev.day[0]?.crew.find(c => c.name === m.value)?.roles || [""]) : [""],
+        roles: m.value ? (prev.day[0]?.crew.find(c => c.name === m.value)?.roles || [""]) : [""]
       }));
+      const nextCrew0 = [...baseCrew, ...additional];
       return {
         ...prev,
-        day: [{ ...prev.day[0], crew: [...baseCrew, ...additional] }],
+        day: (prev.day || []).map((d, idx) => idx === 0 ? { ...d, crew: nextCrew0 } : d),
       };
     });
   }, [additionalCrewMembers]);
@@ -102,7 +104,7 @@ const CreateModal = ({
           : currentCrew.filter((member) => member.name !== value);
         setFormData((prev) => ({
           ...prev,
-          day: [{ ...prev.day[0], crew: updatedCrew }],
+          day: (prev.day || []).map((d, idx) => idx === 0 ? { ...d, crew: updatedCrew } : d),
         }));
       } else {
         handleCheckboxChange(name, value, checked);
@@ -137,7 +139,17 @@ const CreateModal = ({
     const finalData = {
       ...formData,
       status: false,
-      day: [{ ...formData.day[0], crew: cleanedCrew }],
+      day: (formData.day || []).map((d, idx) => ({
+        ...d,
+        expense: {
+          rent: d.expense?.rent || [],
+          operational: d.expense?.operational || [],
+          orderlist: d.expense?.orderlist || [],
+        },
+        crew: idx === 0 ? cleanedCrew : (Array.isArray(d.crew) ? d.crew : []),
+        images: Array.isArray(d.images) ? d.images : [],
+        totalExpenses: d.totalExpenses || 0,
+      })),
     };
 
     try {
@@ -549,7 +561,7 @@ const CreateModal = ({
                                 const updatedCrew = prev.day[0].crew.filter((_, i) => i !== idx);
                                 return {
                                   ...prev,
-                                  day: [{ ...prev.day[0], crew: updatedCrew }]
+                                  day: (prev.day || []).map((d, di) => di === 0 ? { ...d, crew: updatedCrew } : d)
                                 };
                               });
                               if (member.id !== undefined) {
@@ -575,7 +587,7 @@ const CreateModal = ({
                                 });
                                 return {
                                   ...prev,
-                                  day: [{ ...prev.day[0], crew: updatedCrew }]
+                                  day: (prev.day || []).map((d, di) => di === 0 ? { ...d, crew: updatedCrew } : d)
                                 };
                               });
                             }}
@@ -590,16 +602,29 @@ const CreateModal = ({
                             <select
                               value={role || ""}
                               onChange={e => {
+                                const selectedRole = e.target.value;
+                                if ((selectedRole || '').toLowerCase() === 'project manager') {
+                                  const hasPmElsewhere = (formData.day[0]?.crew || []).some((m, mIdx) => {
+                                    if (!m) return false;
+                                    const sameMember = mIdx === idx;
+                                    const roles = Array.isArray(m.roles) ? m.roles : [];
+                                    return roles.some(r => (r || '').toLowerCase() === 'project manager') && !sameMember;
+                                  });
+                                  if (hasPmElsewhere) {
+                                    showToast('Project Manager already selected', 'error');
+                                    return;
+                                  }
+                                }
                                 setFormData(prev => {
                                   const updatedCrew = prev.day[0].crew.map((m, i) => {
                                     if (i !== idx) return m;
                                     const updatedRoles = [...(m.roles || [])];
-                                    updatedRoles[roleIdx] = e.target.value;
+                                    updatedRoles[roleIdx] = selectedRole;
                                     return { ...m, roles: updatedRoles };
                                   });
                                   return {
                                     ...prev,
-                                    day: [{ ...prev.day[0], crew: updatedCrew }]
+                                    day: (prev.day || []).map((d, di) => di === 0 ? { ...d, crew: updatedCrew } : d)
                                   };
                                 });
                               }}
@@ -627,7 +652,7 @@ const CreateModal = ({
                                     });
                                     return {
                                       ...prev,
-                                      day: [{ ...prev.day[0], crew: updatedCrew }]
+                                      day: (prev.day || []).map((d, di) => di === 0 ? { ...d, crew: updatedCrew } : d)
                                     };
                                   });
                                 }}

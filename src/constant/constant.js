@@ -8,7 +8,7 @@ export const crew = [
   { name: "Imam Affandi", roles: [] },
   { name: "Kevin Rizkianto", roles: [] },
   { name: "Nova Laksmana", roles: [] },
-  { name: "Oktha Viano", roles: [] },
+  // { name: "Oktha Viano", roles: [] },
   { name: "Rafli Fadillah", roles: [] },
   { name: "Rully Okta", roles: [] },
   { name: "Romadhona Larasati", roles: [] },
