@@ -521,7 +521,14 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
           },
           images: Array.isArray(day.images) ? day.images : [],
           backup: day.backup || [],
-          crew: day.crew || [],
+          crew: (day.crew || []).map(c => ({
+            ...c,
+            overtime: Array.isArray(c.overtime)
+              ? c.overtime
+              : (c.overtime && typeof c.overtime === 'object')
+                ? [{ job: c.overtime.job || '', date: c.overtime.date || '', hour: c.overtime.hour || 0 }]
+                : []
+          })),
           note: day.note || '',
           totalExpenses: day.totalExpenses || 0,
           template: dayTemplate,
@@ -579,7 +586,11 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
 
     const newDay = {
       id: Date.now() + Math.random(),
-      crew: (Array.isArray(days[0]?.crew) ? days[0].crew.map(c => ({ name: c?.name || '', roles: Array.isArray(c?.roles) ? [...c.roles] : [] })) : []),
+      crew: (Array.isArray(days[0]?.crew) ? days[0].crew.map(c => ({
+        name: c?.name || '',
+        roles: Array.isArray(c?.roles) ? [...c.roles] : [],
+        overtime: []
+      })) : []),
       expense: { rent: [], operational: [], orderlist: [] },
       images: [],
       note: '',
@@ -825,7 +836,14 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
         },
         images: Array.isArray(d.images) ? d.images : [],
         backup: d.backup || [],
-        crew: d.crew || [],
+        crew: (d.crew || []).map(c => ({
+          ...c,
+          overtime: Array.isArray(c.overtime)
+            ? c.overtime
+            : (c.overtime && typeof c.overtime === 'object')
+              ? [{ job: c.overtime.job || '', date: c.overtime.date || '', hour: c.overtime.hour || 0 }]
+              : []
+        })),
         note: d.note || '',
         date: d.date || '',
         template: d.template === undefined ? true : d.template,
@@ -886,7 +904,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
           <BudgetOverview days={days} pro={pro} />
         </div>
         {/* Content */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-5 w-full">
           {/* Data per Day */}
           {days.map((day, dayIndex) => (
             <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center gap-1 min-h-64">
@@ -1329,7 +1347,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
                           setDays(prevDays =>
                             prevDays.map((d, idx) => {
                               if (idx === dayIndex) {
-                                const updatedCrew = [...(d.crew || []), { name: '', roles: [] }];
+                                const updatedCrew = [...(d.crew || []), { name: '', roles: [], overtime: [] }];
                                 return { ...d, crew: updatedCrew };
                               }
                               return d;
@@ -1755,13 +1773,223 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
           ))}
           <button
             type="button"
-            className="w-20 m-1 rounded-xl text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex justify-center font-body text-xs font-thin"
+            className="w-20 h-12 m-1 rounded-xl text-dark bg-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer flex items-center justify-center font-body text-xs font-thin"
             onClick={addDay}
           >
-            Add Day
+            + Add Day
           </button>
+          {/* Overtime feature */}
+          <section className="glass p-4 m-1 w-full h-full rounded-xl font-body text-sm tracking-wider border border-light/50">
+            <p className="pb-4 text-xl font-semibold text-light tracking-wider">Overtime</p>
+
+            {/* Overtime Table */}
+            <div className="w-full overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-light/50">
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Name</th>
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Jobdesk</th>
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Date</th>
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Overtime (hours)</th>
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {days.flatMap((day, dayIndex) => {
+                    if (!day.crew || day.crew.length === 0) return [];
+
+                    return day.crew.flatMap((crewMember, crewIdx) => {
+                      const overtimeEntries = Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0
+                        ? crewMember.overtime
+                        : [{ job: '', date: '', hour: 0 }];
+
+                      return overtimeEntries.map((overtimeEntry, overtimeIdx) => (
+                        <tr key={`${dayIndex}-${crewIdx}-${overtimeIdx}`} className="border-b border-light/20 hover:bg-light/5 transition-colors">
+                          <td className="py-2 px-3 text-light/80 text-xs">
+                            {overtimeIdx === 0 ? (crewMember.name || 'Unnamed') : ''}
+                          </td>
+                          <td className="py-2 px-3">
+                            <select
+                              value={overtimeEntry.job || ''}
+                              onChange={(e) => {
+                                setDays(prevDays =>
+                                  prevDays.map((d, dIdx) => {
+                                    if (dIdx === dayIndex) {
+                                      const updatedCrew = [...d.crew];
+                                      const updatedOvertime = Array.isArray(updatedCrew[crewIdx].overtime)
+                                        ? [...updatedCrew[crewIdx].overtime]
+                                        : [];
+                                      updatedOvertime[overtimeIdx] = {
+                                        ...updatedOvertime[overtimeIdx],
+                                        job: e.target.value
+                                      };
+                                      updatedCrew[crewIdx] = {
+                                        ...updatedCrew[crewIdx],
+                                        overtime: updatedOvertime
+                                      };
+                                      return { ...d, crew: updatedCrew };
+                                    }
+                                    return d;
+                                  })
+                                );
+                              }}
+                              className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs bg-transparent text-light"
+                            >
+                              <option className="bg-dark text-light" value="">Select Jobdesk</option>
+                              {(day.template ? [...roleProduction] : [...roleMotion])
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map(roleOption => (
+                                  <option key={roleOption.id} value={roleOption.name} className="text-light bg-dark">
+                                    {roleOption.name}
+                                  </option>
+                                ))}
+                            </select>
+                          </td>
+                          <td className="py-2 px-3">
+                            <input
+                              type="date"
+                              value={overtimeEntry.date || day.date || ''}
+                              onChange={(e) => {
+                                setDays(prevDays =>
+                                  prevDays.map((d, dIdx) => {
+                                    if (dIdx === dayIndex) {
+                                      const updatedCrew = [...d.crew];
+                                      const updatedOvertime = Array.isArray(updatedCrew[crewIdx].overtime)
+                                        ? [...updatedCrew[crewIdx].overtime]
+                                        : [];
+                                      updatedOvertime[overtimeIdx] = {
+                                        ...updatedOvertime[overtimeIdx],
+                                        date: e.target.value
+                                      };
+                                      updatedCrew[crewIdx] = {
+                                        ...updatedCrew[crewIdx],
+                                        overtime: updatedOvertime
+                                      };
+                                      return { ...d, crew: updatedCrew };
+                                    }
+                                    return d;
+                                  })
+                                );
+                              }}
+                              className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs text-light bg-transparent"
+                            />
+                          </td>
+                          <td className="py-2 px-3">
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              placeholder="0"
+                              value={overtimeEntry.hour || ''}
+                              onChange={(e) => {
+                                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                if (value >= 0 || e.target.value === '') {
+                                  setDays(prevDays =>
+                                    prevDays.map((d, dIdx) => {
+                                      if (dIdx === dayIndex) {
+                                        const updatedCrew = [...d.crew];
+                                        const updatedOvertime = Array.isArray(updatedCrew[crewIdx].overtime)
+                                          ? [...updatedCrew[crewIdx].overtime]
+                                          : [];
+                                        updatedOvertime[overtimeIdx] = {
+                                          job: updatedOvertime[overtimeIdx]?.job || '',
+                                          date: updatedOvertime[overtimeIdx]?.date || d.date || '',
+                                          hour: value
+                                        };
+                                        updatedCrew[crewIdx] = {
+                                          ...updatedCrew[crewIdx],
+                                          overtime: updatedOvertime
+                                        };
+                                        return { ...d, crew: updatedCrew };
+                                      }
+                                      return d;
+                                    })
+                                  );
+                                }
+                              }}
+                              className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs w-20 text-light"
+                            />
+                          </td>
+                          <td className="py-2 px-3">
+                            <div className="flex items-center gap-1">
+                              {/* Add button - only show on first overtime entry of each crew member */}
+                              {overtimeIdx === 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDays(prevDays =>
+                                      prevDays.map((d, dIdx) => {
+                                        if (dIdx === dayIndex) {
+                                          const updatedCrew = [...d.crew];
+                                          const currentOvertime = Array.isArray(updatedCrew[crewIdx].overtime)
+                                            ? [...updatedCrew[crewIdx].overtime]
+                                            : [];
+                                          currentOvertime.push({ job: '', date: d.date || '', hour: 0 });
+                                          updatedCrew[crewIdx] = {
+                                            ...updatedCrew[crewIdx],
+                                            overtime: currentOvertime
+                                          };
+                                          return { ...d, crew: updatedCrew };
+                                        }
+                                        return d;
+                                      })
+                                    );
+                                  }}
+                                  className="text-xs px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-light cursor-pointer"
+                                  title="Add overtime entry"
+                                >
+                                  +
+                                </button>
+                              )}
+                              {/* Delete button - show when there are multiple entries or when hour > 0 */}
+                              {(overtimeEntries.length > 1 || overtimeEntry.hour > 0 || overtimeEntry.job) && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDays(prevDays =>
+                                      prevDays.map((d, dIdx) => {
+                                        if (dIdx === dayIndex) {
+                                          const updatedCrew = [...d.crew];
+                                          const currentOvertime = Array.isArray(updatedCrew[crewIdx].overtime)
+                                            ? [...updatedCrew[crewIdx].overtime]
+                                            : [];
+                                          currentOvertime.splice(overtimeIdx, 1);
+                                          updatedCrew[crewIdx] = {
+                                            ...updatedCrew[crewIdx],
+                                            overtime: currentOvertime
+                                          };
+                                          return { ...d, crew: updatedCrew };
+                                        }
+                                        return d;
+                                      })
+                                    );
+                                  }}
+                                  className="text-xs text-red-400 hover:text-red-300 cursor-pointer"
+                                  title="Delete overtime entry"
+                                >
+                                  ×
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ));
+                    });
+                  })}
+                </tbody>
+              </table>
+
+              {/* Empty state */}
+              {days.every(day => !day.crew || day.crew.length === 0) && (
+                <div className="text-center py-8 text-light/60">
+                  <p className="text-sm">No crew members assigned yet</p>
+                </div>
+              )}
+            </div>
+          </section>
         </form>
       </main>
+
       {/* Delete Confirmation Modal */}
       {deleteConfirm.show && (
         <div className="fixed top-0 left-0 z-50 glass w-full h-full flex items-center justify-center">
