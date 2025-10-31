@@ -239,7 +239,6 @@ const PDFDocument = ({ pro, days }) => {
     if (!num || isNaN(num)) return "Rp. 0";
     return `Rp. ${parseFloat(num).toLocaleString("id-ID")}`;
   };
-
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     try {
@@ -253,6 +252,8 @@ const PDFDocument = ({ pro, days }) => {
       return dateString;
     }
   };
+
+  // (Removed normalized overtime formatting; display raw strings instead)
 
   const getDayLabel = (day, index, total) => {
     if (index === 0) return "Pre-Production";
@@ -286,15 +287,6 @@ const PDFDocument = ({ pro, days }) => {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const projectTotal = days.reduce((acc, day) => acc + calculateDayTotal(day), 0);
-
-  // Calculate total overtime hours across all days
-  const totalOvertimeHours = days.reduce((acc, day) => {
-    if (!Array.isArray(day.crew)) return acc;
-    return acc + day.crew.reduce((dayAcc, member) => {
-      if (!Array.isArray(member.overtime)) return dayAcc;
-      return dayAcc + member.overtime.reduce((overtimeAcc, ot) => overtimeAcc + (ot.hour || 0), 0);
-    }, 0);
-  }, 0);
 
   // Check if there are any images in the project
   const hasAnyImages = days.some(day => Array.isArray(day.images) && day.images.length > 0);
@@ -439,7 +431,7 @@ const PDFDocument = ({ pro, days }) => {
               })()}
 
               {/* Overtime Section */}
-              {Array.isArray(day.crew) && day.crew.some(c => Array.isArray(c.overtime) && c.overtime.length > 0 && c.overtime.some(ot => ot.hour > 0)) && (
+              {Array.isArray(day.crew) && day.crew.some(c => Array.isArray(c.overtime) && c.overtime.length > 0) && (
                 <View style={styles.expenseSection}>
                   <Text style={styles.expenseTitle}>Overtime Hours</Text>
                   <View style={styles.table}>
@@ -453,27 +445,16 @@ const PDFDocument = ({ pro, days }) => {
                       .filter(member => Array.isArray(member.overtime) && member.overtime.length > 0)
                       .flatMap((member, memberIndex) =>
                         member.overtime
-                          .filter(ot => ot.hour > 0)
                           .map((ot, otIndex) => (
                             <View key={`${memberIndex}-${otIndex}`} style={styles.tableRow}>
                               <Text style={styles.tableCell}>{member.name || '-'}</Text>
                               <Text style={styles.tableCell}>{ot.job || '-'}</Text>
                               <Text style={styles.tableCell}>{ot.date ? formatDate(ot.date) : '-'}</Text>
-                              <Text style={styles.tableCell}>{ot.hour}h</Text>
+                              <Text style={styles.tableCell}>{(ot.hour === undefined || ot.hour === null || ot.hour === '') ? '-' : String(ot.hour)}</Text>
                             </View>
                           ))
                       )}
-                    <View style={[styles.tableRow, { backgroundColor: '#f5f5f5' }]}>
-                      <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>Total</Text>
-                      <Text style={styles.tableCell}></Text>
-                      <Text style={styles.tableCell}></Text>
-                      <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>
-                        {day.crew.reduce((sum, member) => {
-                          if (!Array.isArray(member.overtime)) return sum;
-                          return sum + member.overtime.reduce((otSum, ot) => otSum + (ot.hour || 0), 0);
-                        }, 0)}h
-                      </Text>
-                    </View>
+
                   </View>
                 </View>
               )}
@@ -591,19 +572,13 @@ const PDFDocument = ({ pro, days }) => {
         </View>
 
         {/* Project Summary */}
-        {(projectTotal > 0 || totalOvertimeHours > 0) && (
+        {(projectTotal > 0) && (
           <View style={styles.projectSummary}>
             <Text style={styles.summaryTitle}>Project Summary</Text>
             {projectTotal > 0 && (
               <View style={styles.summaryRow}>
                 <Text>Total Project Expenses:</Text>
                 <Text style={{ fontWeight: 'bold' }}>{formatCurrency(projectTotal)}</Text>
-              </View>
-            )}
-            {totalOvertimeHours > 0 && (
-              <View style={styles.summaryRow}>
-                <Text>Total Overtime Hours:</Text>
-                <Text style={{ fontWeight: 'bold' }}>{totalOvertimeHours}h</Text>
               </View>
             )}
           </View>
