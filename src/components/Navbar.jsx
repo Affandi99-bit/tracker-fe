@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { tags } from "../constant/constant";
 import { Link } from 'react-router-dom'
-import Tooltip from "./Tooltip";
-import { useToast } from "./ToastContext";
+import Tooltip from "./micro-components/Tooltip";
+import { useToast } from "./micro-components/ToastContext";
+import { useHasPermission } from "../hook";
 const Dropdown = ({ selectedTags, setSelectedTags }) => {
   const handleTagChange = (tag) => {
     setSelectedTags((prevTags) =>
@@ -112,6 +113,7 @@ const Navbar = ({
   const [showFilter, setShowFilter] = useState(false);
   const [showLastMonth, setShowLastMonth] = useState(false);
   const { showToast } = useToast();
+  const canCreate = useHasPermission("create");
   const handleInput = (e) => {
     onSearch(e.target.value);
   };
@@ -253,27 +255,29 @@ const Navbar = ({
               </button>
             </Tooltip>
             {/* Create */}
-            <button
-              onClick={() => setShowCreateModal(!showCreateModal)}
-              className="px-3 py-1 flex items-center justify-center bg-light text-dark font-body  rounded-xl transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="#222222"
-                className={`size-4 transition-all duration-300 ${showCreateModal ? "rotate-45" : "rotate-180"
-                  }`}
+            {canCreate && (
+              <button
+                onClick={() => setShowCreateModal(!showCreateModal)}
+                className="px-3 py-1 flex items-center justify-center bg-light text-dark font-body  rounded-xl transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 4.5v15m7.5-7.5h-15"
-                />
-              </svg>
-              Create
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="#222222"
+                  className={`size-4 transition-all duration-300 ${showCreateModal ? "rotate-45" : "rotate-180"
+                    }`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                  />
+                </svg>
+                Create
+              </button>
+            )}
             {/* Logout Button */}
             <Tooltip position="left" content={"Log-Out"}>
               <button

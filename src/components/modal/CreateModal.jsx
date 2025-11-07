@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { tags, crew as crewList } from "../constant/constant";
-import { useToast } from './ToastContext';
-import { useRoleProduction } from '../constant/constant'
+import React, { useState, useEffect, useMemo } from "react";
+import { tags } from "../../constant/constant";
+import { useToast } from '../micro-components/ToastContext';
+import { useRoleProduction, useRoleMotion, useRoleDesign, useRoleDocs, crewImport } from '../../hook'
 
 const CreateModal = ({
   showModal,
@@ -15,6 +15,15 @@ const CreateModal = ({
 }) => {
   const { showToast } = useToast();
   const roleProduction = useRoleProduction();
+  const roleMotion = useRoleMotion();
+  const roleDesign = useRoleDesign();
+  const roleDocs = useRoleDocs();
+  const crewListData = crewImport();
+
+  // Transform crew data from {id, name} to {name, roles: []} format
+  const crewList = useMemo(() => {
+    return crewListData.map(c => ({ name: c.name, roles: [] }));
+  }, [crewListData]);
 
   const initialFormData = {
     title: "",
@@ -57,6 +66,28 @@ const CreateModal = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
+
+  // Determine which role list to use based on first checked category
+  const selectedRoleList = useMemo(() => {
+    const firstCategory = formData.categories?.[0];
+
+    if (!firstCategory) {
+      return roleProduction; // Default to Production if no category selected
+    }
+
+    switch (firstCategory) {
+      case "Produksi":
+        return roleProduction;
+      case "Dokumentasi":
+        return roleDocs;
+      case "Motion":
+        return roleMotion;
+      case "Design":
+        return roleDesign;
+      default:
+        return roleProduction; // Default fallback
+    }
+  }, [formData.categories, roleProduction, roleMotion, roleDesign, roleDocs]);
 
   const [additionalCrewMembers, setAdditionalCrewMembers] = useState(() => {
     if (isEditing && initialData?.day?.[0]?.crew?.length) {
@@ -548,8 +579,8 @@ const CreateModal = ({
                 <main className="flex items-start justify-start gap-1 flex-wrap min-h-10 select-none p-3 w-full">
                   {(formData.day[0]?.crew || []).map((member, idx) => (
                     <div
-                      key={member.name + (member.id || "")}
-                      className="min-h-16 flex items-start w-48 mb-2 px-3 rounded-2xl z-10 glass border border-gray-400"
+                      key={idx}
+                      className="min-h-16 flex items-start min-w-48 mb-2 px-3 rounded-2xl z-10 glass border border-gray-400"
                     >
                       <div className="flex w-full flex-col gap-2">
                         <div className="w-full flex items-center justify-between mt-2 mx-1">
@@ -631,7 +662,7 @@ const CreateModal = ({
                               className="font-body outline-none p-1"
                             >
                               <option value="" className="text-dark bg-light">Select Jobdesk</option>
-                              {[...roleProduction]
+                              {[...selectedRoleList]
                                 .sort((a, b) => a.name.localeCompare(b.name))
                                 .map(roleOption => (
                                   <option key={roleOption.id} value={roleOption.name} className="text-dark bg-light">

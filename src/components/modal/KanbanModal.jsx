@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useRoleProduction } from "../constant/constant"
+import { useRoleProduction } from "../../hook"
 const KanbanModal = ({ draft, onClose, onSave, onDelete }) => {
     const [title, setTitle] = useState(draft.title || '');
     const [pic, setPic] = useState(draft.pic || '');

@@ -24,6 +24,8 @@ const Login = ({ onLoginSuccess }) => {
 
     if (foundUser) {
       console.log("Login successfull!");
+      // Store user privilege
+      localStorage.setItem("userPrivilege", foundUser.privilege || "user");
       if (rememberMe) {
         localStorage.setItem("username", username);
         localStorage.setItem("password", password);

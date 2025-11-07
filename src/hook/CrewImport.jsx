@@ -13,7 +13,7 @@ const crewImport = () => {
 
                 const formatted = data.map((r, index) => ({
                     id: index,
-                    name: r.TITLE,
+                    name: r.Name,
                 }));
                 setCrew(formatted);
             } catch (err) {

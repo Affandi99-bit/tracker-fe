@@ -1,18 +1,63 @@
-export const crew = [
-  { name: "Andika Aris", roles: [] },
-  { name: "Adri Irfanto", roles: [] },
-  { name: "Anindya Aulia", roles: [] },
-  { name: "Audrey Agessy", roles: [] },
-  { name: "Delia Sagita", roles: [] },
-  { name: "Helida Laylatus", roles: [] },
-  { name: "Imam Affandi", roles: [] },
-  { name: "Kevin Rizkianto", roles: [] },
-  { name: "Nova Laksmana", roles: [] },
-  // { name: "Oktha Viano", roles: [] },
-  { name: "Rafli Fadillah", roles: [] },
-  { name: "Rully Okta", roles: [] },
-  { name: "Romadhona Larasati", roles: [] },
-];
+// export const roleProduction = [
+//   { id: 1, name: "Photographer" },
+//   { id: 2, name: "Videographer" },
+//   { id: 3, name: "Editor" },
+//   { id: 4, name: "Drone" },
+//   { id: 5, name: "Helper" },
+//   { id: 6, name: "FPV" },
+//   { id: 7, name: "Freelance" },
+//   { id: 8, name: "Lighting" },
+//   { id: 9, name: "Director" },
+//   { id: 10, name: "Art Prop" },
+//   { id: 11, name: "Sound" },
+//   { id: 12, name: "Logistik" },
+//   { id: 13, name: "Man Loc" },
+//   { id: 14, name: "BTS" },
+//   { id: 15, name: "Ass Dir" },
+//   { id: 16, name: "Tal Co" },
+//   { id: 17, name: "Ass Cam" },
+//   { id: 18, name: "DOP" },
+//   { id: 19, name: "Producer" },
+//   { id: 20, name: "Creative" },
+//   { id: 21, name: "Unit" },
+//   { id: 23, name: "Project Manager" },
+//   { id: 24, name: "Social Media" },
+//   { id: 25, name: "Motion" },
+//   { id: 26, name: "Design Layout" },
+//   { id: 27, name: "Illustration" },
+//   { id: 28, name: "Layer Splitting" },
+//   { id: 29, name: "Compositing" },
+//   { id: 30, name: "VFX" },
+//   { id: 31, name: "Freelance" },
+//   { id: 32, name: "Voice Over" },
+//   { id: 22, name: "Crew" },
+// ];
+// export const roleGraphic = [
+//   { id: 1, name: "Motion" },
+//   { id: 2, name: "Design Layout" },
+//   { id: 3, name: "Illustration" },
+//   { id: 4, name: "Layer Splitting" },
+//   { id: 5, name: "Compositing" },
+//   { id: 6, name: "VFX" },
+//   { id: 7, name: "Freelance" },
+//   { id: 8, name: "Voice Over" },
+// ];
+// Static crew list - now using crewImport hook from CrewImport.jsx
+// export const crew = [
+//   { name: "Andika Aris", roles: [] },
+//   { name: "Adri Irfanto", roles: [] },
+//   { name: "Anindya Aulia", roles: [] },
+//   { name: "Audrey Agessy", roles: [] },
+//   { name: "Delia Sagita", roles: [] },
+//   { name: "Helida Laylatus", roles: [] },
+//   { name: "Imam Affandi", roles: [] },
+//   { name: "Kevin Rizkianto", roles: [] },
+//   { name: "Nova Laksmana", roles: [] },
+//   // { name: "Oktha Viano", roles: [] },
+//   { name: "Rafli Fadillah", roles: [] },
+//   { name: "Rully Okta", roles: [] },
+//   { name: "Romadhona Larasati", roles: [] },
+// ];
 export const tags = {
   projectType: [
     {
@@ -50,52 +95,7 @@ export const tags = {
     },
   ],
 };
-
-export const roleProduction = [
-  { id: 1, name: "Photographer" },
-  { id: 2, name: "Videographer" },
-  { id: 3, name: "Editor" },
-  { id: 4, name: "Drone" },
-  { id: 5, name: "Helper" },
-  { id: 6, name: "FPV" },
-  { id: 7, name: "Freelance" },
-  { id: 8, name: "Lighting" },
-  { id: 9, name: "Director" },
-  { id: 10, name: "Art Prop" },
-  { id: 11, name: "Sound" },
-  { id: 12, name: "Logistik" },
-  { id: 13, name: "Man Loc" },
-  { id: 14, name: "BTS" },
-  { id: 15, name: "Ass Dir" },
-  { id: 16, name: "Tal Co" },
-  { id: 17, name: "Ass Cam" },
-  { id: 18, name: "DOP" },
-  { id: 19, name: "Producer" },
-  { id: 20, name: "Creative" },
-  { id: 21, name: "Unit" },
-  { id: 23, name: "Project Manager" },
-  { id: 24, name: "Social Media" },
-  { id: 25, name: "Motion" },
-  { id: 26, name: "Design Layout" },
-  { id: 27, name: "Illustration" },
-  { id: 28, name: "Layer Splitting" },
-  { id: 29, name: "Compositing" },
-  { id: 30, name: "VFX" },
-  { id: 31, name: "Freelance" },
-  { id: 32, name: "Voice Over" },
-  { id: 22, name: "Crew" },
-];
-export const roleGraphic = [
-  { id: 1, name: "Motion" },
-  { id: 2, name: "Design Layout" },
-  { id: 3, name: "Illustration" },
-  { id: 4, name: "Layer Splitting" },
-  { id: 5, name: "Compositing" },
-  { id: 6, name: "VFX" },
-  { id: 7, name: "Freelance" },
-  { id: 8, name: "Voice Over" },
-];
-
+// Kanban default value
 export const vidProd = {
   praprod: [
     { title: "Crew Listing", pic: "Crew" },
@@ -205,11 +205,23 @@ export const motion = {
 
 export const user = [
   {
+    privilege: "user",
     user: "blackfamz",
     password: "bendinongopi",
   },
+  {
+    privilege: "pm",
+    user: "blackstdpm",
+    password: "blckstdpm",
+  },
+  {
+    privilege: "finance",
+    user: "blackstdfinance",
+    password: "blckfn",
+  },
+  {
+    privilege: "masteruser",
+    user: "main",
+    password: "blck",
+  },
 ];
-import useRoleProduction from "./ProductionRole";
-import useRoleMotion from "./MotionRoles";
-import crewImport from "./CrewImport";
-export { useRoleProduction, useRoleMotion, crewImport };

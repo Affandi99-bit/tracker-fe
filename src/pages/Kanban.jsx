@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { vidProd, design, motion, dokumentasi } from '../constant/constant';
-import { useToast } from '../components/ToastContext';
+import { useToast } from '../components/micro-components/ToastContext';
 import { KanbanModal } from '../components';
 
 const GOOGLE_API_KEY = "AIzaSyDc6sqyAKybW9hTzMylP3QHtSc78xUbRXI";
@@ -96,6 +97,7 @@ function useDebouncedSave(updateData, delay = 500) {
 }
 
 const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
     const [praprodData, setPraprodData] = useState([]);
@@ -591,7 +593,7 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
             if (onProjectUpdate) {
                 onProjectUpdate(updatedProject);
             }
-            setKanban(false);
+            navigate(-1);
         } catch (err) {
             console.error('Error saving before closing:', err);
             showToast("Error saving changes", "error");

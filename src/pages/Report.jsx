@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { NumericFormat } from "react-number-format";
-import { useToast } from '../components/ToastContext';
+import { useToast } from '../components/micro-components/ToastContext';
 import { ErrorBoundary, PDFDocument } from "../components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { pdf } from '@react-pdf/renderer';
-import { useRoleProduction, useRoleMotion, crew as baseCrew } from '../constant/constant';
+import { useRoleProduction, useRoleMotion, crewImport, useHasPermission } from '../hook';
 
 const ImageZoomModal = ({ src, onClose }) => {
   return (
@@ -28,8 +29,10 @@ const ImageZoomModal = ({ src, onClose }) => {
     </div>
   );
 };
-const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }) => {
+const ReportComponent = ({ pro: initialPro, updateData }) => {
+  const navigate = useNavigate();
   const { showToast } = useToast();
+  const canAccessReport = useHasPermission("report");
   const [pro, setPro] = useState(initialPro || {});
   const [loading, setLoading] = useState(false);
   const [days, setDays] = useState([]);
@@ -38,6 +41,23 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
   const [crewDeleteConfirm, setCrewDeleteConfirm] = useState({ show: false, dayIndex: null, crewIndex: null });
   const roleProduction = useRoleProduction();
   const roleMotion = useRoleMotion();
+
+  // Check privilege - if user doesn't have access, show message and close
+  useEffect(() => {
+    if (!canAccessReport) {
+      showToast("You don't have permission to access this feature", "error");
+      navigate(-1);
+    }
+  }, [canAccessReport, showToast, navigate]);
+
+  if (!canAccessReport) {
+    return null;
+  }
+  const baseCrewData = crewImport();
+  // Transform crew data from {id, name} to {name, roles: []} format
+  const baseCrew = useMemo(() => {
+    return baseCrewData.map(c => ({ name: c.name, roles: [] }));
+  }, [baseCrewData]);
 
   // Merge global crew list with any custom crew names found in the project's days (from CreateModal)
   const crewOptions = useMemo(() => {
@@ -53,7 +73,7 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
     return Array.from(allNames)
       .map(name => ({ name }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [days]);
+  }, [days, baseCrew]);
 
 
   // Budget Overview Component
@@ -883,13 +903,13 @@ const ReportComponent = ({ setShowReportGenerator, pro: initialPro, updateData }
     return d.toISOString().slice(0, 10);
   };
   return (
-    <main className="fixed top-0 left-0 z-40 bg-dark w-full h-screen flex flex-col items-start">
+    <main className="fixed top-0 left-0 z-40 bg-dark text-light w-full h-screen flex flex-col items-start">
       {/* Navbar */}
       <nav className="flex justify-between px-10 font-body text-sm tracking-wider items-center w-full h-10 border-b border-light">
         <button
           type="button"
           className="flex gap-1 items-center text-light transition ease-in-out hover:scale-105 duration-300 active:scale-95 cursor-pointer"
-          onClick={() => setShowReportGenerator(false)}
+          onClick={() => navigate(-1)}
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={0.5} stroke="#e8e8e8" className="size-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />

@@ -1,15 +1,57 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
 import { Loader, Navbar, CreateModal, Toast, FullscreenButton, Maintenance } from "./components";
-import { MainTable, Readonly, Login, SOP } from "./pages";
+import { MainTable, Readonly, Login, SOP, Bonus, Invoice, Quotation, Kanban, Report } from "./pages";
 import axios from "axios";
-import { ToastProvider } from './components/ToastContext';
+import { usePrivilege } from "./hook";
+import { ToastProvider } from './components/micro-components/ToastContext';
 
 const ReadonlyWrapper = ({ data }) => {
   const { id } = useParams();
   const found = data.filter(d => d._id === id);
   if (!found.length) return <Loader />
   return <Readonly data={found} />;
+};
+
+const KanbanWrapper = ({ data, updateData }) => {
+  const { id } = useParams();
+  const found = data.find(d => d._id === id);
+  if (!found) return <Loader />;
+  return (
+    <Kanban
+      setKanban={() => { }}
+      updateData={updateData}
+      project={found}
+      selectedTypes={found.type}
+      onProjectUpdate={() => { }}
+    />
+  );
+};
+
+const ReportWrapper = ({ data, updateData }) => {
+  const { id } = useParams();
+  const found = data.find(d => d._id === id);
+  if (!found) return <Loader />;
+  return (
+    <Report
+      setShowReportGenerator={() => { }}
+      pro={found}
+      updateData={updateData}
+    />
+  );
+};
+
+const BonusWrapper = ({ data, updateData }) => {
+  const { id } = useParams();
+  const found = data.find(d => d._id === id);
+  if (!found) return <Loader />;
+  return (
+    <Bonus
+      setShowReportGenerator={() => { }}
+      pro={found}
+      updateData={updateData}
+    />
+  );
 };
 
 const MainApp = () => {
@@ -30,6 +72,15 @@ const MainApp = () => {
     setMessage(msg);
     setToastVisible(true);
   };
+  const privilege = usePrivilege();
+
+  useEffect(() => {
+    if (privilege) {
+      document.title = `Project Tracker | ${privilege.toUpperCase()}`;
+    } else {
+      document.title = "Project Tracker | Blackstudio.id";
+    }
+  }, [privilege]);
 
   useEffect(() => {
     fetchProjects();
@@ -42,8 +93,16 @@ const MainApp = () => {
       const twoHours = 2 * 60 * 60 * 1000;
       if (currentTime - loginTime < twoHours) {
         setIsLoggedIn(true);
+        // Restore privilege if user is still logged in
+        const username = localStorage.getItem("username");
+        const password = localStorage.getItem("password");
+        if (username && password) {
+          // Privilege should already be in localStorage from Login.jsx
+          // This ensures it persists across page refreshes
+        }
       } else {
         localStorage.removeItem("loginTime");
+        localStorage.removeItem("userPrivilege");
       }
     }
   }, []);
@@ -128,6 +187,7 @@ const MainApp = () => {
     localStorage.removeItem("loginTime");
     localStorage.removeItem("username");
     localStorage.removeItem("password");
+    localStorage.removeItem("userPrivilege");
   };
 
   return (
@@ -138,6 +198,11 @@ const MainApp = () => {
             path="/readonly/:id"
             element={<ReadonlyWrapper data={tableData} />}
           />
+          <Route path="/bonus/:id" element={<BonusWrapper data={tableData} updateData={updateData} />} />
+          <Route path="/invoice/:id" element={<Invoice />} />
+          <Route path="/quotation/:id" element={<Quotation />} />
+          <Route path="/kanban/:id" element={<KanbanWrapper data={tableData} updateData={updateData} />} />
+          <Route path="/report/:id" element={<ReportWrapper data={tableData} updateData={updateData} />} />
           <Route
             path="/sop"
             element={<SOP />}
