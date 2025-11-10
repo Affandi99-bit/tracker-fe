@@ -110,8 +110,8 @@ const MainApp = () => {
       }
     }
   }, []);
-  // const apiUrl="https://tracker-be-omega.vercel.app"
-  const apiUrl = "http://localhost:5001/api/report"
+  const apiUrl = "https://tracker-be-omega.vercel.app"
+  // const apiUrl = "http://localhost:5001/api/report"
   const fetchProjects = async () => {
     try {
       setIsLoading(true);
