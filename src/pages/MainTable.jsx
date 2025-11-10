@@ -403,6 +403,7 @@ const DataTable = ({
 
 const MainTable = ({
   tableData,
+  archivedData = [],
   updateData,
   deleteData,
   searchQuery,
@@ -410,6 +411,9 @@ const MainTable = ({
   isSortedDesc,
   setSortedData,
   showHidden,
+  hasMoreArchived = false,
+  loadingArchived = false,
+  loadMoreArchived,
 }) => {
   const [selectedRowData, setSelectedRowData] = useState(null);
   const [sortedData, setSortedDataLocal] = useState(tableData);
@@ -428,7 +432,12 @@ const MainTable = ({
   useEffect(() => {
     if (!tableData) return;
 
-    const filteredTableData = tableData.filter((item) => {
+    // Combine ongoing and archived data based on showHidden
+    const dataToFilter = showHidden
+      ? [...tableData, ...archivedData]
+      : tableData;
+
+    const filteredTableData = dataToFilter.filter((item) => {
       const matchesSearch =
         (item.title?.toLowerCase() ?? "").includes(searchQuery.toLowerCase()) ||
         (item.client?.toLowerCase() ?? "").includes(searchQuery.toLowerCase()) ||
@@ -444,10 +453,13 @@ const MainTable = ({
             item.categories?.includes(tag)
         );
 
-      const isNotDone = item.done !== true && !item.archived;
+      const isNotDone = item.done !== true;
       const isOngoing = item.done === false;
+      const isArchived = item.done === true;
 
-      return matchesSearch && matchesTags && (showHidden || isNotDone || isOngoing);
+      // If showHidden is true, show all (ongoing + archived)
+      // If showHidden is false, only show ongoing
+      return matchesSearch && matchesTags && (showHidden ? (isNotDone || isOngoing || isArchived) : (isNotDone || isOngoing));
     });
 
     const sorted = [...filteredTableData].sort((a, b) =>
@@ -458,7 +470,8 @@ const MainTable = ({
 
     setSortedData(sorted);
     setSortedDataLocal(sorted);
-  }, [tableData, isSortedDesc, searchQuery, selectedTags, showHidden]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableData, archivedData, isSortedDesc, searchQuery, selectedTags, showHidden]);
 
   const handleDate = () => {
     setIsSorted(prev => !prev);
@@ -547,6 +560,39 @@ const MainTable = ({
           </Suspense>
         </table>
       </section>
+      {showHidden && hasMoreArchived && (
+        <div className="flex justify-center items-center py-4">
+          <button
+            onClick={loadMoreArchived}
+            disabled={loadingArchived}
+            className="px-6 py-2 bg-light text-dark rounded-xl hover:scale-105 duration-300 active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {loadingArchived ? (
+              <>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  className="animate-spin"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M21.4155 15.3411C18.5924 17.3495 14.8895 17.5726 11.877 16M2.58445 8.65889C5.41439 6.64566 9.12844 6.42638 12.1448 8.01149M15.3737 14.1243C18.2604 12.305 19.9319 8.97413 19.601 5.51222M8.58184 9.90371C5.72231 11.7291 4.06959 15.0436 4.39878 18.4878M15.5269 10.137C15.3939 6.72851 13.345 3.61684 10.1821 2.17222M8.47562 13.9256C8.63112 17.3096 10.6743 20.392 13.8177 21.8278M19.071 4.92893C22.9763 8.83418 22.9763 15.1658 19.071 19.071C15.1658 22.9763 8.83416 22.9763 4.92893 19.071C1.02369 15.1658 1.02369 8.83416 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.071 4.92893ZM14.8284 9.17157C16.3905 10.7337 16.3905 13.2663 14.8284 14.8284C13.2663 16.3905 10.7337 16.3905 9.17157 14.8284C7.60948 13.2663 7.60948 10.7337 9.17157 9.17157C10.7337 7.60948 13.2663 7.60948 14.8284 9.17157Z"
+                    stroke="#222222"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Loading...
+              </>
+            ) : (
+              "Load More Archived Projects"
+            )}
+          </button>
+        </div>
+      )}
       {showEditModal && (
         <CreateModal
           showModal={showEditModal}

@@ -56,6 +56,7 @@ const BonusWrapper = ({ data, updateData }) => {
 
 const MainApp = () => {
   const [tableData, setTableData] = useState([]);
+  const [archivedData, setArchivedData] = useState([]);
   const [sortedData, setSortedData] = useState([]);
   const [showHidden, setShowHidden] = useState(false);
   const [isSortedDesc, setIsSortedDesc] = useState(true);
@@ -67,6 +68,9 @@ const MainApp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
   const [message, setMessage] = useState("");
+  const [archivedPage, setArchivedPage] = useState(1);
+  const [hasMoreArchived, setHasMoreArchived] = useState(false);
+  const [loadingArchived, setLoadingArchived] = useState(false);
 
   const showToast = (msg) => {
     setMessage(msg);
@@ -106,12 +110,13 @@ const MainApp = () => {
       }
     }
   }, []);
-
+  // const apiUrl="https://tracker-be-omega.vercel.app"
+  const apiUrl = "http://localhost:5001/api/report"
   const fetchProjects = async () => {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `https://tracker-be-omega.vercel.app/api/report/getallprojects`
+        `${apiUrl}/getallprojects`
       );
       setTableData(response.data);
       setIsLoading(false);
@@ -122,10 +127,35 @@ const MainApp = () => {
     }
   };
 
+  const fetchArchivedProjects = async (page = 1, append = false) => {
+    try {
+      setLoadingArchived(true);
+      const response = await axios.get(
+        `${apiUrl}/getarchivedprojects?page=${page}`
+      );
+      if (append) {
+        setArchivedData(prev => [...prev, ...response.data.projects]);
+      } else {
+        setArchivedData(response.data.projects);
+      }
+      setHasMoreArchived(response.data.pagination.hasMore);
+      setArchivedPage(page);
+      setLoadingArchived(false);
+    } catch (error) {
+      console.error("Error fetching archived projects:", error);
+      setLoadingArchived(false);
+      alert("Failed to fetch archived projects.");
+    }
+  };
+
+  const loadMoreArchived = () => {
+    fetchArchivedProjects(archivedPage + 1, true);
+  };
+
   const addNewData = async (newData) => {
     try {
       const response = await axios.post(
-        "https://tracker-be-omega.vercel.app/api/report/create",
+        `${apiUrl}/create`,
         newData
       );
 
@@ -141,15 +171,37 @@ const MainApp = () => {
   const updateData = async (updatedData) => {
     try {
       await axios.put(
-        `https://tracker-be-omega.vercel.app/api/report/update/${updatedData._id}`,
+        `${apiUrl}/update/${updatedData._id}`,
         updatedData
       );
       setIsLoading(true);
-      setTableData((prev) =>
-        prev.map((item) =>
-          item._id === updatedData._id ? { ...item, ...updatedData } : item
-        )
-      );
+
+      // Check current state - archived status is determined by done field
+      const currentInOngoing = tableData.find(item => item._id === updatedData._id);
+      const currentInArchived = archivedData.find(item => item._id === updatedData._id);
+      const isNowArchived = updatedData.done === true;
+
+      // Update the appropriate list
+      if (isNowArchived) {
+        // Project is now archived (done === true) - remove from ongoing, add to archived if showing
+        setTableData((prev) => prev.filter((item) => item._id !== updatedData._id));
+        if (showHidden && !currentInArchived) {
+          // Add to archived list if we're showing archived
+          setArchivedData((prev) => [...prev, updatedData]);
+        }
+      } else {
+        // Project is now ongoing (done !== true) - remove from archived, add to ongoing
+        setTableData((prev) => {
+          const exists = prev.find(item => item._id === updatedData._id);
+          if (exists) {
+            return prev.map((item) =>
+              item._id === updatedData._id ? { ...item, ...updatedData } : item
+            );
+          }
+          return [...prev, updatedData];
+        });
+        setArchivedData((prev) => prev.filter((item) => item._id !== updatedData._id));
+      }
       setIsLoading(false);
     } catch (error) {
       console.error("Error updating project:", error);
@@ -159,10 +211,11 @@ const MainApp = () => {
   const deleteData = async (id) => {
     try {
       await axios.delete(
-        `https://tracker-be-omega.vercel.app/api/report/delete/${id}`
+        `${apiUrl}/delete/${id}`
       );
       setIsLoading(true);
       setTableData((prev) => prev.filter((item) => item._id !== id));
+      setArchivedData((prev) => prev.filter((item) => item._id !== id));
       setIsLoading(false);
     } catch (error) {
       console.error("Error deleting project:", error);
@@ -173,7 +226,12 @@ const MainApp = () => {
     fetchProjects();
   };
   const handleArchiveToggle = () => {
-    setShowHidden((prev) => !prev);
+    const newValue = !showHidden;
+    setShowHidden(newValue);
+    if (newValue && archivedData.length === 0) {
+      // First time showing archived, fetch first page
+      fetchArchivedProjects(1, false);
+    }
   };
   const handleSortToggle = () => {
     setIsSortedDesc((prev) => !prev);
@@ -256,6 +314,7 @@ const MainApp = () => {
                     />
                     <MainTable
                       tableData={tableData}
+                      archivedData={archivedData}
                       searchQuery={searchQuery}
                       selectedTags={selectedTags}
                       isSortedDesc={isSortedDesc}
@@ -263,6 +322,9 @@ const MainApp = () => {
                       showHidden={showHidden}
                       updateData={updateData}
                       deleteData={deleteData}
+                      hasMoreArchived={hasMoreArchived}
+                      loadingArchived={loadingArchived}
+                      loadMoreArchived={loadMoreArchived}
                     />
                     <CreateModal
                       showModal={showCreateModal}

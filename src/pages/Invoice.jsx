@@ -1,8 +1,8 @@
 import React from 'react'
-
+import { Maintenance } from '../components'
 const Invoice = () => {
     return (
-        <div>Invoice</div>
+        <div><Maintenance /></div>
     )
 }
 
