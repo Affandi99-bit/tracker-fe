@@ -30,12 +30,71 @@ const KanbanWrapper = ({ data, updateData }) => {
 
 const ReportWrapper = ({ data, updateData }) => {
   const { id } = useParams();
-  const found = data.find(d => d._id === id);
-  if (!found) return <Loader />;
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  // const apiUrl = "http://localhost:5000/api/report";
+  const apiUrl = "https://tracker-be-omega.vercel.app/api/report"
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // First try to find in local data (for faster initial load)
+        const found = data.find(d => d._id === id);
+        if (found && found.day) {
+          // If we have full data locally, use it
+          setProject(found);
+          setLoading(false);
+          return;
+        }
+        // Otherwise fetch full project data from API
+        const response = await axios.get(`${apiUrl}/getproject/${id}`);
+        setProject(response.data);
+      } catch (err) {
+        console.error("Error fetching project:", err);
+        setError(err.message || "Failed to load project");
+        // Fallback to local data if available
+        const found = data.find(d => d._id === id);
+        if (found) {
+          setProject(found);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProject();
+    }
+  }, [id, data]);
+
+  if (loading) return <Loader />;
+  if (error && !project) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-dark text-light">
+        <div className="text-center">
+          <p className="text-xl mb-4">Error loading project</p>
+          <p className="text-sm text-light/60">{error}</p>
+        </div>
+      </div>
+    );
+  }
+  if (!project) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-dark text-light">
+        <div className="text-center">
+          <p className="text-xl">Project not found</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Report
       setShowReportGenerator={() => { }}
-      pro={found}
+      pro={project}
       updateData={updateData}
     />
   );
@@ -111,7 +170,7 @@ const MainApp = () => {
     }
   }, []);
   const apiUrl = "https://tracker-be-omega.vercel.app/api/report"
-  // const apiUrl = "http://localhost:5001/api/report"
+  // const apiUrl = "http://localhost:5000/api/report"
   const fetchProjects = async () => {
     try {
       setIsLoading(true);
