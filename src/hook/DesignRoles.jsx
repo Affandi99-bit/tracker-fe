@@ -13,6 +13,7 @@ const useRoleDesign = () => {
                 const formatted = data.map((r, index) => ({
                     id: index,
                     name: r.TITLE,
+                    bobot: r.Bobot
                 }));
                 setRoleDesign(formatted);
             } catch (err) {

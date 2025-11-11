@@ -13,6 +13,7 @@ const useRoleMotion = () => {
                 const formatted = data.map((r, index) => ({
                     id: index,
                     name: r.TITLE,
+                    bobot: r.Bobot
                 }));
                 setRoleMotion(formatted);
             } catch (err) {

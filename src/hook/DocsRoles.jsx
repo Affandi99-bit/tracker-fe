@@ -13,6 +13,7 @@ const useRoleDocs = () => {
                 const formatted = data.map((r, index) => ({
                     id: index,
                     name: r.TITLE,
+                    bobot: r.Bobot
                 }));
                 setRoleDocs(formatted);
             } catch (err) {

@@ -14,6 +14,7 @@ const useRoleProduction = () => {
                 const formatted = data.map((r, index) => ({
                     id: index,
                     name: r.TITLE,
+                    bobot: r.Bobot
                 }));
                 setRoleProduction(formatted);
             } catch (err) {
