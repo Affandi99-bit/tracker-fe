@@ -92,8 +92,8 @@ const ReportWrapper = ({ data, updateData }) => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = "http://localhost:5000/api/report";
-  // const apiUrl = "https://tracker-be-omega.vercel.app/api/report"
+  // const apiUrl = "http://localhost:5000/api/report";
+  const apiUrl = "https://tracker-be-omega.vercel.app/api/report"
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -164,8 +164,8 @@ const BonusWrapper = ({ data, updateData }) => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = "http://localhost:5000/api/report";
-  // const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
+  // const apiUrl = "http://localhost:5000/api/report";
+  const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
 
   useEffect(() => {
     const fetchProject = async () => {
