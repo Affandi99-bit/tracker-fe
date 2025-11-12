@@ -374,13 +374,11 @@ const PDFBonus = ({ pro, crewBonuses, bonusCalculation, grossProfit, netProfit, 
                   <View style={styles.table}>
                     <View style={[styles.tableRow, styles.tableHeader]}>
                       <Text style={styles.tableCellHeader}>Role</Text>
-                      <Text style={styles.tableCellHeader}>Weight</Text>
                       <Text style={styles.tableCellHeader}>Bonus</Text>
                     </View>
                     {crew.roleBonuses.map((rb, rbIndex) => (
                       <View key={rbIndex} style={styles.tableRow}>
                         <Text style={styles.tableCell}>{rb.role}</Text>
-                        <Text style={styles.tableCell}>{rb.weight}</Text>
                         <Text style={styles.tableCell}>{formatCurrency(rb.bonus)}</Text>
                       </View>
                     ))}

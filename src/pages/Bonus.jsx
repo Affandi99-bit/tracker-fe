@@ -160,7 +160,7 @@ const Bonus = ({ pro: initialPro, updateData }) => {
         return calculateGrossProfit(budget, totalExpenses, freelance);
     }, [pro?.budget, pro?.freelance, totalExpenses]);
 
-    // Calculate total weight and weight 8 count
+    // Calculate total weight and weight count
     const { totalWeight, weight8Count } = useMemo(() => {
         let total = 0;
         let weight8Jobs = 0;
@@ -229,7 +229,21 @@ const Bonus = ({ pro: initialPro, updateData }) => {
     const crucialNotes = useMemo(() => {
         const notes = [];
 
-        if (!projectTier || grossProfit <= 0) {
+        // Critical: Check for negative or zero gross profit first
+        if (grossProfit < 0) {
+            notes.push({
+                type: 'critical',
+                message: `🚨 CRITICAL: Gross profit is negative (${formatCurrency(grossProfit)})! Total expenses exceed project budget. This project is operating at a loss. Review budget, expenses, or freelance costs immediately.`
+            });
+            // Still continue to show other warnings even with negative gross profit
+        } else if (grossProfit === 0) {
+            notes.push({
+                type: 'critical',
+                message: `🚨 CRITICAL: Gross profit is zero! Total expenses equal project budget. No profit margin available. Review budget or reduce expenses.`
+            });
+        }
+
+        if (!projectTier) {
             return notes;
         }
 
@@ -237,17 +251,17 @@ const Bonus = ({ pro: initialPro, updateData }) => {
         const tierMax = projectTier.maxPercent || 0;
         const tierMin = projectTier.minPercent || 0;
 
-        // Check if bonus percentage was adjusted due to Weight 8 minimum
+        // Check if bonus percentage was adjusted due to Weight minimum
         if (bonusCalculation?.adjusted) {
             if (finalPercentage >= tierMax) {
                 notes.push({
                     type: 'warning',
-                    message: `⚠️ Bonus percentage adjusted to ${finalPercentage.toFixed(2)}% (MAX: ${tierMax}%) to meet Weight 8 minimum requirement. This exceeds the recommended range.`
+                    message: `⚠️ Bonus percentage adjusted to ${finalPercentage.toFixed(2)}% (MAX: ${tierMax}%) to meet Weight minimum requirement. This exceeds the recommended range.`
                 });
             } else {
                 notes.push({
                     type: 'info',
-                    message: `ℹ️ Bonus percentage adjusted to ${finalPercentage.toFixed(2)}% to meet Weight 8 minimum requirement (${projectTier.name} tier).`
+                    message: `ℹ️ Bonus percentage adjusted to ${finalPercentage.toFixed(2)}% to meet Weight minimum requirement (${projectTier.name} tier).`
                 });
             }
         }
@@ -276,7 +290,7 @@ const Bonus = ({ pro: initialPro, updateData }) => {
             });
         }
 
-        // Check if Weight 8 minimum couldn't be met even at max percentage
+        // Check if Weight minimum couldn't be met even at max percentage
         if (weight8Count > 0 && projectTier.weight8Min) {
             const weight8Bonus = calculateCrewBonus(
                 bonusCalculation?.bonusPool || 0,
@@ -286,35 +300,114 @@ const Bonus = ({ pro: initialPro, updateData }) => {
             if (weight8Bonus < projectTier.weight8Min && finalPercentage >= tierMax) {
                 notes.push({
                     type: 'critical',
-                    message: `🚨 Weight 8 minimum (${formatCurrency(projectTier.weight8Min)}) cannot be met even at maximum percentage. Consider increasing project budget or reducing crew size.`
+                    message: `🚨 Weight minimum (${formatCurrency(projectTier.weight8Min)}) cannot be met even at maximum percentage. Consider increasing project budget or reducing crew size.`
                 });
             }
         }
 
-        // Check if net profit is negative or very low
-        if (netProfit < 0) {
+        // Check if net profit is negative or very low (only if gross profit is positive)
+        if (grossProfit > 0) {
+            if (netProfit < 0) {
+                notes.push({
+                    type: 'critical',
+                    message: `🚨 Net profit is negative! Total bonus and overtime exceed gross profit. Review budget or reduce bonus percentage.`
+                });
+            } else if (netProfit < grossProfit * 0.1) {
+                notes.push({
+                    type: 'warning',
+                    message: `⚠️ Net profit is very low (${formatCurrency(netProfit)}). Consider reviewing bonus allocation.`
+                });
+            }
+
+            // Check if bonus pool is very large relative to gross profit
+            const bonusRatio = (bonusCalculation?.bonusPool || 0) / grossProfit;
+            if (bonusRatio > 0.5) {
+                notes.push({
+                    type: 'warning',
+                    message: `⚠️ Bonus pool represents ${(bonusRatio * 100).toFixed(1)}% of gross profit. This is unusually high.`
+                });
+            }
+        } else if (grossProfit < 0) {
+            // If gross profit is negative, net profit will definitely be negative too
             notes.push({
                 type: 'critical',
-                message: `🚨 Net profit is negative! Total bonus and overtime exceed gross profit. Review budget or reduce bonus percentage.`
-            });
-        } else if (netProfit < grossProfit * 0.1) {
-            notes.push({
-                type: 'warning',
-                message: `⚠️ Net profit is very low (${formatCurrency(netProfit)}). Consider reviewing bonus allocation.`
+                message: `🚨 Net profit is negative (${formatCurrency(netProfit)}) due to negative gross profit. Cannot calculate bonuses with current budget and expenses.`
             });
         }
 
-        // Check if bonus pool is very large relative to gross profit
-        const bonusRatio = (bonusCalculation?.bonusPool || 0) / grossProfit;
-        if (bonusRatio > 0.5) {
+        // SOP Warnings
+        const budget = parseFloat(pro?.budget) || 0;
+        const freelance = parseFloat(pro?.freelance) || 0;
+        const operationalExpenses = totalExpenses; // Total expenses from all days
+        const opFreelanceTotal = operationalExpenses + freelance;
+
+        // SOP Warning 1: Op+Freelance Warning
+        if (budget > 0) {
+            const opFreelancePercentage = (opFreelanceTotal / budget) * 100;
+            // Define maximum percentage based on tier (default: 40% for large projects, 35% for smaller)
+            const maxOpFreelancePercentage = projectTier.name.includes('Large') || projectTier.name.includes('Extra Large')
+                ? 40
+                : projectTier.name.includes('Micro') || projectTier.name.includes('Small')
+                    ? 35
+                    : 38;
+
+            if (opFreelancePercentage > maxOpFreelancePercentage) {
+                notes.push({
+                    type: 'warning',
+                    message: `⚠️ SOP Warning: Operational + Freelance (${formatCurrency(opFreelanceTotal)}) represents ${opFreelancePercentage.toFixed(1)}% of budget, exceeding recommended maximum of ${maxOpFreelancePercentage}% for ${projectTier.name} tier. Consider reducing expenses or increasing budget.`
+                });
+            }
+        }
+
+        // SOP Warning 2: Crew Size Warning
+        const crewCount = crewWithOvertime.length;
+        // Define maximum crew size based on tier (default: 20 for large, 15 for medium, 12 for small)
+        const maxCrewSize = projectTier.name.includes('Large') || projectTier.name.includes('Extra Large')
+            ? 20
+            : projectTier.name.includes('Medium')
+                ? 15
+                : projectTier.name.includes('Micro') || projectTier.name.includes('Small')
+                    ? 12
+                    : 18;
+
+        if (crewCount > maxCrewSize) {
             notes.push({
                 type: 'warning',
-                message: `⚠️ Bonus pool represents ${(bonusRatio * 100).toFixed(1)}% of gross profit. This is unusually high.`
+                message: `⚠️ SOP Warning: Crew size (${crewCount} members) exceeds recommended maximum of ${maxCrewSize} for ${projectTier.name} tier. This may reduce individual bonuses. Consider optimizing crew allocation.`
             });
+        }
+
+        // SOP Warning 3: Bonus Per Person Warning
+        const bonusesToCheck = calculatedBonuses || crewBonusCalculation;
+        if (bonusesToCheck?.crewBonuses && bonusesToCheck.crewBonuses.length > 0) {
+            const minBonusPerPerson = Math.min(
+                ...bonusesToCheck.crewBonuses.map(crew => {
+                    const baseBonus = crew.totalBonus || 0;
+                    const overtimeBonus = crew.totalOvertime || 0;
+                    return baseBonus + overtimeBonus;
+                })
+            );
+
+            const MIN_BONUS_PER_PERSON = 750000;
+            if (minBonusPerPerson < MIN_BONUS_PER_PERSON) {
+                const affectedCrew = bonusesToCheck.crewBonuses.filter(crew => {
+                    const total = (crew.totalBonus || 0) + (crew.totalOvertime || 0);
+                    return total < MIN_BONUS_PER_PERSON;
+                });
+
+                const recommendation = minBonusPerPerson > 0
+                    ? `Recommended: Increase bonus percentage or reduce crew size to ensure minimum ${formatCurrency(MIN_BONUS_PER_PERSON)} per person.`
+                    : `Recommended: Review crew allocation and ensure proper bonus distribution.`;
+
+                notes.push({
+                    type: 'warning',
+                    message: `⚠️ SOP Warning: Lowest bonus per person (${formatCurrency(minBonusPerPerson)}) falls below minimum threshold of ${formatCurrency(MIN_BONUS_PER_PERSON)}. ${affectedCrew.length} crew member(s) affected. ${recommendation}`
+                });
+            }
         }
 
         return notes;
-    }, [bonusCalculation, projectTier, grossProfit, totalWeight, weight8Count, netProfit, formatCurrency]);
+    }, [bonusCalculation, projectTier, grossProfit, totalWeight, weight8Count, netProfit, formatCurrency, pro?.budget, pro?.freelance, totalExpenses, crewWithOvertime, calculatedBonuses, crewBonusCalculation]);
 
     const pmNames = useMemo(() => {
         return crewWithOvertime
@@ -457,7 +550,7 @@ const Bonus = ({ pro: initialPro, updateData }) => {
             {/* Left */}
             <div className='flex flex-col h-full w-2/3 mt-5'>
                 {/* Project Overview */}
-                <main className="space-y-4 w-full">
+                <main className="space-y-1 w-full">
                     {/* Project details */}
                     <section className='py-3 w-full glass rounded-xl border border-light/50 p-3'>
                         <h3 className="text-lg font-semibold text-light mb-3 tracking-wider">Project Overview</h3>
@@ -625,10 +718,6 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                     <h3 className="text-lg font-semibold text-light mb-3 tracking-wider">Bonus Calculation</h3>
                     <div className="space-y-2 border-b border-light/50 p-2">
                         <div className="flex justify-between">
-                            <span className="text-light/80 text-sm">Title:</span>
-                            <span className="text-light text-xs tracking-wider">{pro?.title || "-"}</span>
-                        </div>
-                        <div className="flex justify-between">
                             <span className="text-light/80 text-sm">Budget:</span>
                             <span className="text-light text-xs tracking-wider">{formatCurrency(pro?.budget || 0)}</span>
                         </div>
@@ -689,7 +778,7 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-xs tracking-wider rounded-xl border border-amber-200/75 text-light p-3">
+                                <p className="text-xs tracking-wider rounded-xl border border-green-400/75 text-light p-3">
                                     {pro?.bonusNote || "No critical notes. Calculation is within recommended parameters."}
                                 </p>
                             )}
@@ -698,6 +787,12 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                             <span className="text-light/80 text-sm">Floor Minimum:</span>
                             <span className="text-amber-500 text-xs tracking-wider">
                                 {formatCurrency(projectTier ? getWeight8Minimum(projectTier) : 0)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-light/80 text-sm">Total Overtime:</span>
+                            <span className="text-blue-500 text-xs tracking-wider">
+                                {formatCurrency(calculatedBonuses?.totalOvertime || crewBonusCalculation.totalOvertime || pro?.uangLembur || 0)}
                             </span>
                         </div>
                         <div className="flex justify-between">

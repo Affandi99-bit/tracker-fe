@@ -492,17 +492,21 @@ export const calculateCrewBonuses = (
         const jobBonus =
           roleBonuses.find((rb) => rb.role === ot.job)?.bonus || 0;
 
-        if (jobBonus > 0 && ot.hour > 0) {
+        // Parse hour value - handle both number and string
+        const overtimeHours = parseFloat(ot.hour) || parseFloat(ot.hours) || 0;
+
+        if (jobBonus > 0 && overtimeHours > 0) {
           const overtimeCalc = calculateOvertime(
             jobBonus,
-            ot.hour,
-            "uang_penuh"
+            overtimeHours,
+            ot.option || "uang_penuh"
           );
           overtimeDetails.push({
             job: ot.job,
-            hours: ot.hour,
+            hours: overtimeHours,
             baseBonus: jobBonus,
             overtimeBonus: overtimeCalc.bonus,
+            option: ot.option || "uang_penuh",
           });
           crewOvertimeBonus += overtimeCalc.bonus;
         }

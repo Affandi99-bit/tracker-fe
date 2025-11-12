@@ -54,15 +54,62 @@ const CreateModal = ({
 
   const [formData, setFormData] = useState(() => {
     if (isEditing && initialData) {
+      // Ensure crew data is properly formatted
+      const formattedDays = initialData.day?.length
+        ? initialData.day.map(d => ({
+          ...d,
+          crew: (d.crew || []).map(m => ({
+            name: m.name || '',
+            roles: Array.isArray(m.roles) ? m.roles.filter(Boolean) : (m.roles ? [m.roles] : [""]),
+            overtime: Array.isArray(m.overtime) ? m.overtime : []
+          }))
+        }))
+        : [initialFormData.day[0]];
+
       return {
         ...initialData,
         deadline: initialData?.deadline?.split("T")[0] || "",
         status: initialData.status || false,
-        day: initialData.day?.length ? initialData.day : [initialFormData.day[0]],
+        day: formattedDays,
       };
     }
     return initialFormData;
   });
+
+  // Track the last project ID we initialized for to detect project switches
+  const [lastInitializedProjectId, setLastInitializedProjectId] = useState(null);
+
+  // Update formData when initialData changes (only if it's a different project or first load)
+  useEffect(() => {
+    if (isEditing && initialData) {
+      const currentProjectId = initialData._id;
+
+      // Only update if this is a different project or first initialization
+      if (currentProjectId !== lastInitializedProjectId) {
+        const formattedDays = initialData.day?.length
+          ? initialData.day.map(d => ({
+            ...d,
+            crew: (d.crew || []).map(m => ({
+              name: m.name || '',
+              roles: Array.isArray(m.roles) ? m.roles.filter(Boolean) : (m.roles ? [m.roles] : [""]),
+              overtime: Array.isArray(m.overtime) ? m.overtime : []
+            }))
+          }))
+          : [initialFormData.day[0]];
+
+        setFormData({
+          ...initialData,
+          deadline: initialData?.deadline?.split("T")[0] || "",
+          status: initialData.status || false,
+          day: formattedDays,
+        });
+        setLastInitializedProjectId(currentProjectId);
+      }
+    } else if (!isEditing) {
+      // Reset when not editing
+      setLastInitializedProjectId(null);
+    }
+  }, [isEditing, initialData?._id, lastInitializedProjectId]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
@@ -93,29 +140,46 @@ const CreateModal = ({
     if (isEditing && initialData?.day?.[0]?.crew?.length) {
       return initialData.day[0].crew
         .filter((member) => !crewList.some((c) => c.name === member.name))
-        .map((member, index) => ({ id: index, value: member.name }));
+        .map((member, index) => ({ id: Date.now() + index, value: member.name }));
     }
     return [];
   });
 
+
+  // Handle additional crew members changes - only update when additionalCrewMembers actually changes
   useEffect(() => {
+    if (additionalCrewMembers.length === 0) return;
+
     setFormData((prev) => {
-      const additionalNames = additionalCrewMembers.map(m => m.value);
-      const baseCrew = (prev.day[0]?.crew || []).filter(
-        (m) => !m.id && !additionalNames.includes(m.name)
+      const additionalNames = additionalCrewMembers.map(m => m.value).filter(Boolean);
+      if (additionalNames.length === 0) return prev;
+
+      // Get existing crew from the list (those in crewList) - preserve their data
+      const existingCrewFromList = (prev.day[0]?.crew || []).filter(
+        (m) => crewList.some(c => c.name === m.name) && !additionalNames.includes(m.name)
       );
-      const additional = additionalCrewMembers.map((m) => ({
-        id: m.id,
-        name: m.value,
-        roles: m.value ? (prev.day[0]?.crew.find(c => c.name === m.value)?.roles || [""]) : [""]
-      }));
-      const nextCrew0 = [...baseCrew, ...additional];
+
+      // Get additional crew members (those not in crewList)
+      const additional = additionalCrewMembers
+        .filter(m => m.value) // Only include non-empty values
+        .map((m) => {
+          // Try to find existing member data
+          const existingMember = prev.day[0]?.crew?.find(c => c.name === m.value);
+          return {
+            id: m.id,
+            name: m.value,
+            roles: existingMember?.roles || [""],
+            overtime: existingMember?.overtime || []
+          };
+        });
+
+      const nextCrew0 = [...existingCrewFromList, ...additional];
       return {
         ...prev,
         day: (prev.day || []).map((d, idx) => idx === 0 ? { ...d, crew: nextCrew0 } : d),
       };
     });
-  }, [additionalCrewMembers]);
+  }, [additionalCrewMembers, crewList]);
   const handleCheckboxChange = (type, value, checked) => {
     setFormData((prev) => ({
       ...prev,

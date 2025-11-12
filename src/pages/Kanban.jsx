@@ -501,12 +501,14 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                                                         </div>
                                                     );
                                                 }
+                                                // If no crew found, show placeholder
+                                                return <p className='text-xs text-gray-400'>No crew assigned</p>;
                                             }
                                             const crew = getCrewByRole(firstRole);
                                             if (crew) {
                                                 return <p className='text-xs text-gray-400'>{crew.name} as {firstRole}</p>;
                                             }
-                                            return <p className='text-xs text-gray-400'>{firstRole}</p>;
+                                            return <p className='text-xs text-gray-400'>{firstRole || 'Not assigned'}</p>;
                                         })()}
                                     </div>
                                 </div>

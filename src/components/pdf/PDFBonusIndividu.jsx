@@ -278,21 +278,18 @@ const PDFBonusIndividu = ({
                     <View style={styles.table}>
                         <View style={[styles.tableRow, styles.tableHeader]}>
                             <Text style={styles.tableCellHeader}>Role</Text>
-                            <Text style={styles.tableCellHeader}>Weight</Text>
                         </View>
                         {crewMember.roles && crewMember.roles.length > 0 ? (
                             crewMember.roles.map((role, index) => {
-                                const roleBonus = crewBonus.roleBonuses?.find(rb => rb.role === role);
                                 return (
                                     <View key={index} style={styles.tableRow}>
                                         <Text style={styles.tableCell}>{role || "-"}</Text>
-                                        <Text style={styles.tableCell}>{roleBonus?.weight || "-"}</Text>
                                     </View>
                                 );
                             })
                         ) : (
                             <View style={styles.tableRow}>
-                                <Text style={styles.tableCell} colSpan={2}>No roles assigned</Text>
+                                <Text style={styles.tableCell}>No roles assigned</Text>
                             </View>
                         )}
                     </View>
@@ -305,13 +302,11 @@ const PDFBonusIndividu = ({
                         <View style={styles.table}>
                             <View style={[styles.tableRow, styles.tableHeader]}>
                                 <Text style={styles.tableCellHeader}>Role</Text>
-                                <Text style={styles.tableCellHeader}>Weight</Text>
                                 <Text style={styles.tableCellHeader}>Bonus Amount</Text>
                             </View>
                             {crewBonus.roleBonuses.map((rb, index) => (
                                 <View key={index} style={styles.tableRow}>
                                     <Text style={styles.tableCell}>{rb.role}</Text>
-                                    <Text style={styles.tableCell}>{rb.weight}</Text>
                                     <Text style={styles.tableCell}>{formatCurrency(rb.bonus)}</Text>
                                 </View>
                             ))}

@@ -75,6 +75,25 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [days, baseCrew]);
 
+  // Collect all unique roles/jobdesk from all crew members across all days
+  const availableRoles = useMemo(() => {
+    const roleSet = new Set();
+    (Array.isArray(days) ? days : []).forEach(day => {
+      if (Array.isArray(day?.crew)) {
+        day.crew.forEach(crewMember => {
+          if (Array.isArray(crewMember?.roles)) {
+            crewMember.roles.forEach(role => {
+              if (role && role.trim()) {
+                roleSet.add(role.trim());
+              }
+            });
+          }
+        });
+      }
+    });
+    return Array.from(roleSet).sort((a, b) => a.localeCompare(b));
+  }, [days]);
+
 
   // Budget Overview Component
   const BudgetOverview = ({ days, pro }) => {
@@ -520,20 +539,24 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
   //   console.error("PDF export error:", error);
   //   showToast("Failed to export PDF", "error");
   // }
+  // Track if we've initialized days to prevent resetting on subsequent initialPro changes
+  const [daysInitialized, setDaysInitialized] = useState(false);
+
   useEffect(() => {
-    if (initialPro) {
+    // Only initialize days once when initialPro is first loaded and days haven't been initialized
+    if (initialPro && !daysInitialized && days.length === 0) {
       // Use createdAt as start when available
       setPro({ ...initialPro, start: initialPro.createdAt || initialPro.start });
 
       // Determine template from project categories
       const isProductionTemplate = initialPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat)) || false;
 
-      let projectDays = initialPro.day?.map(day => {
+      let projectDays = initialPro.day?.map((day, index) => {
         const dayTemplate = day.template !== undefined ? day.template : isProductionTemplate;
 
         return {
           ...day,
-          id: Date.now() + Math.random(),
+          id: day.id || `day-${index}-${Date.now()}-${Math.random()}`, // Preserve existing ID or create stable one
           expense: {
             rent: day.expense?.rent || [],
             operational: day.expense?.operational || [],
@@ -542,7 +565,8 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
           images: Array.isArray(day.images) ? day.images : [],
           backup: day.backup || [],
           crew: (day.crew || []).map(c => ({
-            ...c,
+            name: c.name || '',
+            roles: Array.isArray(c.roles) ? c.roles : (c.roles ? [c.roles] : []),
             overtime: Array.isArray(c.overtime)
               ? c.overtime
               : (c.overtime && typeof c.overtime === 'object')
@@ -553,7 +577,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
           totalExpenses: day.totalExpenses || 0,
           template: dayTemplate,
           date: day.date || '',
-          dayNumber: day.dayNumber || 1,
+          dayNumber: day.dayNumber || (index + 1),
         };
       }) || [];
 
@@ -563,8 +587,9 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
       const baseDateStr = (initialPro.createdAt || initialPro.start) || '';
       const withDates = assignSequentialDates(numberedDays, baseDateStr);
       setDays(withDates);
+      setDaysInitialized(true);
     }
-  }, [initialPro]);
+  }, [initialPro, daysInitialized, days.length]);
 
   // Monitor template changes to ensure they are preserved
   useEffect(() => {
@@ -580,7 +605,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
 
   // Ensure day numbering is always correct - only when days array changes length
   useEffect(() => {
-    if (days.length > 0) {
+    if (days.length > 0 && daysInitialized) {
       const numberedDays = ensureDayNumbering(days);
       // Only update if there are actual differences in day numbers
       const hasNumberingChanges = numberedDays.some((day, index) =>
@@ -591,26 +616,25 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
         setDays(numberedDays);
       }
     }
-  }, [days.length]); // Only depend on array length, not the entire array
+  }, [days.length, daysInitialized]); // Only depend on array length, not the entire array
 
   // Note: Day 0 crew is a reference only; do not auto-sync other days.
 
   // Recompute sequential dates when start changes or number of days changes
   useEffect(() => {
-    if (!pro?.start || !days.length) return;
+    if (!pro?.start || !days.length || !daysInitialized) return;
     setDays(prev => assignSequentialDates(prev, formatDate(pro.start)));
-  }, [pro?.start, days.length]);
+  }, [pro?.start, days.length, daysInitialized]);
   const addDay = () => {
     // Get the template from existing days or determine from project categories
     const existingTemplate = days.length > 0 ? days[0].template : pro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat));
 
     const newDay = {
-      id: Date.now() + Math.random(),
+      id: `day-new-${Date.now()}-${Math.random()}`, // Stable unique ID
       crew: (Array.isArray(days[0]?.crew) ? days[0].crew.map(c => ({
         name: c?.name || '',
-        // roles: Array.isArray(c?.roles) ? [...c.roles] : [],
-        roles: [],
-        overtime: []
+        roles: Array.isArray(c?.roles) ? [...c.roles] : [], // Preserve roles when copying
+        overtime: Array.isArray(c?.overtime) ? c.overtime.map(ot => ({ ...ot })) : []
       })) : []),
       expense: { rent: [], operational: [], orderlist: [] },
       images: [],
@@ -621,13 +645,17 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
       backup: [],
     };
     // Insert the new day BEFORE the final day to keep last as Post-Production
-    const insertIndex = Math.max(0, days.length - 1);
+    // If there's only 1 day, insert after it (at index 1) to preserve day[0]
+    // If there are multiple days, insert before the last one
+    const insertIndex = days.length === 1 ? 1 : Math.max(1, days.length - 1);
 
-    // Deep clone existing days to prevent mutations
+    // Deep clone existing days to prevent mutations - preserve all data including IDs
     const clonedDays = days.map(day => ({
       ...day,
+      id: day.id || `day-${Date.now()}-${Math.random()}`, // Preserve existing ID
       crew: (day.crew || []).map(member => ({
         ...member,
+        name: member.name || '',
         roles: Array.isArray(member.roles) ? [...member.roles] : [],
         overtime: Array.isArray(member.overtime) ? member.overtime.map(ot => ({ ...ot })) : []
       })),
@@ -637,7 +665,11 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
         orderlist: (day.expense?.orderlist || []).map(item => ({ ...item }))
       },
       images: Array.isArray(day.images) ? [...day.images] : [],
-      backup: (day.backup || []).map(item => ({ ...item }))
+      backup: (day.backup || []).map(item => ({ ...item })),
+      note: day.note || '',
+      date: day.date || '',
+      totalExpenses: day.totalExpenses || 0,
+      template: day.template !== undefined ? day.template : existingTemplate,
     }));
 
     const newDays = [
@@ -865,28 +897,34 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
       setPro(updatedPro);
 
       // Recreate days from saved payload to preserve pre/post inputs and images
-      const rebuiltDays = (updatedPro.day || []).map((d, idx) => ({
-        ...d,
-        id: Date.now() + Math.random() + idx,
-        expense: {
-          rent: d.expense?.rent || [],
-          operational: d.expense?.operational || [],
-          orderlist: d.expense?.orderlist || [],
-        },
-        images: Array.isArray(d.images) ? d.images : [],
-        backup: d.backup || [],
-        crew: (d.crew || []).map(c => ({
-          ...c,
-          overtime: Array.isArray(c.overtime)
-            ? c.overtime
-            : (c.overtime && typeof c.overtime === 'object')
-              ? [{ job: c.overtime.job || '', date: c.overtime.date || '', hour: c.overtime.hour || 0 }]
-              : []
-        })),
-        note: d.note || '',
-        date: d.date || '',
-        template: d.template === undefined ? true : d.template,
-      }));
+      // Preserve existing IDs to maintain component identity
+      const rebuiltDays = (updatedPro.day || []).map((d, idx) => {
+        // Try to find existing day with same index to preserve ID
+        const existingDay = days[idx];
+        return {
+          ...d,
+          id: existingDay?.id || `day-${idx}-${Date.now()}-${Math.random()}`, // Preserve existing ID
+          expense: {
+            rent: d.expense?.rent || [],
+            operational: d.expense?.operational || [],
+            orderlist: d.expense?.orderlist || [],
+          },
+          images: Array.isArray(d.images) ? d.images : [],
+          backup: d.backup || [],
+          crew: (d.crew || []).map(c => ({
+            name: c.name || '',
+            roles: Array.isArray(c.roles) ? c.roles : (c.roles ? [c.roles] : []),
+            overtime: Array.isArray(c.overtime)
+              ? c.overtime
+              : (c.overtime && typeof c.overtime === 'object')
+                ? [{ job: c.overtime.job || '', date: c.overtime.date || '', hour: c.overtime.hour || 0 }]
+                : []
+          })),
+          note: d.note || '',
+          date: d.date || '',
+          template: d.template === undefined ? true : d.template,
+        };
+      });
       const numberedDays = ensureDayNumbering(rebuiltDays);
       setDays(numberedDays);
     } catch (error) {
@@ -946,7 +984,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
         <form onSubmit={handleSubmit} className="flex flex-col items-center gap-5 w-full">
           {/* Data per Day */}
           {days.map((day, dayIndex) => (
-            <main key={`day-${dayIndex}-${day.id}`} className="w-full p-1 flex items-center gap-1 min-h-64">
+            <main key={day.id || `day-${dayIndex}`} className="w-full p-1 flex items-center gap-1 min-h-64">
 
               {/* Expenses section */}
               <section className="rounded-xl glass p-5 border h-full border-gray-400 flex flex-col gap-1 font-body text-xs font-thin w-full">
@@ -1956,13 +1994,15 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                               className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs bg-transparent text-light"
                             >
                               <option className="bg-dark text-light" value="">Select Jobdesk</option>
-                              {(crewMember.dayTemplate ? [...roleProduction] : [...roleMotion])
-                                .sort((a, b) => a.name.localeCompare(b.name))
-                                .map(roleOption => (
-                                  <option key={roleOption.id} value={roleOption.name} className="text-light bg-dark">
-                                    {roleOption.name}
+                              {availableRoles.length > 0 ? (
+                                availableRoles.map((roleName, idx) => (
+                                  <option key={idx} value={roleName} className="text-light bg-dark">
+                                    {roleName}
                                   </option>
-                                ))}
+                                ))
+                              ) : (
+                                <option className="text-light bg-dark" disabled>No jobdesk assigned yet</option>
+                              )}
                             </select>
                           </td>
                           <td className="py-2 px-3">
