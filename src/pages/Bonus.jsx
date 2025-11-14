@@ -24,7 +24,7 @@ import { useRoleProduction, useRoleMotion, useRoleDesign, useRoleDocs } from '..
 
 const Bonus = ({ pro: initialPro, updateData }) => {
     const [pro, setPro] = useState(initialPro || {});
-    const [bonusPercentage, setBonusPercentage] = useState(pro?.bonusPercentage || null);
+    const [bonusPercentage, setBonusPercentage] = useState(pro?.bonusPercentage || pro?.bonus?.bonusPercentage || null);
     const [calculatedBonuses, setCalculatedBonuses] = useState(null);
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -36,8 +36,8 @@ const Bonus = ({ pro: initialPro, updateData }) => {
     useEffect(() => {
         if (initialPro) {
             setPro(initialPro);
-            if (initialPro.bonusPercentage !== undefined) {
-                setBonusPercentage(initialPro.bonusPercentage);
+            if (initialPro.bonusPercentage !== undefined || initialPro.bonus?.bonusPercentage !== undefined) {
+                setBonusPercentage(initialPro.bonusPercentage || initialPro.bonus?.bonusPercentage);
             }
         }
     }, [initialPro]);
@@ -102,7 +102,7 @@ const Bonus = ({ pro: initialPro, updateData }) => {
 
     // Get project tier
     const projectTier = useMemo(() => {
-        const budget = parseFloat(pro?.budget) || 0;
+        const budget = parseFloat(pro?.budget || pro?.bonus?.budget) || 0;
         return getProjectTier(budget, projectType);
     }, [pro?.budget, projectType]);
 
@@ -155,8 +155,8 @@ const Bonus = ({ pro: initialPro, updateData }) => {
 
     // Calculate gross profit
     const grossProfit = useMemo(() => {
-        const budget = parseFloat(pro?.budget) || 0;
-        const freelance = parseFloat(pro?.freelance) || 0;
+        const budget = parseFloat(pro?.budget || pro?.bonus?.budget) || 0;
+        const freelance = parseFloat(pro?.freelance || pro?.bonus?.freelance) || 0;
         return calculateGrossProfit(budget, totalExpenses, freelance);
     }, [pro?.budget, pro?.freelance, totalExpenses]);
 
@@ -220,8 +220,8 @@ const Bonus = ({ pro: initialPro, updateData }) => {
 
     // Calculate net profit
     const netProfit = useMemo(() => {
-        const totalBonus = crewBonusCalculation.totalBonus || parseFloat(pro?.totalBonus) || 0;
-        const uangLembur = crewBonusCalculation.totalOvertime || parseFloat(pro?.uangLembur) || 0;
+        const totalBonus = crewBonusCalculation.totalBonus || parseFloat(pro?.totalBonus || pro?.bonus?.totalBonus) || 0;
+        const uangLembur = crewBonusCalculation.totalOvertime || parseFloat(pro?.uangLembur || pro?.bonus?.uangLembur) || 0;
         return calculateNetProfit(grossProfit, totalBonus + uangLembur);
     }, [grossProfit, crewBonusCalculation, pro?.totalBonus, pro?.uangLembur]);
 
@@ -336,8 +336,8 @@ const Bonus = ({ pro: initialPro, updateData }) => {
         }
 
         // SOP Warnings
-        const budget = parseFloat(pro?.budget) || 0;
-        const freelance = parseFloat(pro?.freelance) || 0;
+        const budget = parseFloat(pro?.budget || pro?.bonus?.budget) || 0;
+        const freelance = parseFloat(pro?.freelance || pro?.bonus?.freelance) || 0;
         const operationalExpenses = totalExpenses; // Total expenses from all days
         const opFreelanceTotal = operationalExpenses + freelance;
 
@@ -420,11 +420,13 @@ const Bonus = ({ pro: initialPro, updateData }) => {
         try {
             const updatedPro = {
                 ...pro,
-                budget: pro.budget || 0,
-                freelance: pro.freelance || 0,
-                bonusPercentage: bonusCalculation.finalPercentage || null,
-                totalBonus: crewBonusCalculation.totalBonus || 0,
-                uangLembur: crewBonusCalculation.totalOvertime || 0,
+                bonus: {
+                    budget: pro.budget || pro.bonus?.budget || 0,
+                    freelance: pro.freelance || pro.bonus?.freelance || 0,
+                    bonusPercentage: bonusCalculation.finalPercentage || null,
+                    totalBonus: crewBonusCalculation.totalBonus || 0,
+                    uangLembur: crewBonusCalculation.totalOvertime || 0,
+                },
             };
             await updateData(updatedPro);
             setPro(updatedPro);
@@ -592,10 +594,14 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                                     thousandSeparator
                                     prefix="Rp. "
                                     placeholder="Project Budget"
-                                    value={pro?.budget || ''}
+                                    value={pro?.budget || pro?.bonus?.budget || ''}
                                     className="glass border text-xs border-light/50 font-light rounded-xl p-2 font-body tracking-widest outline-none mb-1 lg:mb-0"
                                     onValueChange={(values) => {
-                                        setPro(prev => ({ ...prev, budget: values.value }));
+                                        setPro(prev => ({
+                                            ...prev,
+                                            budget: values.value,
+                                            bonus: { ...prev.bonus, budget: values.value }
+                                        }));
                                     }}
                                 />
                             </label>
@@ -618,10 +624,14 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                                     thousandSeparator
                                     prefix="Rp. "
                                     placeholder="Freelance"
-                                    value={pro?.freelance || ''}
+                                    value={pro?.freelance || pro?.bonus?.freelance || ''}
                                     className="glass border text-xs border-light/50 font-light rounded-xl p-2 font-body tracking-widest outline-none mb-1 lg:mb-0"
                                     onValueChange={(values) => {
-                                        setPro(prev => ({ ...prev, freelance: values.value }));
+                                        setPro(prev => ({
+                                            ...prev,
+                                            freelance: values.value,
+                                            bonus: { ...prev.bonus, freelance: values.value }
+                                        }));
                                     }}
                                 />
                             </label>
@@ -719,7 +729,7 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                     <div className="space-y-2 border-b border-light/50 p-2">
                         <div className="flex justify-between">
                             <span className="text-light/80 text-sm">Budget:</span>
-                            <span className="text-light text-xs tracking-wider">{formatCurrency(pro?.budget || 0)}</span>
+                            <span className="text-light text-xs tracking-wider">{formatCurrency(pro?.budget || pro?.bonus?.budget || 0)}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-light/80 text-sm">Expenses:</span>
@@ -727,7 +737,7 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                         </div>
                         <div className="flex justify-between">
                             <span className="text-light/80 text-sm">Freelance:</span>
-                            <span className="text-light text-xs tracking-wider">{formatCurrency(pro?.freelance || 0)}</span>
+                            <span className="text-light text-xs tracking-wider">{formatCurrency(pro?.freelance || pro?.bonus?.freelance || 0)}</span>
                         </div>
                     </div>
                     <div className="space-y-2 border-b border-light/50 p-2">
@@ -792,13 +802,13 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                         <div className="flex justify-between">
                             <span className="text-light/80 text-sm">Total Overtime:</span>
                             <span className="text-blue-500 text-xs tracking-wider">
-                                {formatCurrency(calculatedBonuses?.totalOvertime || crewBonusCalculation.totalOvertime || pro?.uangLembur || 0)}
+                                {formatCurrency(calculatedBonuses?.totalOvertime || crewBonusCalculation.totalOvertime || pro?.uangLembur || pro?.bonus?.uangLembur || 0)}
                             </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-light/80 text-sm">Total Bonus:</span>
                             <span className="text-blue-500 text-xs tracking-wider">
-                                {formatCurrency(calculatedBonuses?.totalBonus || crewBonusCalculation.totalBonus || pro?.totalBonus || 0)}
+                                {formatCurrency(calculatedBonuses?.totalBonus || crewBonusCalculation.totalBonus || pro?.totalBonus || pro?.bonus?.totalBonus || 0)}
                             </span>
                         </div>
                         <div className="flex justify-between">

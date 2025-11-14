@@ -54,15 +54,60 @@ const CreateModal = ({
 
   const [formData, setFormData] = useState(() => {
     if (isEditing && initialData) {
+      // Aggregate crew members from ALL days and merge their roles
+      // This ensures CreateModal shows all jobdesk a person handles across all days
+      const crewMap = new Map();
+
+      (initialData.day || []).forEach(day => {
+        (day.crew || []).forEach(member => {
+          if (!member.name) return;
+
+          const memberName = member.name;
+          if (!crewMap.has(memberName)) {
+            crewMap.set(memberName, {
+              name: memberName,
+              roles: new Set(),
+              overtime: []
+            });
+          }
+
+          const crewEntry = crewMap.get(memberName);
+          // Merge roles from all days
+          if (Array.isArray(member.roles)) {
+            member.roles.filter(Boolean).forEach(role => crewEntry.roles.add(role));
+          } else if (member.roles) {
+            crewEntry.roles.add(member.roles);
+          }
+
+          // Merge overtime (keep all entries)
+          if (Array.isArray(member.overtime) && member.overtime.length > 0) {
+            crewEntry.overtime.push(...member.overtime);
+          } else if (member.overtime && typeof member.overtime === 'object') {
+            crewEntry.overtime.push(member.overtime);
+          }
+        });
+      });
+
+      // Convert Set to Array and ensure at least one empty role slot
+      const aggregatedCrew = Array.from(crewMap.values()).map(member => ({
+        name: member.name,
+        roles: member.roles.size > 0 ? Array.from(member.roles) : [""],
+        overtime: member.overtime
+      }));
+
       // Ensure crew data is properly formatted
       const formattedDays = initialData.day?.length
-        ? initialData.day.map(d => ({
+        ? initialData.day.map((d, index) => ({
           ...d,
-          crew: (d.crew || []).map(m => ({
-            name: m.name || '',
-            roles: Array.isArray(m.roles) ? m.roles.filter(Boolean) : (m.roles ? [m.roles] : [""]),
-            overtime: Array.isArray(m.overtime) ? m.overtime : []
-          }))
+          // For day[0], use aggregated crew with all roles from all days
+          // For other days, keep their original crew data
+          crew: index === 0
+            ? aggregatedCrew
+            : (d.crew || []).map(m => ({
+              name: m.name || '',
+              roles: Array.isArray(m.roles) ? m.roles.filter(Boolean) : (m.roles ? [m.roles] : [""]),
+              overtime: Array.isArray(m.overtime) ? m.overtime : []
+            }))
         }))
         : [initialFormData.day[0]];
 
@@ -78,22 +123,116 @@ const CreateModal = ({
 
   // Track the last project ID we initialized for to detect project switches
   const [lastInitializedProjectId, setLastInitializedProjectId] = useState(null);
+  // Track previous showModal state to detect when modal opens
+  const prevShowModalRef = React.useRef(showModal);
+  // Track last crew data hash to detect when crew data changes
+  const lastCrewDataHashRef = React.useRef('');
+  // Track if we've synced for the current modal open session
+  const hasSyncedThisSessionRef = React.useRef(false);
+
+  // Helper function to create a hash of crew data from all days
+  const getCrewDataHash = (days) => {
+    if (!Array.isArray(days)) return '';
+    return JSON.stringify(
+      days.map(day =>
+        (day.crew || []).map(m => ({
+          name: m.name,
+          roles: Array.isArray(m.roles) ? m.roles.sort() : []
+        })).sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+      )
+    );
+  };
+
+  // Reset tracking when modal closes
+  useEffect(() => {
+    if (!showModal && prevShowModalRef.current) {
+      // Modal just closed, reset tracking
+      setLastInitializedProjectId(null);
+      lastCrewDataHashRef.current = '';
+      hasSyncedThisSessionRef.current = false;
+    }
+    if (showModal && !prevShowModalRef.current) {
+      // Modal just opened, reset sync flag
+      hasSyncedThisSessionRef.current = false;
+    }
+    prevShowModalRef.current = showModal;
+  }, [showModal]);
 
   // Update formData when initialData changes (only if it's a different project or first load)
+  // This ensures formData is always synced with initialData when modal opens or project changes
   useEffect(() => {
-    if (isEditing && initialData) {
+    if (isEditing && initialData && showModal) {
       const currentProjectId = initialData._id;
+      const currentCrewHash = getCrewDataHash(initialData.day || []);
 
-      // Only update if this is a different project or first initialization
-      if (currentProjectId !== lastInitializedProjectId) {
+      // Always sync if:
+      // 1. First time modal opens (lastInitializedProjectId is null)
+      // 2. Different project (currentProjectId !== lastInitializedProjectId)
+      // 3. formData._id doesn't match (formData not synced yet)
+      // 4. Crew data has changed (crew hash is different)
+      // 5. Haven't synced this modal session yet
+      const needsUpdate = currentProjectId && (
+        !lastInitializedProjectId ||
+        currentProjectId !== lastInitializedProjectId ||
+        formData._id !== currentProjectId ||
+        currentCrewHash !== lastCrewDataHashRef.current ||
+        !hasSyncedThisSessionRef.current
+      );
+
+      if (needsUpdate) {
+        // Aggregate crew members from ALL days and merge their roles
+        // This ensures CreateModal shows all jobdesk a person handles across all days
+        const crewMap = new Map();
+
+        (initialData.day || []).forEach(day => {
+          (day.crew || []).forEach(member => {
+            if (!member.name) return;
+
+            const memberName = member.name;
+            if (!crewMap.has(memberName)) {
+              crewMap.set(memberName, {
+                name: memberName,
+                roles: new Set(),
+                overtime: []
+              });
+            }
+
+            const crewEntry = crewMap.get(memberName);
+            // Merge roles from all days
+            if (Array.isArray(member.roles)) {
+              member.roles.filter(Boolean).forEach(role => crewEntry.roles.add(role));
+            } else if (member.roles) {
+              crewEntry.roles.add(member.roles);
+            }
+
+            // Merge overtime (keep all entries)
+            if (Array.isArray(member.overtime) && member.overtime.length > 0) {
+              crewEntry.overtime.push(...member.overtime);
+            } else if (member.overtime && typeof member.overtime === 'object') {
+              crewEntry.overtime.push(member.overtime);
+            }
+          });
+        });
+
+        // Convert Set to Array and ensure at least one empty role slot
+        const aggregatedCrew = Array.from(crewMap.values()).map(member => ({
+          name: member.name,
+          roles: member.roles.size > 0 ? Array.from(member.roles) : [""],
+          overtime: member.overtime
+        }));
+
         const formattedDays = initialData.day?.length
-          ? initialData.day.map(d => ({
+          ? initialData.day.map((d, index) => ({
             ...d,
-            crew: (d.crew || []).map(m => ({
-              name: m.name || '',
-              roles: Array.isArray(m.roles) ? m.roles.filter(Boolean) : (m.roles ? [m.roles] : [""]),
-              overtime: Array.isArray(m.overtime) ? m.overtime : []
-            }))
+            // For day[0], use aggregated crew with all roles from all days
+            // For other days, keep their original crew data
+            crew: index === 0
+              ? aggregatedCrew
+              : (d.crew || []).map(m => ({
+                name: m.name || '',
+                roles: Array.isArray(m.roles) ? m.roles.filter(Boolean) : (m.roles ? [m.roles] : [""]),
+                overtime: Array.isArray(m.overtime) ? m.overtime : []
+              }))
           }))
           : [initialFormData.day[0]];
 
@@ -104,12 +243,26 @@ const CreateModal = ({
           day: formattedDays,
         });
         setLastInitializedProjectId(currentProjectId);
+        lastCrewDataHashRef.current = currentCrewHash;
+        hasSyncedThisSessionRef.current = true;
+
+        // Update additionalCrewMembers when project changes (use aggregated crew)
+        if (aggregatedCrew.length > 0) {
+          const additional = aggregatedCrew
+            .filter((member) => !crewList.some((c) => c.name === member.name))
+            .map((member, index) => ({ id: Date.now() + index, value: member.name }));
+          setAdditionalCrewMembers(additional);
+        } else {
+          setAdditionalCrewMembers([]);
+        }
       }
     } else if (!isEditing) {
       // Reset when not editing
       setLastInitializedProjectId(null);
+      lastCrewDataHashRef.current = '';
+      setAdditionalCrewMembers([]);
     }
-  }, [isEditing, initialData?._id, lastInitializedProjectId]);
+  }, [isEditing, initialData, lastInitializedProjectId, crewList, formData._id, showModal]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
@@ -145,8 +298,8 @@ const CreateModal = ({
     return [];
   });
 
-
   // Handle additional crew members changes - only update when additionalCrewMembers actually changes
+  // This effect syncs additionalCrewMembers to formData, but only when the user makes changes
   useEffect(() => {
     if (additionalCrewMembers.length === 0) return;
 
@@ -163,7 +316,7 @@ const CreateModal = ({
       const additional = additionalCrewMembers
         .filter(m => m.value) // Only include non-empty values
         .map((m) => {
-          // Try to find existing member data
+          // Try to find existing member data - preserve roles and overtime
           const existingMember = prev.day[0]?.crew?.find(c => c.name === m.value);
           return {
             id: m.id,
@@ -180,6 +333,41 @@ const CreateModal = ({
       };
     });
   }, [additionalCrewMembers, crewList]);
+
+  // Sync additionalCrewMembers with formData when formData.crew changes (but only if same project)
+  // This ensures additionalCrewMembers stays in sync when formData is updated from other sources
+  // We use a ref to track the last synced crew names to avoid unnecessary updates
+  const lastSyncedCrewRef = React.useRef('');
+  useEffect(() => {
+    if (isEditing && lastInitializedProjectId && formData.day?.[0]?.crew) {
+      const currentCrew = formData.day[0].crew;
+      const currentCrewNames = currentCrew
+        .map(m => m.name)
+        .filter(Boolean)
+        .sort()
+        .join(',');
+
+      // Only sync if crew names have actually changed (not just a re-render)
+      if (currentCrewNames !== lastSyncedCrewRef.current) {
+        lastSyncedCrewRef.current = currentCrewNames;
+
+        const currentAdditional = currentCrew
+          .filter((member) => member.name && !crewList.some((c) => c.name === member.name))
+          .map((member, index) => ({ id: Date.now() + index, value: member.name }));
+
+        // Use functional update to avoid dependency on additionalCrewMembers
+        setAdditionalCrewMembers(prev => {
+          const currentNames = new Set(currentAdditional.map(m => m.value).filter(Boolean).sort());
+          const existingNames = new Set(prev.map(m => m.value).filter(Boolean).sort());
+
+          const namesEqual = currentNames.size === existingNames.size &&
+            [...currentNames].every(name => existingNames.has(name));
+
+          return namesEqual ? prev : currentAdditional;
+        });
+      }
+    }
+  }, [formData.day?.[0]?.crew, crewList, isEditing, lastInitializedProjectId]);
   const handleCheckboxChange = (type, value, checked) => {
     setFormData((prev) => ({
       ...prev,

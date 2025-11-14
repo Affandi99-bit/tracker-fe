@@ -66,7 +66,7 @@ export const useHasPermission = (action) => {
 
     // finance permissions - only finance tools and view list
     if (privilege === "finance") {
-        return ["view", "finance", "report"].includes(action);
+        return ["view", "finance", "report", "create", "edit", "delete"].includes(action);
     }
 
     return false;

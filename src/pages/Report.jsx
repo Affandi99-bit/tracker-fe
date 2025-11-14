@@ -5,7 +5,7 @@ import { useToast } from '../components/micro-components/ToastContext';
 import { ErrorBoundary, PDFDocument } from "../components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { pdf } from '@react-pdf/renderer';
-import { useRoleProduction, useRoleMotion, crewImport, useHasPermission } from '../hook';
+import { useRoleProduction, useRoleMotion, useRoleDesign, useRoleDocs, crewImport, useHasPermission } from '../hook';
 
 const ImageZoomModal = ({ src, onClose }) => {
   return (
@@ -41,6 +41,30 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
   const [crewDeleteConfirm, setCrewDeleteConfirm] = useState({ show: false, dayIndex: null, crewIndex: null });
   const roleProduction = useRoleProduction();
   const roleMotion = useRoleMotion();
+  const roleDesign = useRoleDesign();
+  const roleDocs = useRoleDocs();
+
+  // Determine which role list to use based on first checked category (same logic as CreateModal)
+  const selectedRoleList = useMemo(() => {
+    const firstCategory = pro?.categories?.[0];
+
+    if (!firstCategory) {
+      return roleProduction; // Default to Production if no category selected
+    }
+
+    switch (firstCategory) {
+      case "Produksi":
+        return roleProduction;
+      case "Dokumentasi":
+        return roleDocs;
+      case "Motion":
+        return roleMotion;
+      case "Design":
+        return roleDesign;
+      default:
+        return roleProduction; // Default fallback
+    }
+  }, [pro?.categories, roleProduction, roleMotion, roleDesign, roleDocs]);
 
   // Check privilege - if user doesn't have access, show message and close
   useEffect(() => {
@@ -548,8 +572,10 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
       // Use createdAt as start when available
       setPro({ ...initialPro, start: initialPro.createdAt || initialPro.start });
 
-      // Determine template from project categories
-      const isProductionTemplate = initialPro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat)) || false;
+      // Determine template from project categories (same logic as CreateModal)
+      // Production template is true for "Produksi" and "Dokumentasi", false for "Motion" and "Design"
+      const firstCategory = initialPro.categories?.[0];
+      const isProductionTemplate = firstCategory ? ["Produksi", "Dokumentasi"].includes(firstCategory) : true;
 
       let projectDays = initialPro.day?.map((day, index) => {
         const dayTemplate = day.template !== undefined ? day.template : isProductionTemplate;
@@ -626,8 +652,10 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
     setDays(prev => assignSequentialDates(prev, formatDate(pro.start)));
   }, [pro?.start, days.length, daysInitialized]);
   const addDay = () => {
-    // Get the template from existing days or determine from project categories
-    const existingTemplate = days.length > 0 ? days[0].template : pro.categories?.some(cat => ["Produksi", "Dokumentasi"].includes(cat));
+    // Get the template from existing days or determine from project categories (same logic as CreateModal)
+    const firstCategory = pro?.categories?.[0];
+    const defaultTemplate = firstCategory ? ["Produksi", "Dokumentasi"].includes(firstCategory) : true;
+    const existingTemplate = days.length > 0 ? days[0].template : defaultTemplate;
 
     const newDay = {
       id: `day-new-${Date.now()}-${Math.random()}`, // Stable unique ID
@@ -991,11 +1019,22 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                 {/* Day Header */}
                 <div className="relative w-full flex items-start justify-between">
                   <h3 className="text-sm font-semibold text-light tracking-wider">
-                    {dayIndex === 0
-                      ? 'Pre-Production'
-                      : dayIndex === days.length - 1
-                        ? 'Post-Production'
-                        : `Day ${dayIndex}`}
+                    {(() => {
+                      const firstCategory = pro?.categories?.[0];
+                      const isMotionOrDesign = firstCategory === "Motion" || firstCategory === "Design";
+
+                      if (isMotionOrDesign) {
+                        // For Motion/Design projects, just show day numbers
+                        return `Day ${day.dayNumber || dayIndex + 1}`;
+                      } else {
+                        // For Production/Documentation projects, show Pre/Post-Production
+                        return dayIndex === 0
+                          ? 'Pre-Production'
+                          : dayIndex === days.length - 1
+                            ? 'Post-Production'
+                            : `Day ${day.dayNumber || dayIndex}`;
+                      }
+                    })()}
                   </h3>
                   <div className="flex items-center gap-2">
                     <input type="date" value={day.date}
@@ -1356,7 +1395,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                   className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
                                 >
                                   <option className="bg-dark text-light" value="">Select Jobdesk</option>
-                                  {[...roleProduction]
+                                  {[...selectedRoleList]
                                     .sort((a, b) => a.name.localeCompare(b.name))
                                     .map(roleOption => (
                                       <option key={roleOption.id} value={roleOption.name} className="text-light bg-dark">
