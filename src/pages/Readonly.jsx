@@ -32,10 +32,23 @@ const Readonly = ({ data }) => {
                                 <p className='w-full flex items-center justify-between border-b border-zinc-400 py-2 tracking-wider'><span className="text-gray-400 tracker-wider">Client:</span> {pro.client} — {pro.pic}</p>
                                 <p className='w-full flex items-center justify-between border-b border-zinc-400 py-2 tracking-wider'><span className="text-gray-400 tracker-wider">Due Date:</span> <span className="font-medium">{new Date(pro.deadline).toLocaleDateString("en-GB")}</span></p>
                                 <p className='w-full flex items-center justify-between py-2 tracking-wider'><span className="text-gray-400 tracker-wider">Project Manager:</span> <span className="font-medium">
-                                    {(pro.day[0]?.crew || [])
-                                        .filter(member => member.roles?.some(role => role.toLowerCase() === "project manager"))
-                                        .map(member => member.name)
-                                        .join(", ") || "—"}
+                                    {(() => {
+                                        // Aggregate crew from all days to find Project Managers
+                                        const allCrew = (Array.isArray(pro.day) ? pro.day : [])
+                                            .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+                                        const groupedByName = allCrew.reduce((acc, member) => {
+                                            if (!member || !member.name) return acc;
+                                            const key = member.name;
+                                            const roles = Array.isArray(member.roles) ? member.roles.filter(Boolean) : [];
+                                            if (!acc[key]) acc[key] = new Set();
+                                            roles.forEach(r => acc[key].add(r));
+                                            return acc;
+                                        }, {});
+                                        const pmNames = Object.entries(groupedByName)
+                                            .filter(([, roleSet]) => Array.from(roleSet).some(r => (r || '').toLowerCase() === 'project manager'))
+                                            .map(([name]) => name);
+                                        return pmNames.length ? pmNames.join(", ") : "—";
+                                    })()}
                                 </span></p>
                             </section>
 
@@ -217,8 +230,21 @@ const Readonly = ({ data }) => {
                                                             <p className="text-gray-300 text-xs">
                                                                 PIC: {(() => {
                                                                     const firstRole = task.pic?.split('/')[0]?.trim();
-                                                                    const crew = (pro.day[0]?.crew || []).find(
-                                                                        c => Array.isArray(c.roles) && c.roles.some(r => r.toLowerCase() === firstRole?.toLowerCase())
+                                                                    // Search all days for crew with matching role
+                                                                    const allCrew = (Array.isArray(pro.day) ? pro.day : [])
+                                                                        .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+                                                                    // Group by name and aggregate roles
+                                                                    const groupedByName = allCrew.reduce((acc, member) => {
+                                                                        if (!member || !member.name) return acc;
+                                                                        const key = member.name;
+                                                                        const roles = Array.isArray(member.roles) ? member.roles.filter(Boolean) : [];
+                                                                        if (!acc[key]) acc[key] = { name: key, roles: new Set() };
+                                                                        roles.forEach(r => acc[key].roles.add(r));
+                                                                        return acc;
+                                                                    }, {});
+                                                                    // Find crew member with matching role
+                                                                    const crew = Object.values(groupedByName).find(
+                                                                        c => Array.from(c.roles).some(r => r.toLowerCase() === firstRole?.toLowerCase())
                                                                     );
                                                                     if (crew) {
                                                                         return <span className='text-xs text-gray-400'>{crew.name} as {firstRole}</span>;
