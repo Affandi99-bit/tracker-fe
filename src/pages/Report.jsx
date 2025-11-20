@@ -1032,7 +1032,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                           ? 'Pre-Production'
                           : dayIndex === days.length - 1
                             ? 'Post-Production'
-                            : `Day ${day.dayNumber || dayIndex}`;
+                            : `Day ${dayIndex}`;
                       }
                     })()}
                   </h3>
@@ -1617,18 +1617,19 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                             )
                           }
                           className="border border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"
-                          disabled={!(Array.isArray(day.crew) && day.crew.length)}
                         >
-                          <option className="bg-dark text-light" value="">
-                            {Array.isArray(day.crew) && day.crew.length ? "Select Jobdesk" : "No Jobdesk"}
-                          </option>
-                          {[...roleMotion]
-                            .sort((a, b) => a.name.localeCompare(b.name))
-                            .map(roleOption => (
-                              <option key={roleOption.id} value={roleOption.name} className="text-light bg-dark">
-                                {roleOption.name}
-                              </option>
-                            ))}
+                          <option className="bg-dark text-light" value="">Select Jobdesk</option>
+                          {Array.isArray(selectedRoleList) && selectedRoleList.length > 0 ? (
+                            [...selectedRoleList]
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map(roleOption => (
+                                <option key={roleOption.id} value={roleOption.name} className="text-light bg-dark">
+                                  {roleOption.name}
+                                </option>
+                              ))
+                          ) : (
+                            <option className="bg-dark text-light" value="" disabled>Loading jobdesk...</option>
+                          )}
                         </select>
                         <input
                           className="border w-28 border-gray-400 glass px-1 rounded-xl p-px outline-none m-1 font-body text-xs font-thin"

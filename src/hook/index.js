@@ -1,9 +1,25 @@
-import useRoleProduction from "./ProductionRole";
-import useRoleMotion from "./MotionRoles";
-import useRoleDesign from "./DesignRoles";
-import useRoleDocs from "./DocsRoles";
+import { tags } from "../constant/constant";
+export const findTagColor = (tagValue) => {
+  for (const category in tags) {
+    const foundTag = tags[category].find((tag) => tag.value === tagValue);
+    if (foundTag) return foundTag.color;
+  }
+  return "#222222";
+};
+
+
+import useRoleProduction from "./Roles/ProductionRole";
+import useRoleMotion from "./Roles/MotionRoles";
+import useRoleDesign from "./Roles/DesignRoles";
+import useRoleDocs from "./Roles/DocsRoles";
+
 import crewImport from "./CrewImport";
 import { usePrivilege, useHasPermission } from "./Privilege";
+
+import useProductionPrice from "./Pricelist/useProductionPrice";
+import useDesignPrice from "./Pricelist/useDesignPrice";
+import useMotionPrice from "./Pricelist/useMotionPrice";
+import useDocumentationPrice from "./Pricelist/useDocumentationPrice";
 
 export {
   useRoleProduction,
@@ -13,4 +29,8 @@ export {
   useRoleDocs,
   usePrivilege,
   useHasPermission,
+  useProductionPrice,
+  useDesignPrice,
+  useMotionPrice,
+  useDocumentationPrice,
 };

@@ -4,12 +4,16 @@ import { NumericFormat } from "react-number-format";
 import { useToast } from '../components/micro-components/ToastContext';
 import { ErrorBoundary, PDFQuotation } from "../components";
 import { pdf } from '@react-pdf/renderer';
-import { useHasPermission } from '../hook';
+import { useHasPermission, useProductionPrice, useDesignPrice, useMotionPrice, useDocumentationPrice } from '../hook';
 
 const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const canAccessFinance = useHasPermission("finance");
+    const productionPrice = useProductionPrice();
+    const designPrice = useDesignPrice();
+    const motionPrice = useMotionPrice();
+    const documentationPrice = useDocumentationPrice();
     const [pro, setPro] = useState(initialPro || {});
     const [loading, setLoading] = useState(false);
     const [days, setDays] = useState([]);
@@ -55,7 +59,14 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                 setValidUntil(initialPro.quotation.validUntil || "");
                 setTaxRate(initialPro.quotation.taxRate || 11);
                 setNotes(initialPro.quotation.notes || "");
-                setItems(initialPro.quotation.items || []);
+                // Format items to ensure correct data types match model schema
+                const formattedItems = (initialPro.quotation.items || []).map(item => ({
+                    description: String(item.description || ""),
+                    unit: String(item.unit || "pcs"),
+                    qty: Number(item.qty) || 0,
+                    price: Number(item.price) || 0,
+                }));
+                setItems(formattedItems);
             }
 
             setPro(initialPro);
@@ -79,10 +90,82 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
         return days.reduce((acc, day) => acc + calculateTotalExpenses(day), 0);
     }, [days]);
 
+    // Check if any price list is loading
+    const isPriceListLoading = useMemo(() => {
+        const firstCategory = pro?.categories?.[0];
+        switch (firstCategory) {
+            case "Produksi":
+                return productionPrice.loading;
+            case "Design":
+                return designPrice.loading;
+            case "Motion":
+                return motionPrice.loading;
+            case "Dokumentasi":
+                return documentationPrice.loading;
+            default:
+                return productionPrice.loading || designPrice.loading || motionPrice.loading || documentationPrice.loading;
+        }
+    }, [pro?.categories, productionPrice.loading, designPrice.loading, motionPrice.loading, documentationPrice.loading]);
+
+    // Get price list based on first checked category
+    const selectedPriceList = useMemo(() => {
+        const firstCategory = pro?.categories?.[0];
+
+        // Map category to price list data
+        switch (firstCategory) {
+            case "Produksi":
+                return productionPrice.data || [];
+            case "Design":
+                return designPrice.data || [];
+            case "Motion":
+                return motionPrice.data || [];
+            case "Dokumentasi":
+                return documentationPrice.data || [];
+            default:
+                // If no category or unknown category, show all price lists combined
+                return [
+                    ...(productionPrice.data || []),
+                    ...(designPrice.data || []),
+                    ...(motionPrice.data || []),
+                    ...(documentationPrice.data || [])
+                ];
+        }
+    }, [pro?.categories, productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data]);
+
+    // Get all available services from all price lists (for fallback matching)
+    const allServices = useMemo(() => {
+        const services = new Map(); // Use Map to preserve original service name
+        productionPrice.data.forEach(x => {
+            if (x.service) services.set(x.service.trim(), x.service);
+        });
+        designPrice.data.forEach(x => {
+            if (x.service) services.set(x.service.trim(), x.service);
+        });
+        motionPrice.data.forEach(x => {
+            if (x.service) services.set(x.service.trim(), x.service);
+        });
+        documentationPrice.data.forEach(x => {
+            if (x.service) services.set(x.service.trim(), x.service);
+        });
+        // Also include any descriptions from existing items that might not be in the price lists yet
+        items.forEach(item => {
+            if (item.description && item.description.trim()) {
+                const trimmed = item.description.trim();
+                if (!services.has(trimmed)) {
+                    services.set(trimmed, item.description);
+                }
+            }
+        });
+        return Array.from(services.values());
+    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, items]);
+
     // Calculate totals from items
     const itemsSubtotal = useMemo(() => {
-        return items.reduce((acc, item) => acc + (parseFloat(item.price || 0) * parseInt(item.qty || 0)), 0);
-    }, [items]);
+        return items.reduce((acc, item) => {
+            const price = selectedPriceList.find((x) => x.service === item.description)?.price || 0;
+            return acc + (parseFloat(price) * parseInt(item.qty || 0));
+        }, 0);
+    }, [items, selectedPriceList]);
 
     const subtotal = itemsSubtotal || totalExpenses;
     const taxAmount = (subtotal * taxRate) / 100;
@@ -122,6 +205,14 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
 
         setLoading(true);
         try {
+            // Format items to match model schema: description (String), unit (String), qty (Number), price (Number)
+            const formattedItems = items.map(item => ({
+                description: String(item.description || ""),
+                unit: String(item.unit || "pcs"),
+                qty: Number(item.qty) || 0,
+                price: Number(item.price) || 0,
+            }));
+
             const updatedPro = {
                 ...pro,
                 quotation: {
@@ -130,7 +221,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                     validUntil,
                     taxRate,
                     notes,
-                    items,
+                    items: formattedItems,
                     subtotal,
                     taxAmount,
                     total,
@@ -157,6 +248,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                     quotationDate={quotationDate}
                     validUntil={validUntil}
                     items={items}
+                    selectedPriceList={selectedPriceList}
                     subtotal={subtotal}
                     taxRate={taxRate}
                     taxAmount={taxAmount}
@@ -183,8 +275,9 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
         }
     };
 
+
     return (
-        <main className="fixed top-0 left-0 z-40 bg-dark text-light w-full h-screen flex flex-col items-start">
+        <main className="fixed font-body top-0 left-0 z-40 bg-dark text-light w-full h-screen flex flex-col items-start">
             {/* Navbar */}
             <nav className="flex justify-between px-10 font-body text-sm tracking-wider items-center w-full h-20 border-b border-light">
                 <button
@@ -299,24 +392,33 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                 + Add Item
                             </button>
                         </div>
-
                         {items.length > 0 ? (
                             <div className="space-y-3">
                                 {items.map((item, index) => (
                                     <div key={index} className="flex items-center gap-2 border border-light/20 rounded-lg p-3">
-                                        <input
-                                            type="text"
+                                        <select
                                             value={item.description}
                                             onChange={(e) => handleItemChange(index, "description", e.target.value)}
-                                            placeholder="Item description"
-                                            className="flex-1 bg-transparent border border-light/30 rounded px-3 py-2 text-light text-sm"
-                                        />
+                                            className="flex-1  bg-dark text-light border border-light/30 rounded px-3 py-2 text-sm"
+                                        >
+                                            <option value="" className="bg-dark text-light">Select Service...</option>
+                                            {selectedPriceList.map((x) => (
+                                                <option key={x.id} value={x.service} className="bg-dark text-light">
+                                                    {x.service}
+                                                </option>
+                                            ))}
+                                            {/* Fallback option for saved items that might not be in the price list */}
+                                            {item.description && item.description.trim() && !selectedPriceList.some(x => x.service === item.description) && (
+                                                <option value={item.description} className="bg-dark text-light">
+                                                    {item.description} {item.price ? `| Rp. ${parseFloat(item.price).toLocaleString("id-ID")}` : ""}
+                                                </option>
+                                            )}
+                                        </select>
                                         <input
                                             type="text"
-                                            value={item.unit}
-                                            onChange={(e) => handleItemChange(index, "unit", e.target.value)}
-                                            placeholder="Unit"
-                                            className="w-20 bg-transparent border border-light/30 rounded px-2 py-2 text-light text-sm"
+                                            className="outline-none"
+                                            readOnly
+                                            value={isPriceListLoading ? "Loading..." : `Rp. ${parseFloat(selectedPriceList.find((x) => x.service === item.description)?.price || 0).toLocaleString("id-ID")}`}
                                         />
                                         <input
                                             type="number"
@@ -326,17 +428,26 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                             min="1"
                                             className="w-24 bg-transparent border border-light/30 rounded px-2 py-2 text-light text-sm"
                                         />
-                                        <NumericFormat
-                                            displayType="input"
-                                            thousandSeparator
-                                            prefix="Rp. "
-                                            value={item.price}
-                                            onValueChange={(values) => handleItemChange(index, "price", values.value)}
-                                            className="w-40 bg-transparent border border-light/30 rounded px-2 py-2 text-light text-sm"
-                                            placeholder="Price"
-                                        />
+                                        <select
+                                            value={item.unit || "pcs"}
+                                            className="w-20 bg-transparent border border-light/30 rounded px-2 py-2 text-light text-sm"
+                                            onChange={(e) => handleItemChange(index, "unit", e.target.value)} name="" id="">
+                                            <option className="bg-dark text-light" value={'pcs'}>pcs</option>
+                                            <option className="bg-dark text-light" value={'day'}>day</option>
+                                            <option className="bg-dark text-light" value={'qty'}>qty</option>
+                                            <option className="bg-dark text-light" value={'rate'}>rate</option>
+                                        </select>
                                         <div className="w-32 text-right text-light font-semibold">
-                                            {formatCurrency((item.qty || 0) * (item.price || 0))}
+                                            {isPriceListLoading ? (
+                                                <span className="flex items-center justify-end gap-1 text-light/60">
+                                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                </span>
+                                            ) : (
+                                                formatCurrency((item.qty || 0) * (selectedPriceList.find((x) => x.service === item.description)?.price || 0))
+                                            )}
                                         </div>
                                         <button
                                             type="button"
@@ -392,7 +503,18 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                             <div className="w-80 space-y-3">
                                 <div className="flex justify-between text-light/80">
                                     <span>Subtotal:</span>
-                                    <span>{formatCurrency(subtotal)}</span>
+                                    <span>
+                                        {isPriceListLoading ? (
+                                            <span className="flex items-center gap-1 text-light/60">
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </span>
+                                        ) : (
+                                            formatCurrency(subtotal)
+                                        )}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
@@ -408,11 +530,33 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                         />
                                         <span className="text-light/80">%</span>
                                     </div>
-                                    <span>{formatCurrency(taxAmount)}</span>
+                                    <span>
+                                        {isPriceListLoading ? (
+                                            <span className="flex items-center gap-1 text-light/60">
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </span>
+                                        ) : (
+                                            formatCurrency(taxAmount)
+                                        )}
+                                    </span>
                                 </div>
                                 <div className="border-t border-light/30 pt-3 flex justify-between text-xl font-bold text-light">
                                     <span>Total:</span>
-                                    <span>{formatCurrency(total)}</span>
+                                    <span>
+                                        {isPriceListLoading ? (
+                                            <span className="flex items-center gap-1 text-light/60">
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </span>
+                                        ) : (
+                                            formatCurrency(total)
+                                        )}
+                                    </span>
                                 </div>
                             </div>
                         </div>

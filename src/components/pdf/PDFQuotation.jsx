@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, items, subtotal, taxRate, taxAmount, total, notes }) => {
+const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, items, selectedPriceList = [], subtotal, taxRate, taxAmount, total, notes }) => {
   const formatCurrency = (num) => {
     if (!num || isNaN(num)) return "Rp. 0";
     return `Rp. ${parseFloat(num).toLocaleString("id-ID")}`;
@@ -207,15 +207,20 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
     }
   };
 
-  // Use items if provided, otherwise generate from days
+  // Use items if provided, calculate prices from selectedPriceList
   const quotationItems = items && items.length > 0
-    ? items.map(item => ({
-      description: item.description || "",
-      unit: item.unit || "pcs",
-      qty: parseInt(item.qty || 0),
-      price: parseFloat(item.price || 0),
-      total: (parseInt(item.qty || 0) * parseFloat(item.price || 0))
-    }))
+    ? items.map(item => {
+      // Get price from selectedPriceList, fallback to item.price if not found
+      const price = selectedPriceList.find((x) => x.service === item.description)?.price || parseFloat(item.price || 0);
+      const qty = parseInt(item.qty || 0);
+      return {
+        description: item.description || "",
+        unit: item.unit || "pcs",
+        qty: qty,
+        price: parseFloat(price),
+        total: qty * parseFloat(price)
+      };
+    })
     : [];
 
   return (
@@ -289,16 +294,16 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
             <View style={styles.table}>
               <View style={[styles.tableRow, styles.tableHeader]}>
                 <Text style={[styles.tableCellHeader, styles.descriptionCell]}>Description</Text>
-                <Text style={[styles.tableCellHeader, styles.unitCell]}>Unit</Text>
                 <Text style={[styles.tableCellHeader, styles.qtyCell]}>Qty</Text>
+                <Text style={[styles.tableCellHeader, styles.unitCell]}>Unit</Text>
                 <Text style={[styles.tableCellHeader, styles.priceCell]}>Unit Price</Text>
                 <Text style={[styles.tableCellHeader, styles.totalCell]}>Total</Text>
               </View>
               {quotationItems.map((item, index) => (
                 <View key={index} style={styles.tableRow}>
                   <Text style={[styles.tableCell, styles.descriptionCell]}>{item.description}</Text>
-                  <Text style={[styles.tableCell, styles.unitCell]}>{item.unit}</Text>
                   <Text style={[styles.tableCell, styles.qtyCell]}>{item.qty}</Text>
+                  <Text style={[styles.tableCell, styles.unitCell]}>{item.unit}</Text>
                   <Text style={[styles.tableCell, styles.priceCell]}>{formatCurrency(item.price)}</Text>
                   <Text style={[styles.tableCell, styles.totalCell]}>{formatCurrency(item.total)}</Text>
                 </View>

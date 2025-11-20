@@ -1,12 +1,7 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { Loader, ReadonlyModal, CreateModal, Tooltip } from "../components";
-import { findTagColor } from "../hook/utils";
+import { findTagColor } from "../hook/index";
 import { useNavigate } from "react-router-dom";
-import Kanban from "./Kanban";
-import Report from "./Report";
-import Bonus from "./Bonus";
-import Invoice from "./Invoice";
-import Quotation from "./Quotation";
 import { useHasPermission } from "../hook";
 
 const calculateOverallProgress = ({ project }) => {
