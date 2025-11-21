@@ -1,4 +1,3 @@
-import TableModal from "./modal/TableModal.jsx";
 import CreateModal from "./modal/CreateModal.jsx";
 import ReadonlyModal from "./modal/ReadonlyModal.jsx";
 import KanbanModal from "./modal/KanbanModal.jsx";
@@ -32,7 +31,6 @@ export {
   KanbanModal,
   FullscreenButton,
   ReadonlyModal,
-  TableModal,
   CreateModal,
   Loader,
   Background,
