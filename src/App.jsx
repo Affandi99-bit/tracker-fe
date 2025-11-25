@@ -6,6 +6,9 @@ import axios from "axios";
 import { usePrivilege } from "./hook";
 import { ToastProvider } from './components/micro-components/ToastContext';
 
+const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
+// const apiUrl = "http://localhost:5000/api/report"
+
 const ReadonlyWrapper = ({ data }) => {
   const { id } = useParams();
   const found = data.filter(d => d._id === id);
@@ -18,8 +21,7 @@ const KanbanWrapper = ({ data, updateData }) => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
-  // const apiUrl = "http://localhost:5000/api/report"
+
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -92,8 +94,7 @@ const ReportWrapper = ({ data, updateData }) => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = "https://tracker-be-omega.vercel.app/api/report"
-  // const apiUrl = "http://localhost:5000/api/report";
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -163,8 +164,6 @@ const BonusWrapper = ({ data, updateData }) => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
-  // const apiUrl = "http://localhost:5000/api/report";
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -235,8 +234,6 @@ const InvoiceWrapper = ({ data, updateData }) => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
-  // const apiUrl = "http://localhost:5000/api/report";
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -301,8 +298,6 @@ const QuotationWrapper = ({ data, updateData }) => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
-  // const apiUrl = "http://localhost:5000/api/report";
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -418,8 +413,7 @@ const MainApp = () => {
       }
     }
   }, []);
-  const apiUrl = "https://tracker-be-omega.vercel.app/api/report"
-  // const apiUrl = "http://localhost:5000/api/report"
+
   const fetchProjects = async () => {
     try {
       setIsLoading(true);
@@ -560,43 +554,35 @@ const MainApp = () => {
     <ToastProvider>
       <div>
         <Routes>
-          <Route
-            path="/readonly/:id"
-            element={<ReadonlyWrapper data={tableData} />}
-          />
+          <Route path="/readonly/:id" element={<ReadonlyWrapper data={tableData} />} />
           <Route path="/bonus/:id" element={<BonusWrapper data={tableData} updateData={updateData} />} />
           <Route path="/invoice/:id" element={<InvoiceWrapper data={tableData} updateData={updateData} />} />
           <Route path="/quotation/:id" element={<QuotationWrapper data={tableData} updateData={updateData} />} />
           <Route path="/kanban/:id" element={<KanbanWrapper data={tableData} updateData={updateData} />} />
           <Route path="/report/:id" element={<ReportWrapper data={tableData} updateData={updateData} />} />
-          <Route
-            path="/sop"
-            element={<SOP />}
-          />
-          <Route
-            path="/tv"
-            element={
-              <main className="bg-dark h-screen overflow-hidden">
-                <FullscreenButton />
-                <div className="fixed top-0 left-0 right-0 flex items-start justify-between w-full p-4">
-                  <img src='/PM.webp' alt="logo" className=" object-contain w-48" />
-                  <img src='/black.webp' alt="logo" className=" object-contain w-56 mr-10" />
-                </div>
+          <Route path="/sop" element={<SOP />} />
+          <Route path="/tv" element={
+            <main className="bg-dark h-screen overflow-hidden">
+              <FullscreenButton />
+              <div className="fixed top-0 left-0 right-0 flex items-start justify-between w-full p-4">
+                <img src='/PM.webp' alt="logo" className=" object-contain w-48" />
+                <img src='/black.webp' alt="logo" className=" object-contain w-56 mr-10" />
+              </div>
 
-                <div id="tv-scroll" className="bg-dark h-full overflow-y-scroll">
-                  <MainTable
-                    tableData={tableData}
-                    setSortedData={setSortedData}
-                    showHidden={[]}
-                    searchQuery=""
-                    selectedTags={[]}
-                    isSortedDesc={true}
-                    updateData={() => { }}
-                    deleteData={() => { }}
-                  />
-                </div>
-              </main>
-            }
+              <div id="tv-scroll" className="bg-dark h-full overflow-y-scroll">
+                <MainTable
+                  tableData={tableData}
+                  setSortedData={setSortedData}
+                  showHidden={[]}
+                  searchQuery=""
+                  selectedTags={[]}
+                  isSortedDesc={true}
+                  updateData={() => { }}
+                  deleteData={() => { }}
+                />
+              </div>
+            </main>
+          }
           />
           {!isLoggedIn ? (
             <Route path="*" element={<Login onLoginSuccess={handleLoginSuccess} />} />

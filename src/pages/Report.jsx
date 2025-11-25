@@ -659,7 +659,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
 
     const newDay = {
       id: `day-new-${Date.now()}-${Math.random()}`, // Stable unique ID
-      crew: (Array.isArray(days[0]?.crew) ? days[0].crew.map(c => ({
+      crew: (days.length > 0 && Array.isArray(days[0]?.crew) ? days[0].crew.map(c => ({
         name: c?.name || '',
         roles: Array.isArray(c?.roles) ? [...c.roles] : [], // Preserve roles when copying
         overtime: Array.isArray(c?.overtime) ? c.overtime.map(ot => ({ ...ot })) : []
@@ -1336,7 +1336,9 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                       showToast("Crew name already selected on this day", "error");
                                       return d;
                                     }
-                                    updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], name: selectedName };
+                                    if (crewIndex >= 0 && crewIndex < updatedCrew.length && updatedCrew[crewIndex]) {
+                                      updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], name: selectedName };
+                                    }
                                     return { ...d, crew: updatedCrew };
                                   }
                                   return d;
@@ -1383,9 +1385,11 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                       prevDays.map((d, idx) => {
                                         if (idx === dayIndex) {
                                           const updatedCrew = [...(d.crew || [])];
-                                          const currentRoles = Array.isArray(updatedCrew[crewIndex].roles) ? [...updatedCrew[crewIndex].roles] : [];
-                                          currentRoles[roleIdx] = selectedRole;
-                                          updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles: currentRoles };
+                                          if (crewIndex >= 0 && crewIndex < updatedCrew.length && updatedCrew[crewIndex]) {
+                                            const currentRoles = Array.isArray(updatedCrew[crewIndex].roles) ? [...updatedCrew[crewIndex].roles] : [];
+                                            currentRoles[roleIdx] = selectedRole;
+                                            updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles: currentRoles };
+                                          }
                                           return { ...d, crew: updatedCrew };
                                         }
                                         return d;
@@ -1410,9 +1414,11 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                       prevDays.map((d, idx) => {
                                         if (idx === dayIndex) {
                                           const updatedCrew = [...(d.crew || [])];
-                                          const currentRoles = Array.isArray(updatedCrew[crewIndex].roles) ? [...updatedCrew[crewIndex].roles] : [];
-                                          currentRoles.splice(roleIdx, 1);
-                                          updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles: currentRoles };
+                                          if (crewIndex >= 0 && crewIndex < updatedCrew.length && updatedCrew[crewIndex]) {
+                                            const currentRoles = Array.isArray(updatedCrew[crewIndex].roles) ? [...updatedCrew[crewIndex].roles] : [];
+                                            currentRoles.splice(roleIdx, 1);
+                                            updatedCrew[crewIndex] = { ...updatedCrew[crewIndex], roles: currentRoles };
+                                          }
                                           return { ...d, crew: updatedCrew };
                                         }
                                         return d;
@@ -1926,20 +1932,33 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                         if (!crewMap.has(crewKey)) {
                           crewMap.set(crewKey, {
                             name: crewMember.name,
-                            roles: crewMember.roles || [],
+                            roles: new Set(),
                             overtime: [],
                             dayTemplate: day.template
                           });
                         }
 
-                        // Merge overtime entries from this day with metadata
+                        // Merge roles from all days for this crew member
                         const existingCrew = crewMap.get(crewKey);
+                        const memberRoles = Array.isArray(crewMember.roles) ? crewMember.roles : [];
+                        memberRoles.forEach(role => {
+                          if (role && role.trim()) {
+                            existingCrew.roles.add(role.trim());
+                          }
+                        });
+
+                        // Merge overtime entries from this day with metadata
                         const overtimeEntries = Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0
                           ? crewMember.overtime.map((entry, otIdx) => ({ ...entry, _dayIndex: dayIndex, _crewIndex: crewIdx, _otIndex: otIdx }))
                           : [];
 
                         existingCrew.overtime.push(...overtimeEntries);
                       });
+                    });
+
+                    // Convert role Sets to Arrays for easier use
+                    crewMap.forEach((crewMember) => {
+                      crewMember.roles = Array.from(crewMember.roles).sort((a, b) => a.localeCompare(b));
                     });
 
                     // Render rows for each unique crew member
@@ -1969,21 +1988,26 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setDays(prevDays =>
-                                    prevDays.map((day) => {
-                                      return {
-                                        ...day,
-                                        crew: (day.crew || []).map((member) => {
-                                          if (member.name === crewMember.name) {
-                                            const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
-                                            currentOvertime.push({ job: '', date: day.date || '', hour: '' });
-                                            return { ...member, overtime: currentOvertime };
-                                          }
-                                          return member;
-                                        })
-                                      };
-                                    })
-                                  );
+                                  // Find the first day where this crew member appears
+                                  setDays(prevDays => {
+                                    let found = false;
+                                    return prevDays.map((day, dayIdx) => {
+                                      if (found) return day; // Already added, skip other days
+
+                                      const memberIndex = (day.crew || []).findIndex(m => m?.name === crewMember.name);
+                                      if (memberIndex !== -1) {
+                                        found = true; // Mark as found so we only add to first occurrence
+                                        const updatedCrew = [...(day.crew || [])];
+                                        const member = updatedCrew[memberIndex];
+                                        const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
+                                        // Add only one overtime entry
+                                        currentOvertime.push({ job: '', date: day.date || '', hour: '' });
+                                        updatedCrew[memberIndex] = { ...member, overtime: currentOvertime };
+                                        return { ...day, crew: updatedCrew };
+                                      }
+                                      return day;
+                                    });
+                                  });
                                 }}
                                 className="text-xs px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-light cursor-pointer"
                                 title="Add overtime entry"
@@ -2034,8 +2058,8 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                               className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs bg-transparent text-light"
                             >
                               <option className="bg-dark text-light" value="">Select Jobdesk</option>
-                              {availableRoles.length > 0 ? (
-                                availableRoles.map((roleName, idx) => (
+                              {crewMember.roles && crewMember.roles.length > 0 ? (
+                                crewMember.roles.map((roleName, idx) => (
                                   <option key={idx} value={roleName} className="text-light bg-dark">
                                     {roleName}
                                   </option>
@@ -2126,22 +2150,26 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    // Add overtime entry across all days for this crew member
-                                    setDays(prevDays =>
-                                      prevDays.map((day) => {
-                                        return {
-                                          ...day,
-                                          crew: (day.crew || []).map((member) => {
-                                            if (member.name === crewMember.name) {
-                                              const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
-                                              currentOvertime.push({ job: '', date: day.date || '', hour: '' });
-                                              return { ...member, overtime: currentOvertime };
-                                            }
-                                            return member;
-                                          })
-                                        };
-                                      })
-                                    );
+                                    // Find the first day where this crew member appears and add one entry
+                                    setDays(prevDays => {
+                                      let found = false;
+                                      return prevDays.map((day, dayIdx) => {
+                                        if (found) return day; // Already added, skip other days
+
+                                        const memberIndex = (day.crew || []).findIndex(m => m?.name === crewMember.name);
+                                        if (memberIndex !== -1) {
+                                          found = true; // Mark as found so we only add to first occurrence
+                                          const updatedCrew = [...(day.crew || [])];
+                                          const member = updatedCrew[memberIndex];
+                                          const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
+                                          // Add only one overtime entry
+                                          currentOvertime.push({ job: '', date: day.date || '', hour: '' });
+                                          updatedCrew[memberIndex] = { ...member, overtime: currentOvertime };
+                                          return { ...day, crew: updatedCrew };
+                                        }
+                                        return day;
+                                      });
+                                    });
                                   }}
                                   className="text-xs px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-light cursor-pointer"
                                   title="Add overtime entry"

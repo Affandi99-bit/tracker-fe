@@ -115,12 +115,40 @@ const DataTable = ({
               <td className="text-xs font-semibold text-light text-start pl-2">{row.client}</td>
               <td className="text-xs font-semibold text-light text-start pl-2">{row.pic}</td>
               <td className="text-xs font-semibold text-light text-start pl-2">
-                {Array.isArray(row.day) && row.day.length > 0 && Array.isArray(row.day[0].crew)
-                  ? row.day[0].crew
-                    .filter(member => member.roles && member.roles.includes("Project Manager"))
-                    .map(member => member.name)
-                    .join(", ")
-                  : ""}
+                {(() => {
+                  if (!Array.isArray(row.day) || row.day.length === 0) return "";
+
+                  // Aggregate crew from all days and then find PMs (same idea as Report/Readonly)
+                  const allCrew = row.day
+                    .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+
+                  const groupedByName = allCrew.reduce((acc, member) => {
+                    if (!member || !member.name) return acc;
+                    const key = member.name;
+                    const rolesArray = Array.isArray(member.roles)
+                      ? member.roles
+                      : (member.roles ? [member.roles] : []);
+                    const roles = rolesArray.filter(Boolean);
+
+                    if (!acc[key]) acc[key] = new Set();
+                    roles.forEach(r => acc[key].add(r));
+                    return acc;
+                  }, {});
+
+                  const pmNames = Object.entries(groupedByName)
+                    .filter(([, roleSet]) => {
+                      return Array.from(roleSet).some(r => {
+                        const roleStr = String(r || '').toLowerCase();
+                        if (roleStr === 'project manager') return true;
+                        if (roleStr === 'pm') return true;
+                        return roleStr.includes('project manager');
+                      });
+                    })
+                    .map(([name]) => name)
+                    .sort((a, b) => a.localeCompare(b));
+
+                  return pmNames.length > 0 ? pmNames.join(", ") : "";
+                })()}
               </td>
               <td className="text-xs font-bold text-start pl-2 text-[#269fc6]">
                 {new Date(row.deadline).toLocaleDateString("en-GB")}
