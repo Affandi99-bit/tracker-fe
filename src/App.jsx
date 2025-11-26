@@ -242,13 +242,15 @@ const InvoiceWrapper = ({ data, updateData }) => {
         setError(null);
         // First try to find in local data (for faster initial load)
         const found = data.find(d => d._id === id);
-        if (found && found.day) {
-          // If we have full data locally, use it
+        // For Invoice page, we need invoice data, so check if it exists
+        // The fetch/fetchArchived endpoints exclude invoice field for performance
+        if (found && found.day && found.invoice !== undefined) {
+          // If we have full data locally (including invoice), use it
           setProject(found);
           setLoading(false);
           return;
         }
-        // Otherwise fetch full project data from API
+        // Otherwise fetch full project data from API (which includes invoice)
         const response = await axios.get(`${apiUrl}/getproject/${id}`);
         setProject(response.data);
       } catch (err) {

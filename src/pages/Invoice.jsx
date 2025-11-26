@@ -265,13 +265,13 @@ const InvoiceComponent = ({ pro: initialPro, updateData }) => {
                     </section>
 
                     {/* Expense Summary */}
-                    <section className=" p-6 ">
+                    <section className=" p-6 flex flex-col gap-4">
                         {days.map((day, dayIndex) => {
                             const dayTotal = calculateTotalExpenses(day);
                             if (dayTotal === 0) return null;
                             return (
                                 <div key={day.id || dayIndex} className="border border-light/20 rounded-lg p-4">
-                                    <h2 className="text-xl font-semibold text-light mb-4 tracking-wider">Expense Summary</h2>
+                                    {/* <h2 className="text-xl font-semibold text-light mb-4 tracking-wider">Expense Summary</h2> */}
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-center mb-2">
                                             <h3 className="text-sm font-semibold text-light">

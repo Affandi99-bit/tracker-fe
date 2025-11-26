@@ -596,7 +596,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
             overtime: Array.isArray(c.overtime)
               ? c.overtime
               : (c.overtime && typeof c.overtime === 'object')
-                ? [{ job: c.overtime.job || '', date: c.overtime.date || '', hour: c.overtime.hour || 0 }]
+                ? [{ job: c.overtime.job || '', date: c.overtime.date || '', hour: c.overtime.hour || 0, note: c.overtime.note || '' }]
                 : []
           })),
           note: day.note || '',
@@ -945,7 +945,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
             overtime: Array.isArray(c.overtime)
               ? c.overtime
               : (c.overtime && typeof c.overtime === 'object')
-                ? [{ job: c.overtime.job || '', date: c.overtime.date || '', hour: c.overtime.hour || 0 }]
+                ? [{ job: c.overtime.job || '', date: c.overtime.date || '', hour: c.overtime.hour || 0, note: c.overtime.note || '' }]
                 : []
           })),
           note: d.note || '',
@@ -1914,6 +1914,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                     <th className="text-left py-2 px-3 text-light font-semibold text-sm">Jobdesk</th>
                     <th className="text-left py-2 px-3 text-light font-semibold text-sm">Date</th>
                     <th className="text-left py-2 px-3 text-light font-semibold text-sm">Overtime (hours)</th>
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Note</th>
                     <th className="text-left py-2 px-3 text-light font-semibold text-sm">Action</th>
                   </tr>
                 </thead>
@@ -1948,8 +1949,14 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                         });
 
                         // Merge overtime entries from this day with metadata
+                        // Only include entries that have at least some data (not completely empty)
                         const overtimeEntries = Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0
-                          ? crewMember.overtime.map((entry, otIdx) => ({ ...entry, _dayIndex: dayIndex, _crewIndex: crewIdx, _otIndex: otIdx }))
+                          ? crewMember.overtime
+                            .map((entry, otIdx) => ({ ...entry, _dayIndex: dayIndex, _crewIndex: crewIdx, _otIndex: otIdx }))
+                            .filter(entry => {
+                              // Only include entries that have at least one field filled
+                              return entry.job || entry.date || entry.hour || entry.note;
+                            })
                           : [];
 
                         existingCrew.overtime.push(...overtimeEntries);
@@ -1962,61 +1969,13 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                     });
 
                     // Render rows for each unique crew member
-                    // Only show actual overtime entries, not empty defaults
+                    // Only show actual overtime entries - no empty rows
                     return Array.from(crewMap.values()).flatMap((crewMember, crewIdx) => {
                       const overtimeEntries = crewMember.overtime;
 
-                      // If no overtime entries, show an empty row with just an Add button
+                      // Don't show empty rows - only show rows with actual overtime entries
                       if (overtimeEntries.length === 0) {
-                        return (
-                          <tr key={`${crewMember.name}-${crewIdx}-empty`} className="border-b border-light/20 hover:bg-light/5 transition-colors">
-                            <td className="py-2 px-3 text-light/80 text-xs">
-                              {crewMember.name || 'Unnamed'}
-                            </td>
-                            <td className="py-2 px-3">
-                              <select disabled className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs bg-transparent text-light opacity-50">
-                                <option>No overtime entries</option>
-                              </select>
-                            </td>
-                            <td className="py-2 px-3">
-                              <input type="date" disabled className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs text-light bg-transparent opacity-50" />
-                            </td>
-                            <td className="py-2 px-3">
-                              <input type="number" disabled className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs w-20 text-light opacity-50" />
-                            </td>
-                            <td className="py-2 px-3">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  // Find the first day where this crew member appears
-                                  setDays(prevDays => {
-                                    let found = false;
-                                    return prevDays.map((day, dayIdx) => {
-                                      if (found) return day; // Already added, skip other days
-
-                                      const memberIndex = (day.crew || []).findIndex(m => m?.name === crewMember.name);
-                                      if (memberIndex !== -1) {
-                                        found = true; // Mark as found so we only add to first occurrence
-                                        const updatedCrew = [...(day.crew || [])];
-                                        const member = updatedCrew[memberIndex];
-                                        const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
-                                        // Add only one overtime entry
-                                        currentOvertime.push({ job: '', date: day.date || '', hour: '' });
-                                        updatedCrew[memberIndex] = { ...member, overtime: currentOvertime };
-                                        return { ...day, crew: updatedCrew };
-                                      }
-                                      return day;
-                                    });
-                                  });
-                                }}
-                                className="text-xs px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-light cursor-pointer"
-                                title="Add overtime entry"
-                              >
-                                +
-                              </button>
-                            </td>
-                          </tr>
-                        );
+                        return null;
                       }
 
                       return overtimeEntries.map((overtimeEntry, overtimeIdx) => (
@@ -2042,8 +2001,10 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                             const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
                                             // Update the specific overtime entry
                                             currentOvertime[otIdx] = {
-                                              ...currentOvertime[otIdx],
-                                              job: e.target.value
+                                              job: e.target.value,
+                                              date: currentOvertime[otIdx]?.date || '',
+                                              hour: currentOvertime[otIdx]?.hour || '',
+                                              note: currentOvertime[otIdx]?.note || ''
                                             };
                                             return { ...member, overtime: currentOvertime };
                                           }
@@ -2088,8 +2049,10 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                             const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
                                             // Update the specific overtime entry
                                             currentOvertime[otIdx] = {
-                                              ...currentOvertime[otIdx],
-                                              date: e.target.value
+                                              job: currentOvertime[otIdx]?.job || '',
+                                              date: e.target.value,
+                                              hour: currentOvertime[otIdx]?.hour || '',
+                                              note: currentOvertime[otIdx]?.note || ''
                                             };
                                             return { ...member, overtime: currentOvertime };
                                           }
@@ -2128,7 +2091,8 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                             currentOvertime[otIdx] = {
                                               job: currentOvertime[otIdx]?.job || '',
                                               date: currentOvertime[otIdx]?.date || '',
-                                              hour: value
+                                              hour: value,
+                                              note: currentOvertime[otIdx]?.note || ''
                                             };
                                             return { ...member, overtime: currentOvertime };
                                           }
@@ -2141,6 +2105,45 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                 );
                               }}
                               className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs w-20 text-light"
+                            />
+                          </td>
+                          <td className="py-2 px-3">
+                            <input
+                              type="text"
+                              placeholder="Note"
+                              value={overtimeEntry.note || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                // Update specific overtime entry using tracked indices
+                                const dayIdx = overtimeEntry._dayIndex;
+                                const crewIdx = overtimeEntry._crewIndex;
+                                const otIdx = overtimeEntry._otIndex;
+                                setDays(prevDays =>
+                                  prevDays.map((day, idx) => {
+                                    if (idx === dayIdx) {
+                                      return {
+                                        ...day,
+                                        crew: (day.crew || []).map((member, mIdx) => {
+                                          if (mIdx === crewIdx) {
+                                            const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
+                                            // Update the specific overtime entry
+                                            currentOvertime[otIdx] = {
+                                              job: currentOvertime[otIdx]?.job || '',
+                                              date: currentOvertime[otIdx]?.date || '',
+                                              hour: currentOvertime[otIdx]?.hour || '',
+                                              note: value
+                                            };
+                                            return { ...member, overtime: currentOvertime };
+                                          }
+                                          return member;
+                                        })
+                                      };
+                                    }
+                                    return day;
+                                  })
+                                );
+                              }}
+                              className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs text-light bg-transparent w-32"
                             />
                           </td>
                           <td className="py-2 px-3">
@@ -2163,7 +2166,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                                           const member = updatedCrew[memberIndex];
                                           const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
                                           // Add only one overtime entry
-                                          currentOvertime.push({ job: '', date: day.date || '', hour: '' });
+                                          currentOvertime.push({ job: '', date: day.date || '', hour: '', note: '' });
                                           updatedCrew[memberIndex] = { ...member, overtime: currentOvertime };
                                           return { ...day, crew: updatedCrew };
                                         }
@@ -2227,6 +2230,97 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                 </div>
               )}
             </div>
+
+            {/* Add Overtime Entry Section */}
+            {(() => {
+              // Get all crew members who don't have any overtime entries yet
+              const crewMap = new Map();
+              days.forEach((day, dayIndex) => {
+                if (!day.crew || day.crew.length === 0) return;
+                day.crew.forEach((crewMember, crewIdx) => {
+                  if (!crewMember.name) return;
+                  const crewKey = `${crewMember.name}`;
+                  if (!crewMap.has(crewKey)) {
+                    crewMap.set(crewKey, {
+                      name: crewMember.name,
+                      dayIndex,
+                      crewIdx,
+                      hasOvertime: false
+                    });
+                  }
+                  // Check if this crew member has any overtime entries on this day
+                  const hasOvertime = Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0 &&
+                    crewMember.overtime.some(ot => ot.job || ot.date || ot.hour || ot.note);
+                  if (hasOvertime) {
+                    crewMap.get(crewKey).hasOvertime = true;
+                  }
+                });
+              });
+
+              const crewWithoutOvertime = Array.from(crewMap.values())
+                .filter(crew => !crew.hasOvertime)
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+              if (crewWithoutOvertime.length === 0) return null;
+
+              return (
+                <div className="mt-4 pt-4 border-t border-light/20">
+                  <p className="text-sm text-light/80 mb-2">Add Overtime Entry:</p>
+                  <div className="flex items-center gap-2">
+                    <select
+                      id="add-overtime-crew-select"
+                      className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs bg-transparent text-light"
+                      defaultValue=""
+                    >
+                      <option value="" className="bg-dark text-light">Select Crew Member</option>
+                      {crewWithoutOvertime.map((crew, idx) => (
+                        <option key={idx} value={crew.name} className="bg-dark text-light">
+                          {crew.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const select = document.getElementById('add-overtime-crew-select');
+                        const selectedName = select?.value;
+                        if (!selectedName) {
+                          showToast("Please select a crew member", "error");
+                          return;
+                        }
+
+                        const selectedCrew = crewWithoutOvertime.find(c => c.name === selectedName);
+                        if (!selectedCrew) return;
+
+                        setDays(prevDays => {
+                          return prevDays.map((day, dayIdx) => {
+                            if (dayIdx === selectedCrew.dayIndex) {
+                              const updatedCrew = [...(day.crew || [])];
+                              const memberIndex = updatedCrew.findIndex(m => m?.name === selectedCrew.name);
+                              if (memberIndex !== -1) {
+                                const member = updatedCrew[memberIndex];
+                                const currentOvertime = Array.isArray(member.overtime) ? [...member.overtime] : [];
+                                currentOvertime.push({ job: '', date: day.date || '', hour: '', note: '' });
+                                updatedCrew[memberIndex] = { ...member, overtime: currentOvertime };
+                                return { ...day, crew: updatedCrew };
+                              }
+                            }
+                            return day;
+                          });
+                        });
+
+                        // Reset select
+                        if (select) select.value = '';
+                        showToast("Overtime entry added", "success");
+                      }}
+                      className="text-xs px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-light cursor-pointer"
+                    >
+                      Add Entry
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
           </section>
         </form>
       </main>

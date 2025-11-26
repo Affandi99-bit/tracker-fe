@@ -429,35 +429,6 @@ const PDFDocument = ({ pro, days }) => {
                   </View>
                 );
               })()}
-
-              {/* Overtime Section */}
-              {Array.isArray(day.crew) && day.crew.some(c => Array.isArray(c.overtime) && c.overtime.length > 0) && (
-                <View style={styles.expenseSection}>
-                  <Text style={styles.expenseTitle}>Overtime Hours</Text>
-                  <View style={styles.table}>
-                    <View style={[styles.tableRow, styles.tableHeader]}>
-                      <Text style={styles.tableCellHeader}>Name</Text>
-                      <Text style={styles.tableCellHeader}>Jobdesk</Text>
-                      <Text style={styles.tableCellHeader}>Date</Text>
-                      <Text style={styles.tableCellHeader}>Overtime (Hours)</Text>
-                    </View>
-                    {day.crew
-                      .filter(member => Array.isArray(member.overtime) && member.overtime.length > 0)
-                      .flatMap((member, memberIndex) =>
-                        member.overtime
-                          .map((ot, otIndex) => (
-                            <View key={`${memberIndex}-${otIndex}`} style={styles.tableRow}>
-                              <Text style={styles.tableCell}>{member.name || '-'}</Text>
-                              <Text style={styles.tableCell}>{ot.job || '-'}</Text>
-                              <Text style={styles.tableCell}>{ot.date ? formatDate(ot.date) : '-'}</Text>
-                              <Text style={styles.tableCell}>{(ot.hour === undefined || ot.hour === null || ot.hour === '') ? '-' : String(ot.hour)}</Text>
-                            </View>
-                          ))
-                      )}
-
-                  </View>
-                </View>
-              )}
               {/* Rent Expenses */}
               {day.expense.rent && day.expense.rent.length > 0 && (
                 <View style={styles.expenseSection}>
@@ -570,6 +541,58 @@ const PDFDocument = ({ pro, days }) => {
             </View>
           ))}
         </View>
+        {/* Overtime Section */}
+        {(() => {
+          // Collect all overtime entries from all days
+          const overtimeEntries = [];
+          (Array.isArray(days) ? days : []).forEach((day, dayIndex) => {
+            if (!day.crew || !Array.isArray(day.crew)) return;
+            day.crew.forEach((crewMember, crewIdx) => {
+              if (!crewMember.name) return;
+              if (Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0) {
+                crewMember.overtime.forEach((ot, otIdx) => {
+                  // Only include entries that have at least one field filled
+                  if (ot.job || ot.date || ot.hour || ot.note) {
+                    overtimeEntries.push({
+                      name: crewMember.name,
+                      job: ot.job || '',
+                      date: ot.date || '',
+                      hour: ot.hour || '',
+                      note: ot.note || '',
+                      key: `${dayIndex}-${crewIdx}-${otIdx}`
+                    });
+                  }
+                });
+              }
+            });
+          });
+
+          if (overtimeEntries.length === 0) return null;
+
+          return (
+            <View style={styles.expenseSection}>
+              <Text style={styles.expenseTitle}>Overtime Hours</Text>
+              <View style={styles.table}>
+                <View style={[styles.tableRow, styles.tableHeader]}>
+                  <Text style={styles.tableCellHeader}>Name</Text>
+                  <Text style={styles.tableCellHeader}>Jobdesk</Text>
+                  <Text style={styles.tableCellHeader}>Date</Text>
+                  <Text style={styles.tableCellHeader}>Overtime (Hours)</Text>
+                  <Text style={styles.tableCellHeader}>Note</Text>
+                </View>
+                {overtimeEntries.map((entry) => (
+                  <View key={entry.key} style={styles.tableRow}>
+                    <Text style={styles.tableCell}>{entry.name || '-'}</Text>
+                    <Text style={styles.tableCell}>{entry.job || '-'}</Text>
+                    <Text style={styles.tableCell}>{entry.date ? formatDate(entry.date) : '-'}</Text>
+                    <Text style={styles.tableCell}>{(entry.hour === undefined || entry.hour === null || entry.hour === '') ? '-' : String(entry.hour)}</Text>
+                    <Text style={styles.tableCell}>{entry.note || '-'}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          );
+        })()}
 
         {/* Project Summary */}
         {(projectTotal > 0) && (
