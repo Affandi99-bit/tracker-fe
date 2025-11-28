@@ -28,8 +28,8 @@ const styles = StyleSheet.create({
     gap: 15,
     width: '100%',
     borderBottom: '1px solid #222',
-    marginBottom: 20,
-    paddingBottom: 8,
+    marginBottom: 25,
+    paddingBottom: 12,
   },
   header: {
     display: "flex",
@@ -60,30 +60,31 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: 'center',
-    justifyContent: '',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   infotitle: {
-    width: '50%',
-    marginBottom: 3,
+    width: '40%',
     fontSize: 8,
     textAlign: 'left',
     color: '#000',
+    fontWeight: 'bold',
   },
   infodata: {
-    width: '50%',
+    width: '60%',
     fontSize: 7,
     textAlign: 'left',
     color: '#666',
   },
   section: {
-    marginBottom: 13,
+    marginBottom: 20,
   },
   sectionTitle: {
     color: '#222',
     fontSize: 10,
     fontWeight: 'bold',
-    marginBottom: 6,
-    paddingBottom: 2,
+    marginBottom: 10,
+    paddingBottom: 4,
   },
   table: {
     display: 'table',
@@ -91,13 +92,13 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderWidth: 1,
     borderColor: '#222',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   tableRow: {
     flexDirection: 'row',
     borderBottomWidth: .3,
     borderBottomColor: '#222',
-    minHeight: 25,
+    minHeight: 28,
     alignItems: 'center',
   },
   tableHeader: {
@@ -106,18 +107,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   tableCell: {
-    padding: 3,
+    padding: 4,
     flex: 1,
   },
   tableCellHeader: {
-    padding: 3,
+    padding: 4,
     flex: 1,
     color: '#fff',
   },
   dayHeader: {
-    padding: 5,
-    marginBottom: 8,
+    padding: 8,
+    marginBottom: 15,
     border: '1px solid #222',
+    pageBreakInside: 'avoid',
   },
   dayTitle: {
     color: '#222',
@@ -130,29 +132,31 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   expenseSection: {
-    marginBottom: 5,
+    marginBottom: 12,
   },
   expenseTitle: {
     color: '#222',
-    fontSize: 6,
+    fontSize: 7,
     fontWeight: 'bold',
-    marginBottom: 3,
+    marginBottom: 6,
   },
   noteBox: {
-    padding: 5,
+    padding: 8,
     border: '1px solid #ddd',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   dayTotal: {
     textAlign: 'right',
     fontWeight: 'bold',
-    marginTop: 3,
-    paddingTop: 3,
+    marginTop: 8,
+    paddingTop: 6,
+    fontSize: 9,
   },
   projectSummary: {
     border: '1px solid #222',
-    padding: 8,
-    marginTop: 10,
+    padding: 12,
+    marginTop: 15,
+    marginBottom: 20,
   },
   summaryTitle: {
     color: '#222',
@@ -167,15 +171,15 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   footer: {
-    marginTop: 15,
-    paddingTop: 8,
+    marginTop: 25,
+    paddingTop: 12,
     borderTop: '1px solid #222',
     textAlign: 'center',
     color: '#222',
     fontSize: 7,
   },
   backupItem: {
-    marginBottom: 3,
+    marginBottom: 5,
     color: '#222',
     fontSize: 7,
   },
@@ -193,7 +197,8 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
   },
   dayImagesContainer: {
-    marginBottom: 15,
+    marginBottom: 20,
+    pageBreakInside: 'avoid',
   },
   dayImagesTitle: {
     color: '#222',
@@ -206,22 +211,22 @@ const styles = StyleSheet.create({
   imagesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8, // Increased gap for better spacing
-    marginBottom: 15,
+    gap: 10,
+    marginBottom: 12,
     justifyContent: 'flex-start',
     width: '100%',
   },
 
   imageContainer: {
-    width: 120, // Increased from 80
-    height: 120, // Increased from 80
+    width: 120,
+    height: 120,
     border: '1px solid #ccc',
     borderRadius: 3,
     overflow: 'hidden',
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
 
   imageCaption: {
@@ -262,11 +267,12 @@ const PDFDocument = ({ pro, days }) => {
   };
 
   const calculateDayTotal = (day) => {
-    const rentTotal = day.expense.rent.reduce((acc, item) =>
-      acc + (parseFloat(item.price || 0) * parseInt(item.qty || 0)), 0
+    if (!day || !day.expense) return 0;
+    const rentTotal = (Array.isArray(day.expense.rent) ? day.expense.rent : []).reduce((acc, item) =>
+      acc + (parseFloat(item?.price || 0) * parseInt(item?.qty || 0)), 0
     );
-    const operationalTotal = day.expense.operational.reduce((acc, item) =>
-      acc + (parseFloat(item.price || 0) * parseInt(item.qty || 0)), 0
+    const operationalTotal = (Array.isArray(day.expense.operational) ? day.expense.operational : []).reduce((acc, item) =>
+      acc + (parseFloat(item?.price || 0) * parseInt(item?.qty || 0)), 0
     );
     return rentTotal + operationalTotal;
   };
@@ -286,10 +292,7 @@ const PDFDocument = ({ pro, days }) => {
     .map(([name, roleSet]) => ({ name, roles: Array.from(roleSet) }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const projectTotal = days.reduce((acc, day) => acc + calculateDayTotal(day), 0);
-
-  // Check if there are any images in the project
-  const hasAnyImages = days.some(day => Array.isArray(day.images) && day.images.length > 0);
+  const projectTotal = (Array.isArray(days) ? days : []).reduce((acc, day) => acc + calculateDayTotal(day), 0);
 
   return (
     <Document>
@@ -392,10 +395,95 @@ const PDFDocument = ({ pro, days }) => {
           </View>
         )}
 
+
+        {/* Overtime Section */}
+        {(() => {
+          // Collect all overtime entries from all days
+          const overtimeEntries = [];
+          (Array.isArray(days) ? days : []).forEach((day, dayIndex) => {
+            if (!day.crew || !Array.isArray(day.crew)) return;
+            day.crew.forEach((crewMember, crewIdx) => {
+              if (!crewMember.name) return;
+              if (Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0) {
+                crewMember.overtime.forEach((ot, otIdx) => {
+                  // Only include entries that have at least one field filled
+                  if (ot.job || ot.date || ot.hour || ot.note) {
+                    overtimeEntries.push({
+                      name: crewMember.name,
+                      job: ot.job || '',
+                      date: ot.date || '',
+                      hour: ot.hour || '',
+                      note: ot.note || '',
+                      key: `${dayIndex}-${crewIdx}-${otIdx}`
+                    });
+                  }
+                });
+              }
+            });
+          });
+
+          if (overtimeEntries.length === 0) return null;
+
+          return (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Overtime Hours</Text>
+              <View style={styles.table}>
+                <View style={[styles.tableRow, styles.tableHeader]}>
+                  <Text style={styles.tableCellHeader}>Name</Text>
+                  <Text style={styles.tableCellHeader}>Jobdesk</Text>
+                  <Text style={styles.tableCellHeader}>Date</Text>
+                  <Text style={styles.tableCellHeader}>Overtime (Hours)</Text>
+                  <Text style={styles.tableCellHeader}>Note</Text>
+                </View>
+                {overtimeEntries.map((entry) => (
+                  <View key={entry.key} style={styles.tableRow}>
+                    <Text style={styles.tableCell}>{entry.name || '-'}</Text>
+                    <Text style={styles.tableCell}>{entry.job || '-'}</Text>
+                    <Text style={styles.tableCell}>{entry.date ? formatDate(entry.date) : '-'}</Text>
+                    <Text style={styles.tableCell}>{(entry.hour === undefined || entry.hour === null || entry.hour === '') ? '-' : String(entry.hour)}</Text>
+                    <Text style={styles.tableCell}>{entry.note || '-'}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          );
+        })()}
+
+        {/* Project Summary */}
+        {(projectTotal > 0) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Project Summary</Text>
+
+            {/* Daily Expenses Summary */}
+            {(Array.isArray(days) ? days : []).some(day => calculateDayTotal(day) > 0) && (
+              <View style={{ marginBottom: 15 }}>
+                {(Array.isArray(days) ? days : []).map((day, dayIndex) => {
+                  const dayTotal = calculateDayTotal(day);
+                  if (dayTotal <= 0) return null;
+                  return (
+                    <View key={dayIndex} style={styles.infocontainer}>
+                      <Text style={styles.infotitle}>{getDayLabel(day, dayIndex, days.length)}</Text>
+                      <Text style={[styles.summaryRow, { opacity: .8 }]}>{formatCurrency(dayTotal)}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+
+            {/* Total Project Expenses */}
+            {projectTotal > 0 && (
+              <View style={styles.infocontainer}>
+                <Text style={styles.summaryTitle}>Total Project Expenses</Text>
+                <Text style={[styles.summaryRow, { fontWeight: 'bold' }]}>{formatCurrency(projectTotal)}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Daily Expenses */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Daily Breakdown</Text>
-          {days.map((day, dayIndex) => (
+          {(Array.isArray(days) ? days : []).map((day, dayIndex) => (
             <View key={dayIndex} style={styles.dayHeader}>
               <Text style={styles.dayTitle}>
                 {getDayLabel(day, dayIndex, days.length)}{day.date ? ` - ${formatDate(day.date)}` : ""}
@@ -430,7 +518,7 @@ const PDFDocument = ({ pro, days }) => {
                 );
               })()}
               {/* Rent Expenses */}
-              {day.expense.rent && day.expense.rent.length > 0 && (
+              {day?.expense?.rent && Array.isArray(day.expense.rent) && day.expense.rent.length > 0 && (
                 <View style={styles.expenseSection}>
                   <Text style={styles.expenseTitle}>Rent Expenses</Text>
                   <View style={styles.table}>
@@ -455,7 +543,7 @@ const PDFDocument = ({ pro, days }) => {
               )}
 
               {/* Operational Expenses */}
-              {day.expense.operational && day.expense.operational.length > 0 && (
+              {day?.expense?.operational && Array.isArray(day.expense.operational) && day.expense.operational.length > 0 && (
                 <View style={styles.expenseSection}>
                   <Text style={styles.expenseTitle}>Operational Expenses</Text>
                   <View style={styles.table}>
@@ -482,7 +570,7 @@ const PDFDocument = ({ pro, days }) => {
               )}
 
               {/* Shoplist */}
-              {day.expense.orderlist && day.expense.orderlist.length > 0 && (
+              {day?.expense?.orderlist && Array.isArray(day.expense.orderlist) && day.expense.orderlist.length > 0 && (
                 <View style={styles.expenseSection}>
                   <Text style={styles.expenseTitle}>Shoplist</Text>
                   <View style={styles.table}>
@@ -511,7 +599,7 @@ const PDFDocument = ({ pro, days }) => {
               )}
 
               {/* Backup Information */}
-              {day.backup && day.backup.length > 0 && (
+              {day?.backup && Array.isArray(day.backup) && day.backup.length > 0 && (
                 <View style={styles.expenseSection}>
                   <Text style={styles.expenseTitle}>Backup Operations</Text>
                   {day.backup.map((backup, idx) => (
@@ -523,7 +611,7 @@ const PDFDocument = ({ pro, days }) => {
               )}
 
               {/* Day Note */}
-              {day.note && (
+              {day?.note && (
                 <View style={styles.expenseSection}>
                   <Text style={styles.expenseTitle}>Day Note</Text>
                   <View style={styles.noteBox}>
@@ -532,95 +620,10 @@ const PDFDocument = ({ pro, days }) => {
                 </View>
               )}
 
-              {/* Day Total */}
-              {calculateDayTotal(day) > 0 && (
-                <Text style={styles.dayTotal}>
-                  {getDayLabel(day)} Total: {formatCurrency(calculateDayTotal(day))}
-                </Text>
-              )}
-            </View>
-          ))}
-        </View>
-        {/* Overtime Section */}
-        {(() => {
-          // Collect all overtime entries from all days
-          const overtimeEntries = [];
-          (Array.isArray(days) ? days : []).forEach((day, dayIndex) => {
-            if (!day.crew || !Array.isArray(day.crew)) return;
-            day.crew.forEach((crewMember, crewIdx) => {
-              if (!crewMember.name) return;
-              if (Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0) {
-                crewMember.overtime.forEach((ot, otIdx) => {
-                  // Only include entries that have at least one field filled
-                  if (ot.job || ot.date || ot.hour || ot.note) {
-                    overtimeEntries.push({
-                      name: crewMember.name,
-                      job: ot.job || '',
-                      date: ot.date || '',
-                      hour: ot.hour || '',
-                      note: ot.note || '',
-                      key: `${dayIndex}-${crewIdx}-${otIdx}`
-                    });
-                  }
-                });
-              }
-            });
-          });
-
-          if (overtimeEntries.length === 0) return null;
-
-          return (
-            <View style={styles.expenseSection}>
-              <Text style={styles.expenseTitle}>Overtime Hours</Text>
-              <View style={styles.table}>
-                <View style={[styles.tableRow, styles.tableHeader]}>
-                  <Text style={styles.tableCellHeader}>Name</Text>
-                  <Text style={styles.tableCellHeader}>Jobdesk</Text>
-                  <Text style={styles.tableCellHeader}>Date</Text>
-                  <Text style={styles.tableCellHeader}>Overtime (Hours)</Text>
-                  <Text style={styles.tableCellHeader}>Note</Text>
-                </View>
-                {overtimeEntries.map((entry) => (
-                  <View key={entry.key} style={styles.tableRow}>
-                    <Text style={styles.tableCell}>{entry.name || '-'}</Text>
-                    <Text style={styles.tableCell}>{entry.job || '-'}</Text>
-                    <Text style={styles.tableCell}>{entry.date ? formatDate(entry.date) : '-'}</Text>
-                    <Text style={styles.tableCell}>{(entry.hour === undefined || entry.hour === null || entry.hour === '') ? '-' : String(entry.hour)}</Text>
-                    <Text style={styles.tableCell}>{entry.note || '-'}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          );
-        })()}
-
-        {/* Project Summary */}
-        {(projectTotal > 0) && (
-          <View style={styles.projectSummary}>
-            <Text style={styles.summaryTitle}>Project Summary</Text>
-            {projectTotal > 0 && (
-              <View style={styles.summaryRow}>
-                <Text>Total Project Expenses:</Text>
-                <Text style={{ fontWeight: 'bold' }}>{formatCurrency(projectTotal)}</Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Images Documentation */}
-        {hasAnyImages && (
-          <View style={styles.imagesSection}>
-            <Text style={styles.imagesSectionTitle}>Project Documentation Images</Text>
-
-            {days.map((day, dayIndex) => {
-              if (!Array.isArray(day.images) || day.images.length === 0) return null;
-
-              return (
-                <View key={dayIndex} style={styles.dayImagesContainer}>
-                  <Text style={styles.dayImagesTitle}>
-                    {getDayLabel(day)}{day.date ? ` - ${formatDate(day.date)}` : ""}
-                  </Text>
-
+              {/* Images Documentation - Per Day */}
+              {Array.isArray(day?.images) && day.images.length > 0 && (
+                <View style={styles.expenseSection}>
+                  <Text style={styles.expenseTitle}>Documentation Images</Text>
                   <View style={styles.imagesGrid}>
                     {day.images.map((imageSrc, imgIndex) => (
                       <View key={imgIndex} style={styles.imageContainer}>
@@ -636,15 +639,23 @@ const PDFDocument = ({ pro, days }) => {
                       </View>
                     ))}
                   </View>
-
                   <Text style={styles.imageCaption}>
                     {day.images.length} image{day.images.length !== 1 ? 's' : ''} from {getDayLabel(day, dayIndex, days.length)}
                   </Text>
                 </View>
-              );
-            })}
-          </View>
-        )}
+              )}
+
+              {/* Day Total */}
+              {calculateDayTotal(day) > 0 && (
+                <Text style={styles.dayTotal}>
+                  {getDayLabel(day, dayIndex, days.length)} Total: {formatCurrency(calculateDayTotal(day))}
+                </Text>
+              )}
+            </View>
+          ))}
+        </View>
+
+
 
         {/* Footer */}
         <View style={styles.footer}>
