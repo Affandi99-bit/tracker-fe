@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFDocument = ({ pro, days }) => {
+const PDFDocument = ({ pro, days, freelancers = [] }) => {
   // Helper functions
   const formatCurrency = (num) => {
     if (!num || isNaN(num)) return "Rp. 0";
@@ -395,6 +395,34 @@ const PDFDocument = ({ pro, days }) => {
           </View>
         )}
 
+        {/* Freelancers Section */}
+        {Array.isArray(freelancers) && freelancers.length > 0 && (() => {
+          const totalFreelancerPrice = freelancers.reduce((sum, f) => sum + (parseFloat(f.price) || 0), 0);
+          return (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Freelancers</Text>
+              <View style={styles.table}>
+                <View style={[styles.tableRow, styles.tableHeader]}>
+                  <Text style={styles.tableCellHeader}>Name</Text>
+                  <Text style={styles.tableCellHeader}>Type</Text>
+                  <Text style={styles.tableCellHeader}>Price</Text>
+                </View>
+                {freelancers.map((freelancer, index) => (
+                  <View key={index} style={styles.tableRow}>
+                    <Text style={styles.tableCell}>{freelancer.name || "-"}</Text>
+                    <Text style={styles.tableCell}>{freelancer.type || "-"}</Text>
+                    <Text style={styles.tableCell}>{formatCurrency(freelancer.price || 0)}</Text>
+                  </View>
+                ))}
+                <View style={[styles.tableRow, { backgroundColor: '#f0f0f0' }]}>
+                  <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>Total</Text>
+                  <Text style={styles.tableCell}></Text>
+                  <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>{formatCurrency(totalFreelancerPrice)}</Text>
+                </View>
+              </View>
+            </View>
+          );
+        })()}
 
         {/* Overtime Section */}
         {(() => {

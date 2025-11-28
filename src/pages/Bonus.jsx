@@ -106,8 +106,13 @@ const Bonus = ({ pro: initialPro, updateData }) => {
         return getProjectTier(budget, projectType);
     }, [pro?.budget, projectType]);
 
-    // Group crew across all days with overtime data
+    // Group crew across all days with overtime data (exclude freelancers)
     const crewWithOvertime = useMemo(() => {
+        const freelancerNamesSet = new Set(
+            (Array.isArray(pro?.freelancers) ? pro.freelancers : [])
+                .map(f => String(f.name).trim().toLowerCase())
+                .filter(Boolean)
+        );
         const crewMap = new Map();
 
         days.forEach((day) => {
@@ -115,6 +120,10 @@ const Bonus = ({ pro: initialPro, updateData }) => {
 
             day.crew.forEach((crewMember) => {
                 if (!crewMember.name) return;
+
+                // Skip freelancers
+                const memberNameKey = String(crewMember.name).trim().toLowerCase();
+                if (freelancerNamesSet.has(memberNameKey)) return;
 
                 const crewKey = crewMember.name;
                 if (!crewMap.has(crewKey)) {
@@ -151,7 +160,13 @@ const Bonus = ({ pro: initialPro, updateData }) => {
             roles: Array.from(crew.roles),
             overtime: crew.overtime
         })).sort((a, b) => a.name.localeCompare(b.name));
-    }, [days]);
+    }, [days, pro?.freelancers]);
+
+    // Calculate total freelancer price
+    const totalFreelancerPrice = useMemo(() => {
+        const freelancers = Array.isArray(pro?.freelancers) ? pro.freelancers : [];
+        return freelancers.reduce((sum, f) => sum + (parseFloat(f.price) || 0), 0);
+    }, [pro?.freelancers]);
 
     // Calculate gross profit
     const grossProfit = useMemo(() => {
@@ -461,6 +476,7 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                     grossProfit={grossProfit}
                     netProfit={netProfit}
                     totalExpenses={totalExpenses}
+                    totalFreelancerPrice={totalFreelancerPrice}
                     projectTier={projectTier}
                     crucialNotes={crucialNotes}
                 />
@@ -624,15 +640,9 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                                     thousandSeparator
                                     prefix="Rp. "
                                     placeholder="Freelance"
-                                    value={pro?.freelance || pro?.bonus?.freelance || ''}
-                                    className="glass border text-xs border-light/50 font-light rounded-xl p-2 font-body tracking-widest outline-none mb-1 lg:mb-0"
-                                    onValueChange={(values) => {
-                                        setPro(prev => ({
-                                            ...prev,
-                                            freelance: values.value,
-                                            bonus: { ...prev.bonus, freelance: values.value }
-                                        }));
-                                    }}
+                                    value={totalFreelancerPrice || ''}
+                                    readOnly
+                                    className="glass border text-xs border-light/50 font-light rounded-xl p-2 font-body tracking-widest outline-none mb-1 lg:mb-0 bg-dark/50"
                                 />
                             </label>
                         </div>
@@ -736,8 +746,8 @@ const Bonus = ({ pro: initialPro, updateData }) => {
                             <span className="text-light text-xs tracking-wider">{formatCurrency(totalExpenses)}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-light/80 text-sm">Freelance:</span>
-                            <span className="text-light text-xs tracking-wider">{formatCurrency(pro?.freelance || pro?.bonus?.freelance || 0)}</span>
+                            <span className="text-light/80 text-sm">Total Freelancers:</span>
+                            <span className="text-light text-xs tracking-wider">{formatCurrency(totalFreelancerPrice)}</span>
                         </div>
                     </div>
                     <div className="space-y-2 border-b border-light/50 p-2">

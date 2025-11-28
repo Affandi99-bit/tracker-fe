@@ -371,6 +371,17 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
         const allCrew = (Array.isArray(project.day) ? project.day : [])
             .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
 
+        // Add freelancers to crew list
+        const freelancers = Array.isArray(project.freelancers) ? project.freelancers : [];
+        freelancers.forEach(f => {
+            if (f && f.name) {
+                allCrew.push({
+                    name: f.name,
+                    roles: []
+                });
+            }
+        });
+
         // Group crew by name and merge roles across all days
         const groupedByName = allCrew.reduce((acc, member) => {
             if (!member || !member.name) return acc;
@@ -477,6 +488,17 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                                                 const allCrew = (Array.isArray(project.day) ? project.day : [])
                                                     .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
 
+                                                // Add freelancers to crew list
+                                                const freelancers = Array.isArray(project.freelancers) ? project.freelancers : [];
+                                                freelancers.forEach(f => {
+                                                    if (f && f.name) {
+                                                        allCrew.push({
+                                                            name: f.name,
+                                                            roles: []
+                                                        });
+                                                    }
+                                                });
+
                                                 // Group crew by name and merge roles across all days
                                                 const groupedByName = allCrew.reduce((acc, member) => {
                                                     if (!member || !member.name) return acc;
@@ -496,7 +518,7 @@ const Kanban = ({ updateData, setKanban, project, onProjectUpdate }) => {
                                                         <div className="flex flex-col gap-1">
                                                             <p className='text-xs font-medium'>Crew Produksi</p>
                                                             {mergedCrew.map((c, idx) => (
-                                                                <p key={idx} className='text-xs text-gray-400'>{c.name}  ·  {c.roles.join(', ')}</p>
+                                                                <p key={idx} className='text-xs text-gray-400'>{c.name}  ·  {c.roles.join(', ') || 'Freelancer'}</p>
                                                             ))}
                                                         </div>
                                                     );

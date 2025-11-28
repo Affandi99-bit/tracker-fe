@@ -36,6 +36,7 @@ const CreateModal = ({
     note: "",
     categories: [],
     type: [],
+    freelancers: [],
     day: [
       {
         crew: [],
@@ -96,12 +97,24 @@ const CreateModal = ({
         overtime: member.overtime
       }));
 
+      // Add freelancers to crew list with customKey
+      const freelancers = Array.isArray(initialData.freelancers) ? initialData.freelancers : [];
+      const freelancerCrew = freelancers.map((freelancer, idx) => ({
+        name: freelancer.name || '',
+        roles: [''],
+        overtime: [],
+        customKey: `custom-freelancer-${idx}-${Date.now()}`
+      }));
+
+      // Combine regular crew and freelancers
+      const allCrewForDay0 = [...aggregatedCrew, ...freelancerCrew];
+
       // Format all days - use aggregated crew for day[0], preserve others
       const formattedDays = initialData.day?.length
         ? initialData.day.map((d, index) => ({
           ...d,
           crew: index === 0
-            ? aggregatedCrew
+            ? allCrewForDay0
             : (d.crew || []).map(m => ({
               name: m.name || '',
               roles: Array.isArray(m.roles) ? m.roles.filter(Boolean) : (m.roles ? [m.roles] : []),
@@ -115,7 +128,7 @@ const CreateModal = ({
           images: Array.isArray(d.images) ? d.images : [],
         }))
         : [{
-          crew: aggregatedCrew,
+          crew: allCrewForDay0,
           expense: { rent: [], operational: [], orderlist: [] },
           note: "",
           totalExpenses: 0,
@@ -183,11 +196,23 @@ const CreateModal = ({
         overtime: member.overtime
       }));
 
+      // Add freelancers to crew list with customKey
+      const freelancers = Array.isArray(initialData.freelancers) ? initialData.freelancers : [];
+      const freelancerCrew = freelancers.map((freelancer, idx) => ({
+        name: freelancer.name || '',
+        roles: [''],
+        overtime: [],
+        customKey: `custom-freelancer-${idx}-${Date.now()}`
+      }));
+
+      // Combine regular crew and freelancers
+      const allCrewForDay0 = [...aggregatedCrew, ...freelancerCrew];
+
       const formattedDays = initialData.day?.length
         ? initialData.day.map((d, index) => ({
           ...d,
           crew: index === 0
-            ? aggregatedCrew
+            ? allCrewForDay0
             : (d.crew || []).map(m => ({
               name: m.name || '',
               roles: Array.isArray(m.roles) ? m.roles.filter(Boolean) : (m.roles ? [m.roles] : []),
@@ -201,7 +226,7 @@ const CreateModal = ({
           images: Array.isArray(d.images) ? d.images : [],
         }))
         : [{
-          crew: aggregatedCrew,
+          crew: allCrewForDay0,
           expense: { rent: [], operational: [], orderlist: [] },
           note: "",
           totalExpenses: 0,
@@ -213,6 +238,7 @@ const CreateModal = ({
         deadline: initialData?.deadline?.split("T")[0] || "",
         status: initialData.status || false,
         day: formattedDays,
+        freelancers: initialData.freelancers || [], // Preserve existing freelancers
       });
       // Additional crew will be initialized in a separate effect once crewList is available
     } else if (!isEditing && showModal) {
@@ -432,16 +458,75 @@ const CreateModal = ({
     e.preventDefault();
     setIsLoading(true);
 
-    // Clean crew data - filter out empty roles
-    const cleanedCrew = (formData.day?.[0]?.crew || []).map((m) => ({
-      name: m?.name || '',
-      roles: Array.isArray(m?.roles) ? m.roles.filter(Boolean) : (m?.roles ? [m.roles] : []),
-      overtime: Array.isArray(m?.overtime) ? m.overtime : []
-    }));
+    // Separate regular crew and freelancers (additional crew members)
+    const allCrew = formData.day?.[0]?.crew || [];
+    const regularCrew = [];
+    const extractedFreelancers = [];
+
+    // Get existing freelancers to preserve their prices and types
+    const existingFreelancers = Array.isArray(formData.freelancers) ? formData.freelancers : [];
+    const existingFreelancersMap = new Map();
+    existingFreelancers.forEach(f => {
+      if (f.name) {
+        existingFreelancersMap.set(String(f.name).trim().toLowerCase(), f);
+      }
+    });
+
+    allCrew.forEach((member) => {
+      if (!member || !member.name) return;
+
+      // Check if this member is in the crew list (regular crew) or additional (freelancer)
+      const isListed = crewList.some(c =>
+        String(c.name || "").trim().toLowerCase() === String(member.name || "").trim().toLowerCase()
+      );
+
+      if (isListed || !member.customKey) {
+        // Regular crew member
+        regularCrew.push({
+          name: member?.name || '',
+          roles: Array.isArray(member?.roles) ? member.roles.filter(Boolean) : (member?.roles ? [member.roles] : []),
+          overtime: Array.isArray(member?.overtime) ? member.overtime : []
+        });
+      } else {
+        // Freelancer (additional crew member)
+        const memberNameKey = String(member.name).trim().toLowerCase();
+        const existingFreelancer = existingFreelancersMap.get(memberNameKey);
+
+        // Preserve existing price and type if freelancer already exists, otherwise use defaults
+        extractedFreelancers.push({
+          name: member?.name || '',
+          price: existingFreelancer?.price || 0,
+          type: existingFreelancer?.type || 'freelancer'
+        });
+
+        // Remove from map to avoid duplicates
+        existingFreelancersMap.delete(memberNameKey);
+      }
+    });
+
+    // Add remaining existing freelancers that weren't in crew (preserve freelancers added directly in Report.jsx)
+    const remainingFreelancers = Array.from(existingFreelancersMap.values());
+    const mergedFreelancers = [...extractedFreelancers, ...remainingFreelancers];
+
+    // Add freelancers to regular crew so they appear in day.crew
+    // Add freelancers to crew if they're not already there
+    const freelancersAsCrew = mergedFreelancers
+      .filter(f => f.name && !regularCrew.some(c =>
+        String(c.name).trim().toLowerCase() === String(f.name).trim().toLowerCase()
+      ))
+      .map(f => ({
+        name: f.name || '',
+        roles: [''],
+        overtime: []
+      }));
+
+    // Combine regular crew and freelancers
+    const cleanedCrew = [...regularCrew, ...freelancersAsCrew];
 
     const finalData = {
       ...formData,
       status: false,
+      freelancers: mergedFreelancers, // Merge extracted and existing freelancers
       day: (formData.day || []).map((d, idx) => ({
         ...d,
         expense: {

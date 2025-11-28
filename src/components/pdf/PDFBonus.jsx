@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFBonus = ({ pro, crewBonuses, bonusCalculation, grossProfit, netProfit, totalExpenses, projectTier, crucialNotes = [] }) => {
+const PDFBonus = ({ pro, crewBonuses, bonusCalculation, grossProfit, netProfit, totalExpenses, totalFreelancerPrice = 0, projectTier, crucialNotes = [] }) => {
   // Helper functions
   const formatCurrency = (num) => {
     if (!num || isNaN(num)) return "Rp. 0";
@@ -245,7 +245,7 @@ const PDFBonus = ({ pro, crewBonuses, bonusCalculation, grossProfit, netProfit, 
               </View>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Freelance Cost</Text>
-                <Text style={styles.infodata}>{formatCurrency(pro?.freelance || 0)}</Text>
+                <Text style={styles.infodata}>{formatCurrency(totalFreelancerPrice)}</Text>
               </View>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Tier</Text>

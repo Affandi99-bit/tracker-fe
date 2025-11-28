@@ -36,6 +36,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
   const [pro, setPro] = useState(initialPro || {});
   const [loading, setLoading] = useState(false);
   const [days, setDays] = useState([]);
+  const [freelancers, setFreelancers] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dayIndex: null });
   const [crewDeleteConfirm, setCrewDeleteConfirm] = useState({ show: false, dayIndex: null, crewIndex: null });
@@ -83,7 +84,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
     return baseCrewData.map(c => ({ name: c.name, roles: [] }));
   }, [baseCrewData]);
 
-  // Merge global crew list with any custom crew names found in the project's days (from CreateModal)
+  // Merge global crew list with any custom crew names found in the project's days (from CreateModal) and freelancers
   const crewOptions = useMemo(() => {
     const base = Array.isArray(baseCrew) ? baseCrew : [];
     const baseNames = new Set(base.map(c => c?.name).filter(Boolean));
@@ -93,11 +94,17 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
         .map(c => c?.name)
         .filter(Boolean)
     );
-    const allNames = new Set([...baseNames, ...customNames]);
+    // Add freelancer names
+    const freelancerNames = new Set(
+      (Array.isArray(freelancers) ? freelancers : [])
+        .map(f => f?.name)
+        .filter(Boolean)
+    );
+    const allNames = new Set([...baseNames, ...customNames, ...freelancerNames]);
     return Array.from(allNames)
       .map(name => ({ name }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [days, baseCrew]);
+  }, [days, baseCrew, freelancers]);
 
   // Collect all unique roles/jobdesk from all crew members across all days
   const availableRoles = useMemo(() => {
@@ -533,7 +540,7 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
   const handleExportPDF = async () => {
     try {
       // Generate PDF using react-pdf
-      const blob = await pdf(<PDFDocument pro={pro} days={days} />).toBlob();
+      const blob = await pdf(<PDFDocument pro={pro} days={days} freelancers={freelancers} />).toBlob();
 
       // Create download link
       const url = URL.createObjectURL(blob);
@@ -613,6 +620,18 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
       const baseDateStr = (initialPro.createdAt || initialPro.start) || '';
       const withDates = assignSequentialDates(numberedDays, baseDateStr);
       setDays(withDates);
+
+      // Initialize freelancers
+      const initialFreelancers = Array.isArray(initialPro.freelancers)
+        ? initialPro.freelancers.map((f, idx) => ({
+          name: f.name || '',
+          price: f.price || 0,
+          type: f.type || 'freelancer',
+          id: `freelancer-${idx}-${Date.now()}`
+        }))
+        : [];
+      setFreelancers(initialFreelancers);
+
       setDaysInitialized(true);
     }
   }, [initialPro, daysInitialized, days.length]);
@@ -869,10 +888,18 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
     event.preventDefault();
     setLoading(true);
     try {
+      // Clean freelancers data - remove id field and ensure proper types
+      const cleanedFreelancers = freelancers.map(f => ({
+        name: f.name || '',
+        price: parseFloat(f.price) || 0,
+        type: f.type || 'freelancer'
+      }));
+
       const updatedPro = {
         ...pro,
         start: pro.start,
         total: days.reduce((acc, day) => acc + (day.totalExpenses || 0), 0),
+        freelancers: cleanedFreelancers,
         day: days.map((day) => ({
           // Persist all days, including pre/post
           // Ensure expense arrays and allowed fields
@@ -923,6 +950,13 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
       await updateData(updatedPro);
       showToast("Project Report saved successfully", 'success');
       setPro(updatedPro);
+
+      // Update freelancers state with cleaned data
+      const rebuiltFreelancers = cleanedFreelancers.map((f, idx) => ({
+        ...f,
+        id: `freelancer-${idx}-${Date.now()}`
+      }));
+      setFreelancers(rebuiltFreelancers);
 
       // Recreate days from saved payload to preserve pre/post inputs and images
       // Preserve existing IDs to maintain component identity
@@ -1901,6 +1935,111 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
           >
             + Add Day
           </button>
+          {/* Freelancer feature */}
+          <section className="glass p-4 m-1 w-full h-full rounded-xl font-body text-sm tracking-wider border border-light/50">
+            <p className="pb-4 text-xl font-semibold text-light tracking-wider">Freelancers</p>
+
+            {/* Freelancer Table */}
+            <div className="w-full overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-light/50">
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Name</th>
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Price Total</th>
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Type</th>
+                    <th className="text-left py-2 px-3 text-light font-semibold text-sm">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {freelancers.map((freelancer, idx) => (
+                    <tr key={freelancer.id || idx} className="border-b border-light/20 hover:bg-light/5 transition-colors">
+                      <td className="py-2 px-3">
+                        <input
+                          type="text"
+                          placeholder="Name"
+                          value={freelancer.name || ''}
+                          onChange={(e) => {
+                            setFreelancers(prev => prev.map((f, i) =>
+                              i === idx ? { ...f, name: e.target.value } : f
+                            ));
+                          }}
+                          className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs bg-transparent text-light w-32"
+                        />
+                      </td>
+                      <td className="py-2 px-3">
+                        <NumericFormat
+                          displayType="input"
+                          thousandSeparator
+                          allowNegative={false}
+                          prefix={"Rp. "}
+                          value={freelancer.price || ''}
+                          onValueChange={(values) => {
+                            setFreelancers(prev => prev.map((f, i) =>
+                              i === idx ? { ...f, price: parseFloat(values.value) || 0 } : f
+                            ));
+                          }}
+                          className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs bg-transparent text-light w-32"
+                        />
+                      </td>
+                      <td className="py-2 px-3">
+                        <select
+                          value={freelancer.type || 'freelancer'}
+                          onChange={(e) => {
+                            setFreelancers(prev => prev.map((f, i) =>
+                              i === idx ? { ...f, type: e.target.value } : f
+                            ));
+                          }}
+                          className="border border-gray-400 glass px-2 rounded-xl p-1 outline-none font-body text-xs bg-transparent text-light"
+                        >
+                          <option className="bg-dark text-light" value="freelancer">Freelancer</option>
+                          <option className="bg-dark text-light" value="intern">Intern</option>
+                        </select>
+                      </td>
+                      <td className="py-2 px-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFreelancers(prev => prev.filter((_, i) => i !== idx));
+                            showToast("Freelancer removed", "success");
+                          }}
+                          className="text-xs text-red-400 hover:text-red-300 cursor-pointer"
+                          title="Delete freelancer"
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Empty state */}
+              {freelancers.length === 0 && (
+                <div className="text-center py-8 text-light/60">
+                  <p className="text-sm">No freelancers added yet</p>
+                </div>
+              )}
+            </div>
+
+            {/* Add Freelancer Button */}
+            <div className="mt-4 pt-4 border-t border-light/20">
+              <button
+                type="button"
+                onClick={() => {
+                  setFreelancers(prev => [...prev, {
+                    id: `freelancer-${Date.now()}-${Math.random()}`,
+                    name: '',
+                    role: '',
+                    price: 0,
+                    type: 'freelancer'
+                  }]);
+                }}
+                className="text-xs px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-light cursor-pointer"
+              >
+                + Add Freelancer
+              </button>
+            </div>
+          </section>
           {/* Overtime feature */}
           <section className="glass p-4 m-1 w-full h-full rounded-xl font-body text-sm tracking-wider border border-light/50">
             <p className="pb-4 text-xl font-semibold text-light tracking-wider">Overtime</p>
@@ -1920,7 +2059,12 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
                 </thead>
                 <tbody>
                   {(() => {
-                    // Collect all unique crew members across all days
+                    // Collect all unique crew members across all days (exclude freelancers)
+                    const freelancerNamesSet = new Set(
+                      (Array.isArray(freelancers) ? freelancers : [])
+                        .map(f => String(f.name).trim().toLowerCase())
+                        .filter(Boolean)
+                    );
                     const crewMap = new Map();
 
                     days.forEach((day, dayIndex) => {
@@ -1928,6 +2072,10 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
 
                       day.crew.forEach((crewMember, crewIdx) => {
                         if (!crewMember.name) return;
+
+                        // Skip freelancers
+                        const memberNameKey = String(crewMember.name).trim().toLowerCase();
+                        if (freelancerNamesSet.has(memberNameKey)) return;
 
                         const crewKey = `${crewMember.name}`;
                         if (!crewMap.has(crewKey)) {
@@ -2233,12 +2381,22 @@ const ReportComponent = ({ pro: initialPro, updateData }) => {
 
             {/* Add Overtime Entry Section */}
             {(() => {
-              // Get all crew members who don't have any overtime entries yet
+              // Get all crew members who don't have any overtime entries yet (exclude freelancers)
+              const freelancerNamesSet = new Set(
+                (Array.isArray(freelancers) ? freelancers : [])
+                  .map(f => String(f.name).trim().toLowerCase())
+                  .filter(Boolean)
+              );
               const crewMap = new Map();
               days.forEach((day, dayIndex) => {
                 if (!day.crew || day.crew.length === 0) return;
                 day.crew.forEach((crewMember, crewIdx) => {
                   if (!crewMember.name) return;
+
+                  // Skip freelancers
+                  const memberNameKey = String(crewMember.name).trim().toLowerCase();
+                  if (freelancerNamesSet.has(memberNameKey)) return;
+
                   const crewKey = `${crewMember.name}`;
                   if (!crewMap.has(crewKey)) {
                     crewMap.set(crewKey, {
