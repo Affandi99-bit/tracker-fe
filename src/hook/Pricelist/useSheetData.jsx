@@ -18,8 +18,8 @@ const useSheetData = (url) => {
 
                 const formatted = json.map((item, index) => ({
                     id: index + 1,
-                    service: item.Service || "",
-                    price: Number(item.Price) || 0
+                    service: item.Nama || "",
+                    price: Number(item.Harga) || 0
                 }));
 
                 setData(formatted);
