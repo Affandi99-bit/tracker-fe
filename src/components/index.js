@@ -13,6 +13,7 @@ import PDFBonus from "./pdf/PDFBonus.jsx";
 import PDFInvoice from "./pdf/PDFInvoice.jsx";
 import PDFQuotation from "./pdf/PDFQuotation.jsx";
 import PDFBonusIndividu from "./pdf/PDFBonusIndividu.jsx";
+import PDFEquipment from "./pdf/PDFEquipment.jsx";
 
 import Navbar from "./Navbar.jsx";
 import Background from "./Background.jsx";
@@ -26,6 +27,7 @@ export {
   PDFBonusIndividu,
   PDFInvoice,
   PDFQuotation,
+  PDFEquipment,
   ErrorBoundary,
   Maintenance,
   KanbanModal,

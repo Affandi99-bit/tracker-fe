@@ -7,13 +7,13 @@ export const findTagColor = (tagValue) => {
   return "#222222";
 };
 
-
 import useRoleProduction from "./Roles/ProductionRole";
 import useRoleMotion from "./Roles/MotionRoles";
 import useRoleDesign from "./Roles/DesignRoles";
 import useRoleDocs from "./Roles/DocsRoles";
 
 import crewImport from "./CrewImport";
+import equipImport from "./EquipImport";
 import { usePrivilege, useHasPermission } from "./Privilege";
 
 import useProductionPrice from "./Pricelist/useProductionPrice";
@@ -25,6 +25,7 @@ export {
   useRoleProduction,
   useRoleMotion,
   crewImport,
+  equipImport,
   useRoleDesign,
   useRoleDocs,
   usePrivilege,

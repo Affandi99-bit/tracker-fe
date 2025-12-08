@@ -7,6 +7,7 @@ import SOP from "./SOP.jsx";
 import Bonus from "./Bonus.jsx";
 import Invoice from "./Invoice.jsx";
 import Quotation from "./Quotation.jsx";
+import Equipment from "./Equipment.jsx";
 
 export {
   MainTable,
@@ -18,4 +19,5 @@ export {
   Bonus,
   Invoice,
   Quotation,
+  Equipment,
 };

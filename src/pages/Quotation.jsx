@@ -23,6 +23,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const [taxRate, setTaxRate] = useState(initialPro?.quotation?.taxRate || 11); // Default 11% VAT
     const [notes, setNotes] = useState(initialPro?.quotation?.notes || "");
     const [items, setItems] = useState(initialPro?.quotation?.items || []);
+    const [serviceSearchQuery, setServiceSearchQuery] = useState("");
 
     // Check privilege - if user doesn't have access, show message and close
     useEffect(() => {
@@ -168,6 +169,20 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
             ...(documentationPrice.data || [])
         ];
     }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data]);
+
+    // Filter price lists based on search query
+    const filterPriceList = (priceList) => {
+        if (!serviceSearchQuery.trim()) return priceList;
+        const query = serviceSearchQuery.toLowerCase();
+        return priceList.filter(item =>
+            item.service?.toLowerCase().includes(query)
+        );
+    };
+
+    const filteredProductionPrice = useMemo(() => filterPriceList(productionPrice.data || []), [productionPrice.data, serviceSearchQuery]);
+    const filteredDesignPrice = useMemo(() => filterPriceList(designPrice.data || []), [designPrice.data, serviceSearchQuery]);
+    const filteredMotionPrice = useMemo(() => filterPriceList(motionPrice.data || []), [motionPrice.data, serviceSearchQuery]);
+    const filteredDocumentationPrice = useMemo(() => filterPriceList(documentationPrice.data || []), [documentationPrice.data, serviceSearchQuery]);
 
     // Helper function to find price from all price lists
     const findServicePrice = (serviceName) => {
@@ -407,6 +422,32 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                 + Add Item
                             </button>
                         </div>
+                        {/* Search Input */}
+                        <div className="mb-4">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={serviceSearchQuery}
+                                    onChange={(e) => setServiceSearchQuery(e.target.value)}
+                                    placeholder="Search services..."
+                                    className="w-full bg-transparent border border-light/30 rounded-lg px-4 py-2 text-light text-sm pl-10"
+                                />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-light/50">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                </svg>
+                                {serviceSearchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setServiceSearchQuery("")}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-light/50 hover:text-light transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                         {items.length > 0 ? (
                             <div className="space-y-3">
                                 {items.map((item, index) => (
@@ -417,48 +458,59 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                             className="flex-1  bg-dark text-light border border-light/30 rounded px-3 py-2 text-sm"
                                         >
                                             <option value="" className="bg-dark text-light">Select Service...</option>
-                                            {productionPrice.data?.length > 0 && (
+                                            {filteredProductionPrice.length > 0 && (
                                                 <optgroup className="bg-dark text-light" label="Production">
-                                                    {productionPrice.data.map((x) => (
+                                                    {filteredProductionPrice.map((x) => (
                                                         <option key={`prod-${x.id}`} value={x.service} className="bg-dark text-light">
                                                             {x.service}
                                                         </option>
                                                     ))}
                                                 </optgroup>
                                             )}
-                                            {designPrice.data?.length > 0 && (
+                                            {filteredDesignPrice.length > 0 && (
                                                 <optgroup className="bg-dark text-light" label="Design">
-                                                    {designPrice.data.map((x) => (
+                                                    {filteredDesignPrice.map((x) => (
                                                         <option key={`design-${x.id}`} value={x.service} className="bg-dark text-light">
                                                             {x.service}
                                                         </option>
                                                     ))}
                                                 </optgroup>
                                             )}
-                                            {motionPrice.data?.length > 0 && (
+                                            {filteredMotionPrice.length > 0 && (
                                                 <optgroup className="bg-dark text-light" label="Motion">
-                                                    {motionPrice.data.map((x) => (
+                                                    {filteredMotionPrice.map((x) => (
                                                         <option key={`motion-${x.id}`} value={x.service} className="bg-dark text-light">
                                                             {x.service}
                                                         </option>
                                                     ))}
                                                 </optgroup>
                                             )}
-                                            {documentationPrice.data?.length > 0 && (
+                                            {filteredDocumentationPrice.length > 0 && (
                                                 <optgroup className="bg-dark text-light" label="Documentation">
-                                                    {documentationPrice.data.map((x) => (
+                                                    {filteredDocumentationPrice.map((x) => (
                                                         <option key={`doc-${x.id}`} value={x.service} className="bg-dark text-light">
                                                             {x.service}
                                                         </option>
                                                     ))}
                                                 </optgroup>
                                             )}
+                                            {/* Show message if search returns no results */}
+                                            {serviceSearchQuery.trim() &&
+                                                filteredProductionPrice.length === 0 &&
+                                                filteredDesignPrice.length === 0 &&
+                                                filteredMotionPrice.length === 0 &&
+                                                filteredDocumentationPrice.length === 0 && (
+                                                    <option value="" disabled className="bg-dark text-light/50 italic">
+                                                        No services found matching "{serviceSearchQuery}"
+                                                    </option>
+                                                )}
                                             {/* Fallback option for saved items that might not be in any price list */}
                                             {item.description && item.description.trim() &&
                                                 !productionPrice.data?.some(x => x.service === item.description) &&
                                                 !designPrice.data?.some(x => x.service === item.description) &&
                                                 !motionPrice.data?.some(x => x.service === item.description) &&
-                                                !documentationPrice.data?.some(x => x.service === item.description) && (
+                                                !documentationPrice.data?.some(x => x.service === item.description) &&
+                                                (!serviceSearchQuery.trim() || item.description.toLowerCase().includes(serviceSearchQuery.toLowerCase())) && (
                                                     <option value={item.description} className="bg-dark text-light">
                                                         {item.description} {item.price ? `| Rp. ${parseFloat(item.price).toLocaleString("id-ID")}` : ""}
                                                     </option>

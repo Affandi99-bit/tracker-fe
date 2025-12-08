@@ -56,12 +56,12 @@ export const useHasPermission = (action) => {
 
     // pm permissions
     if (privilege === "pm") {
-        return ["create", "edit", "delete", "report", "view", "kanban", "share"].includes(action);
+        return ["create", "edit", "delete", "report", "view", "kanban", "share", "equipment"].includes(action);
     }
 
-    // user permissions - only view, kanban, and share
+    // user permissions - only view, kanban, equipment, and share
     if (privilege === "user") {
-        return ["view", "kanban", "share"].includes(action);
+        return ["view", "kanban", "share", "equipment"].includes(action);
     }
 
     // finance permissions - only finance tools and view list
