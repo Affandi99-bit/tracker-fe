@@ -159,13 +159,28 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
         return Array.from(services.values());
     }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, items]);
 
+    // Combine all price lists for lookup
+    const allPriceLists = useMemo(() => {
+        return [
+            ...(productionPrice.data || []),
+            ...(designPrice.data || []),
+            ...(motionPrice.data || []),
+            ...(documentationPrice.data || [])
+        ];
+    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data]);
+
+    // Helper function to find price from all price lists
+    const findServicePrice = (serviceName) => {
+        return allPriceLists.find((x) => x.service === serviceName)?.price || 0;
+    };
+
     // Calculate totals from items
     const itemsSubtotal = useMemo(() => {
         return items.reduce((acc, item) => {
-            const price = selectedPriceList.find((x) => x.service === item.description)?.price || 0;
+            const price = findServicePrice(item.description);
             return acc + (parseFloat(price) * parseInt(item.qty || 0));
         }, 0);
-    }, [items, selectedPriceList]);
+    }, [items, allPriceLists]);
 
     const subtotal = itemsSubtotal || totalExpenses;
     const taxAmount = (subtotal * taxRate) / 100;
@@ -402,23 +417,58 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                             className="flex-1  bg-dark text-light border border-light/30 rounded px-3 py-2 text-sm"
                                         >
                                             <option value="" className="bg-dark text-light">Select Service...</option>
-                                            {selectedPriceList.map((x) => (
-                                                <option key={x.id} value={x.service} className="bg-dark text-light">
-                                                    {x.service}
-                                                </option>
-                                            ))}
-                                            {/* Fallback option for saved items that might not be in the price list */}
-                                            {item.description && item.description.trim() && !selectedPriceList.some(x => x.service === item.description) && (
-                                                <option value={item.description} className="bg-dark text-light">
-                                                    {item.description} {item.price ? `| Rp. ${parseFloat(item.price).toLocaleString("id-ID")}` : ""}
-                                                </option>
+                                            {productionPrice.data?.length > 0 && (
+                                                <optgroup className="bg-dark text-light" label="Production">
+                                                    {productionPrice.data.map((x) => (
+                                                        <option key={`prod-${x.id}`} value={x.service} className="bg-dark text-light">
+                                                            {x.service}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
                                             )}
+                                            {designPrice.data?.length > 0 && (
+                                                <optgroup className="bg-dark text-light" label="Design">
+                                                    {designPrice.data.map((x) => (
+                                                        <option key={`design-${x.id}`} value={x.service} className="bg-dark text-light">
+                                                            {x.service}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            )}
+                                            {motionPrice.data?.length > 0 && (
+                                                <optgroup className="bg-dark text-light" label="Motion">
+                                                    {motionPrice.data.map((x) => (
+                                                        <option key={`motion-${x.id}`} value={x.service} className="bg-dark text-light">
+                                                            {x.service}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            )}
+                                            {documentationPrice.data?.length > 0 && (
+                                                <optgroup className="bg-dark text-light" label="Documentation">
+                                                    {documentationPrice.data.map((x) => (
+                                                        <option key={`doc-${x.id}`} value={x.service} className="bg-dark text-light">
+                                                            {x.service}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            )}
+                                            {/* Fallback option for saved items that might not be in any price list */}
+                                            {item.description && item.description.trim() &&
+                                                !productionPrice.data?.some(x => x.service === item.description) &&
+                                                !designPrice.data?.some(x => x.service === item.description) &&
+                                                !motionPrice.data?.some(x => x.service === item.description) &&
+                                                !documentationPrice.data?.some(x => x.service === item.description) && (
+                                                    <option value={item.description} className="bg-dark text-light">
+                                                        {item.description} {item.price ? `| Rp. ${parseFloat(item.price).toLocaleString("id-ID")}` : ""}
+                                                    </option>
+                                                )}
                                         </select>
                                         <input
                                             type="text"
                                             className="outline-none"
                                             readOnly
-                                            value={isPriceListLoading ? "Loading..." : `Rp. ${parseFloat(selectedPriceList.find((x) => x.service === item.description)?.price || 0).toLocaleString("id-ID")}`}
+                                            value={isPriceListLoading ? "Loading..." : `Rp. ${parseFloat(findServicePrice(item.description)).toLocaleString("id-ID")}`}
                                         />
                                         <input
                                             type="number"
@@ -446,7 +496,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                                     </svg>
                                                 </span>
                                             ) : (
-                                                formatCurrency((item.qty || 0) * (selectedPriceList.find((x) => x.service === item.description)?.price || 0))
+                                                formatCurrency((item.qty || 0) * findServicePrice(item.description))
                                             )}
                                         </div>
                                         <button
