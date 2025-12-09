@@ -4,7 +4,7 @@ import { NumericFormat } from "react-number-format";
 import { useToast } from '../components/micro-components/ToastContext';
 import { ErrorBoundary, PDFQuotation } from "../components";
 import { pdf } from '@react-pdf/renderer';
-import { useHasPermission, useProductionPrice, useDesignPrice, useMotionPrice, useDocumentationPrice } from '../hook';
+import { useHasPermission, useProductionPrice, useDesignPrice, useMotionPrice, useDocumentationPrice, use3DPrice } from '../hook';
 
 const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const navigate = useNavigate();
@@ -14,6 +14,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const designPrice = useDesignPrice();
     const motionPrice = useMotionPrice();
     const documentationPrice = useDocumentationPrice();
+    const threeDPrice = use3DPrice();
     const [pro, setPro] = useState(initialPro || {});
     const [loading, setLoading] = useState(false);
     const [days, setDays] = useState([]);
@@ -81,7 +82,8 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
             ...(productionPrice.data || []),
             ...(designPrice.data || []),
             ...(motionPrice.data || []),
-            ...(documentationPrice.data || [])
+            ...(documentationPrice.data || []),
+            ...(threeDPrice.data || [])
         ];
 
         if (allPriceListsData.length > 0 && items.length > 0) {
@@ -102,7 +104,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                 return hasChanges ? updatedItems : prevItems;
             });
         }
-    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, items.length]); // Run when price lists change
+    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, threeDPrice.data, items.length]); // Run when price lists change
 
     // Calculate total expenses
     const calculateTotalExpenses = (day) => {
@@ -133,10 +135,12 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                 return motionPrice.loading;
             case "Dokumentasi":
                 return documentationPrice.loading;
+            case "3D":
+                return threeDPrice.loading;
             default:
-                return productionPrice.loading || designPrice.loading || motionPrice.loading || documentationPrice.loading;
+                return productionPrice.loading || designPrice.loading || motionPrice.loading || documentationPrice.loading || threeDPrice.loading;
         }
-    }, [pro?.categories, productionPrice.loading, designPrice.loading, motionPrice.loading, documentationPrice.loading]);
+    }, [pro?.categories, productionPrice.loading, designPrice.loading, motionPrice.loading, documentationPrice.loading, threeDPrice.loading]);
 
     // Get price list based on first checked category
     const selectedPriceList = useMemo(() => {
@@ -152,16 +156,19 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                 return motionPrice.data || [];
             case "Dokumentasi":
                 return documentationPrice.data || [];
+            case "3D":
+                return threeDPrice.data || [];
             default:
                 // If no category or unknown category, show all price lists combined
                 return [
                     ...(productionPrice.data || []),
                     ...(designPrice.data || []),
                     ...(motionPrice.data || []),
-                    ...(documentationPrice.data || [])
+                    ...(documentationPrice.data || []),
+                    ...(threeDPrice.data || [])
                 ];
         }
-    }, [pro?.categories, productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data]);
+    }, [pro?.categories, productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, threeDPrice.data]);
 
     // Get all available services from all price lists (for fallback matching)
     const allServices = useMemo(() => {
@@ -178,6 +185,9 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
         documentationPrice.data.forEach(x => {
             if (x.service) services.set(x.service.trim(), x.service);
         });
+        threeDPrice.data.forEach(x => {
+            if (x.service) services.set(x.service.trim(), x.service);
+        });
         // Also include any descriptions from existing items that might not be in the price lists yet
         items.forEach(item => {
             if (item.description && item.description.trim()) {
@@ -188,7 +198,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
             }
         });
         return Array.from(services.values());
-    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, items]);
+    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, threeDPrice.data, items]);
 
     // Combine all price lists for lookup
     const allPriceLists = useMemo(() => {
@@ -196,9 +206,10 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
             ...(productionPrice.data || []),
             ...(designPrice.data || []),
             ...(motionPrice.data || []),
-            ...(documentationPrice.data || [])
+            ...(documentationPrice.data || []),
+            ...(threeDPrice.data || [])
         ];
-    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data]);
+    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, threeDPrice.data]);
 
     // Filter price lists based on search query
     const filterPriceList = (priceList) => {
@@ -213,6 +224,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const filteredDesignPrice = useMemo(() => filterPriceList(designPrice.data || []), [designPrice.data, serviceSearchQuery]);
     const filteredMotionPrice = useMemo(() => filterPriceList(motionPrice.data || []), [motionPrice.data, serviceSearchQuery]);
     const filteredDocumentationPrice = useMemo(() => filterPriceList(documentationPrice.data || []), [documentationPrice.data, serviceSearchQuery]);
+    const filtered3DPrice = useMemo(() => filterPriceList(threeDPrice.data || []), [threeDPrice.data, serviceSearchQuery]);
 
     // Helper function to find price from all price lists
     // The price comes from useSheetData.jsx which maps item.Harga to price: Number(item.Harga) || 0
@@ -323,6 +335,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                     designPrice={designPrice.data || []}
                     motionPrice={motionPrice.data || []}
                     documentationPrice={documentationPrice.data || []}
+                    threeDPrice={threeDPrice.data || []}
                     subtotal={subtotal}
                     taxRate={taxRate}
                     taxAmount={taxAmount}
@@ -538,12 +551,22 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                                     ))}
                                                 </optgroup>
                                             )}
+                                            {filtered3DPrice.length > 0 && (
+                                                <optgroup className="bg-dark text-light" label="3D">
+                                                    {filtered3DPrice.map((x) => (
+                                                        <option key={`3d-${x.id}`} value={x.service} className="bg-dark text-light">
+                                                            {x.service}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            )}
                                             {/* Show message if search returns no results */}
                                             {serviceSearchQuery.trim() &&
                                                 filteredProductionPrice.length === 0 &&
                                                 filteredDesignPrice.length === 0 &&
                                                 filteredMotionPrice.length === 0 &&
-                                                filteredDocumentationPrice.length === 0 && (
+                                                filteredDocumentationPrice.length === 0 &&
+                                                filtered3DPrice.length === 0 && (
                                                     <option value="" disabled className="bg-dark text-light/50 italic">
                                                         No services found matching "{serviceSearchQuery}"
                                                     </option>
@@ -554,6 +577,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                                 !designPrice.data?.some(x => x.service === item.description) &&
                                                 !motionPrice.data?.some(x => x.service === item.description) &&
                                                 !documentationPrice.data?.some(x => x.service === item.description) &&
+                                                !threeDPrice.data?.some(x => x.service === item.description) &&
                                                 (!serviceSearchQuery.trim() || item.description.toLowerCase().includes(serviceSearchQuery.toLowerCase())) && (
                                                     <option value={item.description} className="bg-dark text-light">
                                                         {item.description} {item.price ? `| Rp. ${parseFloat(item.price).toLocaleString("id-ID")}` : ""}

@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, items, selectedPriceList = [], productionPrice = [], designPrice = [], motionPrice = [], documentationPrice = [], subtotal, taxRate, taxAmount, total, notes }) => {
+const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, items, selectedPriceList = [], productionPrice = [], designPrice = [], motionPrice = [], documentationPrice = [], threeDPrice = [], subtotal, taxRate, taxAmount, total, notes }) => {
   const formatCurrency = (num) => {
     if (!num || isNaN(num)) return "Rp. 0";
     return `Rp. ${parseFloat(num).toLocaleString("id-ID")}`;
@@ -213,6 +213,7 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
     if (designPrice.some(x => x.service === itemDescription)) return "Design";
     if (motionPrice.some(x => x.service === itemDescription)) return "Motion";
     if (documentationPrice.some(x => x.service === itemDescription)) return "Documentation";
+    if (threeDPrice.some(x => x.service === itemDescription)) return "3D";
     return "Other";
   };
 
@@ -235,7 +236,7 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
 
   // Group items by category, then flatten with separators
   // This merges items of the same category together even if they're not consecutive
-  const categoryOrder = ["Production", "Design", "Motion", "Documentation", "Other"];
+  const categoryOrder = ["Production", "Design", "Motion", "Documentation", "3D", "Other"];
   const groupedByCategory = {};
 
   // Group all items by their category

@@ -20,6 +20,7 @@ import useProductionPrice from "./Pricelist/useProductionPrice";
 import useDesignPrice from "./Pricelist/useDesignPrice";
 import useMotionPrice from "./Pricelist/useMotionPrice";
 import useDocumentationPrice from "./Pricelist/useDocumentationPrice";
+import use3DPrice from "./Pricelist/use3DPrice";
 
 export {
   useRoleProduction,
@@ -34,4 +35,5 @@ export {
   useDesignPrice,
   useMotionPrice,
   useDocumentationPrice,
+  use3DPrice,
 };
