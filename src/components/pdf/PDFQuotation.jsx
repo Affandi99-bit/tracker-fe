@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, items, selectedPriceList = [], subtotal, taxRate, taxAmount, total, notes }) => {
+const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, items, selectedPriceList = [], productionPrice = [], designPrice = [], motionPrice = [], documentationPrice = [], subtotal, taxRate, taxAmount, total, notes }) => {
   const formatCurrency = (num) => {
     if (!num || isNaN(num)) return "Rp. 0";
     return `Rp. ${parseFloat(num).toLocaleString("id-ID")}`;
@@ -207,7 +207,16 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
     }
   };
 
-  // Use items if provided, calculate prices from selectedPriceList
+  // Determine which category an item belongs to
+  const getItemCategory = (itemDescription) => {
+    if (productionPrice.some(x => x.service === itemDescription)) return "Production";
+    if (designPrice.some(x => x.service === itemDescription)) return "Design";
+    if (motionPrice.some(x => x.service === itemDescription)) return "Motion";
+    if (documentationPrice.some(x => x.service === itemDescription)) return "Documentation";
+    return "Other";
+  };
+
+  // Use items if provided, calculate prices and add category info
   const quotationItems = items && items.length > 0
     ? items.map(item => {
       // Get price from selectedPriceList, fallback to item.price if not found
@@ -218,10 +227,61 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
         unit: item.unit || "pcs",
         qty: qty,
         price: parseFloat(price),
-        total: qty * parseFloat(price)
+        total: qty * parseFloat(price),
+        category: getItemCategory(item.description)
       };
     })
     : [];
+
+  // Group items by category, then flatten with separators
+  // This merges items of the same category together even if they're not consecutive
+  const categoryOrder = ["Production", "Design", "Motion", "Documentation", "Other"];
+  const groupedByCategory = {};
+
+  // Group all items by their category
+  quotationItems.forEach((item) => {
+    if (!groupedByCategory[item.category]) {
+      groupedByCategory[item.category] = [];
+    }
+    groupedByCategory[item.category].push(item);
+  });
+
+  // Determine the order: first category (from first item) comes first, then others
+  const firstCategory = quotationItems.length > 0 ? quotationItems[0].category : null;
+  const orderedCategories = [];
+
+  // Add first category first if it exists
+  if (firstCategory && groupedByCategory[firstCategory]) {
+    orderedCategories.push(firstCategory);
+  }
+
+  // Add other categories in the predefined order
+  categoryOrder.forEach(cat => {
+    if (cat !== firstCategory && groupedByCategory[cat]) {
+      orderedCategories.push(cat);
+    }
+  });
+
+  // Add any remaining categories not in the predefined order
+  Object.keys(groupedByCategory).forEach(cat => {
+    if (!orderedCategories.includes(cat)) {
+      orderedCategories.push(cat);
+    }
+  });
+
+  // Flatten items with category separators
+  const itemsWithSeparators = [];
+  orderedCategories.forEach((category) => {
+    // Add category header
+    itemsWithSeparators.push({
+      isCategoryHeader: true,
+      category: category
+    });
+    // Add all items of this category
+    groupedByCategory[category].forEach(item => {
+      itemsWithSeparators.push(item);
+    });
+  });
 
   return (
     <Document>
@@ -288,7 +348,7 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
           </View>
         </View>
 
-        {/* Items Table */}
+        {/* Items Table with Category Separators */}
         {quotationItems.length > 0 && (
           <View style={styles.section}>
             <View style={styles.table}>
@@ -299,15 +359,30 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
                 <Text style={[styles.tableCellHeader, styles.priceCell]}>Unit Price</Text>
                 <Text style={[styles.tableCellHeader, styles.totalCell]}>Total</Text>
               </View>
-              {quotationItems.map((item, index) => (
-                <View key={index} style={styles.tableRow}>
-                  <Text style={[styles.tableCell, styles.descriptionCell]}>{item.description}</Text>
-                  <Text style={[styles.tableCell, styles.qtyCell]}>{item.qty}</Text>
-                  <Text style={[styles.tableCell, styles.unitCell]}>{item.unit}</Text>
-                  <Text style={[styles.tableCell, styles.priceCell]}>{formatCurrency(item.price)}</Text>
-                  <Text style={[styles.tableCell, styles.totalCell]}>{formatCurrency(item.total)}</Text>
-                </View>
-              ))}
+              {itemsWithSeparators.map((item, index) => {
+                if (item.isCategoryHeader) {
+                  return (
+                    <View key={`category-${index}`} style={[styles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+                      <Text style={[styles.tableCell, styles.descriptionCell, { fontWeight: 'bold', fontSize: 10 }]}>
+                        {item.category}
+                      </Text>
+                      <Text style={[styles.tableCell, styles.qtyCell]}></Text>
+                      <Text style={[styles.tableCell, styles.unitCell]}></Text>
+                      <Text style={[styles.tableCell, styles.priceCell]}></Text>
+                      <Text style={[styles.tableCell, styles.totalCell]}></Text>
+                    </View>
+                  );
+                }
+                return (
+                  <View key={index} style={styles.tableRow}>
+                    <Text style={[styles.tableCell, styles.descriptionCell]}>{item.description}</Text>
+                    <Text style={[styles.tableCell, styles.qtyCell]}>{item.qty}</Text>
+                    <Text style={[styles.tableCell, styles.unitCell]}>{item.unit}</Text>
+                    <Text style={[styles.tableCell, styles.priceCell]}>{formatCurrency(item.price)}</Text>
+                    <Text style={[styles.tableCell, styles.totalCell]}>{formatCurrency(item.total)}</Text>
+                  </View>
+                );
+              })}
             </View>
           </View>
         )}
@@ -316,15 +391,18 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
         <View style={styles.summarySection}>
           <View style={styles.summaryBox}>
             <View style={styles.summaryRow}>
-              <Text>Subtotal:</Text>
+              <Text>Total:</Text>
               <Text>{formatCurrency(subtotal)}</Text>
             </View>
-            <View style={styles.summaryRow}>
-              <Text>Tax (VAT {taxRate}%):</Text>
-              <Text>{formatCurrency(taxAmount)}</Text>
-            </View>
+            {/* Only show tax if taxRate > 0 and taxAmount > 0 */}
+            {(taxRate > 0 && taxAmount > 0) && (
+              <View style={styles.summaryRow}>
+                <Text>PPH 23 ( {taxRate}%):</Text>
+                <Text>{formatCurrency(taxAmount)}</Text>
+              </View>
+            )}
             <View style={styles.summaryTotal}>
-              <Text>Total:</Text>
+              <Text>Grand Total:</Text>
               <Text>{formatCurrency(total)}</Text>
             </View>
           </View>

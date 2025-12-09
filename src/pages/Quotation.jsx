@@ -20,7 +20,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const [quotationNumber, setQuotationNumber] = useState(initialPro?.quotation?.quotationNumber || "");
     const [quotationDate, setQuotationDate] = useState(initialPro?.quotation?.quotationDate || new Date().toISOString().split('T')[0]);
     const [validUntil, setValidUntil] = useState(initialPro?.quotation?.validUntil || "");
-    const [taxRate, setTaxRate] = useState(initialPro?.quotation?.taxRate || 11); // Default 11% VAT
+    const [taxRate, setTaxRate] = useState(initialPro?.quotation?.taxRate || 0);
     const [notes, setNotes] = useState(initialPro?.quotation?.notes || "");
     const [items, setItems] = useState(initialPro?.quotation?.items || []);
     const [serviceSearchQuery, setServiceSearchQuery] = useState("");
@@ -58,7 +58,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                 setQuotationNumber(initialPro.quotation.quotationNumber || "");
                 setQuotationDate(initialPro.quotation.quotationDate || new Date().toISOString().split('T')[0]);
                 setValidUntil(initialPro.quotation.validUntil || "");
-                setTaxRate(initialPro.quotation.taxRate || 11);
+                setTaxRate(initialPro.quotation.taxRate || 0);
                 setNotes(initialPro.quotation.notes || "");
                 // Format items to ensure correct data types match model schema
                 // Note: Price will be populated from price lists when they load
@@ -319,6 +319,10 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                     validUntil={validUntil}
                     items={items}
                     selectedPriceList={selectedPriceList}
+                    productionPrice={productionPrice.data || []}
+                    designPrice={designPrice.data || []}
+                    motionPrice={motionPrice.data || []}
+                    documentationPrice={documentationPrice.data || []}
                     subtotal={subtotal}
                     taxRate={taxRate}
                     taxAmount={taxAmount}
@@ -644,7 +648,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                         <div className="flex justify-end">
                             <div className="w-80 space-y-3">
                                 <div className="flex justify-between text-light/80">
-                                    <span>Subtotal:</span>
+                                    <span>Total:</span>
                                     <span>
                                         {isPriceListLoading ? (
                                             <span className="flex items-center gap-1 text-light/60">
@@ -660,11 +664,19 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-light/80">Tax (VAT):</span>
+                                        <span className="text-light/80">PPH 23:</span>
                                         <input
                                             type="number"
                                             value={taxRate}
-                                            onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                if (value === "" || value === null || value === undefined) {
+                                                    setTaxRate(0);
+                                                } else {
+                                                    const numValue = parseFloat(value);
+                                                    setTaxRate(isNaN(numValue) ? 0 : numValue);
+                                                }
+                                            }}
                                             min="0"
                                             max="100"
                                             step="0.1"
@@ -686,7 +698,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                     </span>
                                 </div>
                                 <div className="border-t border-light/30 pt-3 flex justify-between text-xl font-bold text-light">
-                                    <span>Total:</span>
+                                    <span>Grand Total:</span>
                                     <span>
                                         {isPriceListLoading ? (
                                             <span className="flex items-center gap-1 text-light/60">
