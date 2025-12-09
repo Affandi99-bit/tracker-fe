@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-const Docs_SHEET_URL = "https://sheet2api.com/v1/TwV9qFW8TCCX/database-job-positions/Dokumentasi";
+const Docs_SHEET_URL = "https://sheetdb.io/api/v1/7fhjfzfme2u8g?sheet=Dokumentasi";
 
 const useRoleDocs = () => {
     const [roleDocs, setRoleDocs] = useState([]);

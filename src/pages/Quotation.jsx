@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { NumericFormat } from "react-number-format";
 import { useToast } from '../components/micro-components/ToastContext';
@@ -61,6 +61,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                 setTaxRate(initialPro.quotation.taxRate || 11);
                 setNotes(initialPro.quotation.notes || "");
                 // Format items to ensure correct data types match model schema
+                // Note: Price will be populated from price lists when they load
                 const formattedItems = (initialPro.quotation.items || []).map(item => ({
                     description: String(item.description || ""),
                     unit: String(item.unit || "pcs"),
@@ -73,6 +74,35 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
             setPro(initialPro);
         }
     }, [initialPro]);
+
+    // Update prices for existing items when price lists load
+    useEffect(() => {
+        const allPriceListsData = [
+            ...(productionPrice.data || []),
+            ...(designPrice.data || []),
+            ...(motionPrice.data || []),
+            ...(documentationPrice.data || [])
+        ];
+
+        if (allPriceListsData.length > 0 && items.length > 0) {
+            setItems(prevItems => {
+                const updatedItems = prevItems.map(item => {
+                    // If item has no price or price is 0, try to get it from price list
+                    if (item.description && (!item.price || item.price === 0)) {
+                        const priceFromList = allPriceListsData.find((x) => x.service === item.description)?.price;
+                        if (priceFromList && priceFromList > 0) {
+                            return { ...item, price: priceFromList };
+                        }
+                    }
+                    return item;
+                });
+
+                // Only return updated items if prices actually changed
+                const hasChanges = updatedItems.some((item, index) => item.price !== prevItems[index].price);
+                return hasChanges ? updatedItems : prevItems;
+            });
+        }
+    }, [productionPrice.data, designPrice.data, motionPrice.data, documentationPrice.data, items.length]); // Run when price lists change
 
     // Calculate total expenses
     const calculateTotalExpenses = (day) => {
@@ -185,17 +215,19 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const filteredDocumentationPrice = useMemo(() => filterPriceList(documentationPrice.data || []), [documentationPrice.data, serviceSearchQuery]);
 
     // Helper function to find price from all price lists
-    const findServicePrice = (serviceName) => {
+    // The price comes from useSheetData.jsx which maps item.Harga to price: Number(item.Harga) || 0
+    const findServicePrice = useCallback((serviceName) => {
         return allPriceLists.find((x) => x.service === serviceName)?.price || 0;
-    };
+    }, [allPriceLists]);
 
     // Calculate totals from items
     const itemsSubtotal = useMemo(() => {
         return items.reduce((acc, item) => {
-            const price = findServicePrice(item.description);
+            // Use stored price from item (from sheet data), fallback to lookup if not available
+            const price = item.price || findServicePrice(item.description) || 0;
             return acc + (parseFloat(price) * parseInt(item.qty || 0));
         }, 0);
-    }, [items, allPriceLists]);
+    }, [items, findServicePrice]);
 
     const subtotal = itemsSubtotal || totalExpenses;
     const taxAmount = (subtotal * taxRate) / 100;
@@ -220,6 +252,14 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const handleItemChange = (index, field, value) => {
         const updatedItems = [...items];
         updatedItems[index] = { ...updatedItems[index], [field]: value };
+
+        // When description (service) is selected, automatically set the price from price list
+        // The price comes from useSheetData.jsx: price: Number(item.Harga) || 0
+        if (field === "description" && value) {
+            const servicePrice = findServicePrice(value);
+            updatedItems[index].price = servicePrice; // This price is from sheet data (item.Harga)
+        }
+
         setItems(updatedItems);
     };
 
@@ -520,7 +560,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                             type="text"
                                             className="outline-none"
                                             readOnly
-                                            value={isPriceListLoading ? "Loading..." : `Rp. ${parseFloat(findServicePrice(item.description)).toLocaleString("id-ID")}`}
+                                            value={isPriceListLoading ? "Loading..." : `Rp. ${parseFloat(item.price || findServicePrice(item.description) || 0).toLocaleString("id-ID")}`}
                                         />
                                         <input
                                             type="number"
@@ -548,7 +588,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                                     </svg>
                                                 </span>
                                             ) : (
-                                                formatCurrency((item.qty || 0) * findServicePrice(item.description))
+                                                formatCurrency((item.qty || 0) * (item.price || findServicePrice(item.description) || 0))
                                             )}
                                         </div>
                                         <button
