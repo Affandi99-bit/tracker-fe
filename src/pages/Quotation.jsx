@@ -21,6 +21,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const [quotationNumber, setQuotationNumber] = useState(initialPro?.quotation?.quotationNumber || "");
     const [quotationDate, setQuotationDate] = useState(initialPro?.quotation?.quotationDate || new Date().toISOString().split('T')[0]);
     const [validUntil, setValidUntil] = useState(initialPro?.quotation?.validUntil || "");
+    const [expressCharge, setExpressCharge] = useState(initialPro?.quotation?.expressCharge || 25);
     const [taxRate, setTaxRate] = useState(initialPro?.quotation?.taxRate || 0);
     const [notes, setNotes] = useState(initialPro?.quotation?.notes || "");
     const [items, setItems] = useState(initialPro?.quotation?.items || []);
@@ -59,6 +60,7 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                 setQuotationNumber(initialPro.quotation.quotationNumber || "");
                 setQuotationDate(initialPro.quotation.quotationDate || new Date().toISOString().split('T')[0]);
                 setValidUntil(initialPro.quotation.validUntil || "");
+                setExpressCharge(initialPro.quotation.expressCharge || 25);
                 setTaxRate(initialPro.quotation.taxRate || 0);
                 setNotes(initialPro.quotation.notes || "");
                 // Format items to ensure correct data types match model schema
@@ -242,8 +244,9 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     }, [items, findServicePrice]);
 
     const subtotal = itemsSubtotal || totalExpenses;
+    const expressChargeAmount = (subtotal * expressCharge) / 100;
     const taxAmount = (subtotal * taxRate) / 100;
-    const total = subtotal + taxAmount;
+    const total = subtotal + expressChargeAmount + taxAmount;
 
     const formatCurrency = (num) => {
         if (!num || isNaN(num)) return "Rp. 0";
@@ -301,10 +304,12 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                     quotationNumber,
                     quotationDate,
                     validUntil,
+                    expressCharge,
                     taxRate,
                     notes,
                     items: formattedItems,
                     subtotal,
+                    expressChargeAmount,
                     taxAmount,
                     total,
                 },
@@ -337,6 +342,8 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                     documentationPrice={documentationPrice.data || []}
                     threeDPrice={threeDPrice.data || []}
                     subtotal={subtotal}
+                    expressCharge={expressCharge}
+                    expressChargeAmount={expressChargeAmount}
                     taxRate={taxRate}
                     taxAmount={taxAmount}
                     total={total}
@@ -683,6 +690,41 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                             </span>
                                         ) : (
                                             formatCurrency(subtotal)
+                                        )}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-light/80">Express Charge:</span>
+                                        <input
+                                            type="number"
+                                            value={expressCharge}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                if (value === "" || value === null || value === undefined) {
+                                                    setExpressCharge(0);
+                                                } else {
+                                                    const numValue = parseFloat(value);
+                                                    setExpressCharge(isNaN(numValue) ? 0 : numValue);
+                                                }
+                                            }}
+                                            min="0"
+                                            max="100"
+                                            step="0.1"
+                                            className="bg-transparent border border-light/30 rounded px-2 py-1 text-light text-sm w-20"
+                                        />
+                                        <span className="text-light/80">%</span>
+                                    </div>
+                                    <span>
+                                        {isPriceListLoading ? (
+                                            <span className="flex items-center gap-1 text-light/60">
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </span>
+                                        ) : (
+                                            formatCurrency(expressChargeAmount)
                                         )}
                                     </span>
                                 </div>

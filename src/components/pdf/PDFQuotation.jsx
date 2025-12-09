@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, items, selectedPriceList = [], productionPrice = [], designPrice = [], motionPrice = [], documentationPrice = [], threeDPrice = [], subtotal, taxRate, taxAmount, total, notes }) => {
+const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, items, selectedPriceList = [], productionPrice = [], designPrice = [], motionPrice = [], documentationPrice = [], threeDPrice = [], subtotal, expressCharge, expressChargeAmount, taxRate, taxAmount, total, notes }) => {
   const formatCurrency = (num) => {
     if (!num || isNaN(num)) return "Rp. 0";
     return `Rp. ${parseFloat(num).toLocaleString("id-ID")}`;
@@ -395,6 +395,13 @@ const PDFQuotation = ({ pro, days, quotationNumber, quotationDate, validUntil, i
               <Text>Total:</Text>
               <Text>{formatCurrency(subtotal)}</Text>
             </View>
+            {/* Only show express charge if expressCharge > 0 and expressChargeAmount > 0 */}
+            {(expressCharge > 0 && expressChargeAmount > 0) && (
+              <View style={styles.summaryRow}>
+                <Text>Express Charge ( {expressCharge}%):</Text>
+                <Text>{formatCurrency(expressChargeAmount)}</Text>
+              </View>
+            )}
             {/* Only show tax if taxRate > 0 and taxAmount > 0 */}
             {(taxRate > 0 && taxAmount > 0) && (
               <View style={styles.summaryRow}>
