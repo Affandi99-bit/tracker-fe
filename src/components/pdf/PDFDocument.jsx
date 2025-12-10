@@ -211,7 +211,6 @@ const styles = StyleSheet.create({
   imagesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
     marginBottom: 12,
     justifyContent: 'flex-start',
     width: '100%',
@@ -227,6 +226,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
+    marginRight: 10,
   },
 
   imageCaption: {
@@ -239,10 +239,21 @@ const styles = StyleSheet.create({
 });
 
 const PDFDocument = ({ pro, days, freelancers = [] }) => {
+  // Validate and sanitize input data to prevent array length errors
+  const safeDays = Array.isArray(days)
+    ? days.filter(day => day != null).slice(0, 50) // Limit to 50 days max
+    : [];
+  const safeFreelancers = Array.isArray(freelancers)
+    ? freelancers.filter(f => f != null).slice(0, 100) // Limit to 100 freelancers max
+    : [];
+  const safePro = pro || {};
+
   // Helper functions
   const formatCurrency = (num) => {
     if (!num || isNaN(num)) return "Rp. 0";
-    return `Rp. ${parseFloat(num).toLocaleString("id-ID")}`;
+    const parsed = parseFloat(num);
+    if (isNaN(parsed) || !isFinite(parsed)) return "Rp. 0";
+    return `Rp. ${parsed.toLocaleString("id-ID")}`;
   };
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -261,6 +272,9 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
   // (Removed normalized overtime formatting; display raw strings instead)
 
   const getDayLabel = (day, index, total) => {
+    if (!Number.isInteger(index) || !Number.isInteger(total) || total <= 0 || index < 0) {
+      return "Day";
+    }
     if (index === 0) return "Pre-Production";
     if (index === total - 1) return "Post-Production";
     return `Day ${index}`;
@@ -268,18 +282,32 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
 
   const calculateDayTotal = (day) => {
     if (!day || !day.expense) return 0;
-    const rentTotal = (Array.isArray(day.expense.rent) ? day.expense.rent : []).reduce((acc, item) =>
-      acc + (parseFloat(item?.price || 0) * parseInt(item?.qty || 0)), 0
-    );
-    const operationalTotal = (Array.isArray(day.expense.operational) ? day.expense.operational : []).reduce((acc, item) =>
-      acc + (parseFloat(item?.price || 0) * parseInt(item?.qty || 0)), 0
-    );
-    return rentTotal + operationalTotal;
+    try {
+      const rentTotal = (Array.isArray(day.expense.rent) ? day.expense.rent.slice(0, 1000) : []).reduce((acc, item) => {
+        if (!item) return acc;
+        const price = parseFloat(item?.price || 0);
+        const qty = parseInt(item?.qty || 0, 10);
+        const itemTotal = (isNaN(price) || !isFinite(price) ? 0 : price) * (isNaN(qty) || !isFinite(qty) ? 0 : qty);
+        return acc + (isNaN(itemTotal) || !isFinite(itemTotal) ? 0 : itemTotal);
+      }, 0);
+      const operationalTotal = (Array.isArray(day.expense.operational) ? day.expense.operational.slice(0, 1000) : []).reduce((acc, item) => {
+        if (!item) return acc;
+        const price = parseFloat(item?.price || 0);
+        const qty = parseInt(item?.qty || 0, 10);
+        const itemTotal = (isNaN(price) || !isFinite(price) ? 0 : price) * (isNaN(qty) || !isFinite(qty) ? 0 : qty);
+        return acc + (isNaN(itemTotal) || !isFinite(itemTotal) ? 0 : itemTotal);
+      }, 0);
+      const total = rentTotal + operationalTotal;
+      return isNaN(total) || !isFinite(total) ? 0 : total;
+    } catch (error) {
+      return 0;
+    }
   };
 
   // Aggregate all crew from all days
-  const allCrew = (Array.isArray(days) ? days : [])
-    .flatMap(d => (Array.isArray(d?.crew) ? d.crew : []));
+  const allCrew = safeDays
+    .flatMap(d => (Array.isArray(d?.crew) ? d.crew.filter(m => m != null) : []))
+    .slice(0, 500); // Limit total crew entries to prevent memory issues
   const groupedByName = allCrew.reduce((acc, member) => {
     if (!member || !member.name) return acc;
     const key = member.name;
@@ -292,7 +320,10 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
     .map(([name, roleSet]) => ({ name, roles: Array.from(roleSet) }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const projectTotal = (Array.isArray(days) ? days : []).reduce((acc, day) => acc + calculateDayTotal(day), 0);
+  const projectTotal = safeDays.reduce((acc, day) => {
+    const total = calculateDayTotal(day);
+    return acc + (isNaN(total) || !isFinite(total) ? 0 : total);
+  }, 0);
 
   return (
     <Document>
@@ -316,7 +347,7 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
           </View>
           <View style={styles.header}>
             <Text style={styles.title}>BERITA ACARA</Text>
-            <Text style={styles.subtitle}>{pro?.title || "Untitled Project"}</Text>
+            <Text style={styles.subtitle}>{safePro?.title || "Untitled Project"}</Text>
             <Text style={styles.companyInfo}>
               CV. Kreasi Rumah Hitam | Jl. Suropati Gang 9 Desa Pesanggrahan, Kota Batu | Telp. +62 811-3577-793 | Email: blackstudio.id@gmail.com
             </Text>
@@ -335,15 +366,15 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
             <View style={{ flex: 1 }}>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Project Title</Text>
-                <Text style={styles.infodata}>{pro?.title || "-"}</Text>
+                <Text style={styles.infodata}>{safePro?.title || "-"}</Text>
               </View>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Client</Text>
-                <Text style={styles.infodata}>{pro?.client || "-"}</Text>
+                <Text style={styles.infodata}>{safePro?.client || "-"}</Text>
               </View>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>PIC Client</Text>
-                <Text style={styles.infodata}>{pro?.pic || "-"}</Text>
+                <Text style={styles.infodata}>{safePro?.pic || "-"}</Text>
               </View>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Project Manager</Text>
@@ -358,19 +389,19 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
             <View style={{ flex: 1 }}>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Event Start</Text>
-                <Text style={styles.infodata}>{formatDate(pro?.start)}</Text>
+                <Text style={styles.infodata}>{formatDate(safePro?.start)}</Text>
               </View>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Event Deadline</Text>
-                <Text style={styles.infodata}>{formatDate(pro?.deadline)}</Text>
+                <Text style={styles.infodata}>{formatDate(safePro?.deadline)}</Text>
               </View>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Project Categories</Text>
-                <Text style={styles.infodata}>{pro?.categories?.join(", ") || "-"}</Text>
+                <Text style={styles.infodata}>{Array.isArray(safePro?.categories) ? safePro.categories.join(", ") : "-"}</Text>
               </View>
               <View style={styles.infocontainer}>
                 <Text style={styles.infotitle}>Project Types</Text>
-                <Text style={styles.infodata}>{pro?.type?.join(", ") || "-"}</Text>
+                <Text style={styles.infodata}>{Array.isArray(safePro?.type) ? safePro.type.join(", ") : "-"}</Text>
               </View>
             </View>
           </View>
@@ -396,8 +427,11 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
         )}
 
         {/* Freelancers Section */}
-        {Array.isArray(freelancers) && freelancers.length > 0 && (() => {
-          const totalFreelancerPrice = freelancers.reduce((sum, f) => sum + (parseFloat(f.price) || 0), 0);
+        {safeFreelancers.length > 0 && (() => {
+          const totalFreelancerPrice = safeFreelancers.reduce((sum, f) => {
+            const price = parseFloat(f?.price);
+            return sum + (isNaN(price) || !isFinite(price) ? 0 : price);
+          }, 0);
           return (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Freelancers</Text>
@@ -407,7 +441,7 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
                   <Text style={styles.tableCellHeader}>Type</Text>
                   <Text style={styles.tableCellHeader}>Price</Text>
                 </View>
-                {freelancers.map((freelancer, index) => (
+                {safeFreelancers.map((freelancer, index) => (
                   <View key={index} style={styles.tableRow}>
                     <Text style={styles.tableCell}>{freelancer.name || "-"}</Text>
                     <Text style={styles.tableCell}>{freelancer.type || "-"}</Text>
@@ -428,20 +462,21 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
         {(() => {
           // Collect all overtime entries from all days
           const overtimeEntries = [];
-          (Array.isArray(days) ? days : []).forEach((day, dayIndex) => {
-            if (!day.crew || !Array.isArray(day.crew)) return;
+          safeDays.forEach((day, dayIndex) => {
+            if (!day || !day.crew || !Array.isArray(day.crew)) return;
             day.crew.forEach((crewMember, crewIdx) => {
-              if (!crewMember.name) return;
+              if (!crewMember || !crewMember.name) return;
               if (Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0) {
-                crewMember.overtime.forEach((ot, otIdx) => {
+                crewMember.overtime.slice(0, 50).forEach((ot, otIdx) => { // Limit overtime entries per crew member
+                  if (!ot) return;
                   // Only include entries that have at least one field filled
                   if (ot.job || ot.date || ot.hour || ot.note) {
                     overtimeEntries.push({
-                      name: crewMember.name,
-                      job: ot.job || '',
+                      name: String(crewMember.name || ''),
+                      job: String(ot.job || ''),
                       date: ot.date || '',
                       hour: ot.hour || '',
-                      note: ot.note || '',
+                      note: String(ot.note || ''),
                       key: `${dayIndex}-${crewIdx}-${otIdx}`
                     });
                   }
@@ -450,7 +485,10 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
             });
           });
 
-          if (overtimeEntries.length === 0) return null;
+          // Limit total overtime entries to prevent memory issues
+          const limitedEntries = overtimeEntries.slice(0, 500);
+
+          if (limitedEntries.length === 0) return null;
 
           return (
             <View style={styles.section}>
@@ -463,7 +501,7 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
                   <Text style={styles.tableCellHeader}>Overtime (Hours)</Text>
                   <Text style={styles.tableCellHeader}>Note</Text>
                 </View>
-                {overtimeEntries.map((entry) => (
+                {limitedEntries.map((entry) => (
                   <View key={entry.key} style={styles.tableRow}>
                     <Text style={styles.tableCell}>{entry.name || '-'}</Text>
                     <Text style={styles.tableCell}>{entry.job || '-'}</Text>
@@ -483,14 +521,14 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
             <Text style={styles.sectionTitle}>Project Summary</Text>
 
             {/* Daily Expenses Summary */}
-            {(Array.isArray(days) ? days : []).some(day => calculateDayTotal(day) > 0) && (
+            {safeDays.some(day => calculateDayTotal(day) > 0) && (
               <View style={{ marginBottom: 15 }}>
-                {(Array.isArray(days) ? days : []).map((day, dayIndex) => {
+                {safeDays.map((day, dayIndex) => {
                   const dayTotal = calculateDayTotal(day);
                   if (dayTotal <= 0) return null;
                   return (
                     <View key={dayIndex} style={styles.infocontainer}>
-                      <Text style={styles.infotitle}>{getDayLabel(day, dayIndex, days.length)}</Text>
+                      <Text style={styles.infotitle}>{getDayLabel(day, dayIndex, safeDays.length)}</Text>
                       <Text style={[styles.summaryRow, { opacity: .8 }]}>{formatCurrency(dayTotal)}</Text>
                     </View>
                   );
@@ -511,10 +549,10 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
         {/* Daily Expenses */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Daily Breakdown</Text>
-          {(Array.isArray(days) ? days : []).map((day, dayIndex) => (
+          {safeDays.map((day, dayIndex) => (
             <View key={dayIndex} style={styles.dayHeader}>
               <Text style={styles.dayTitle}>
-                {getDayLabel(day, dayIndex, days.length)}{day.date ? ` - ${formatDate(day.date)}` : ""}
+                {getDayLabel(day, dayIndex, safeDays.length)}{day?.date ? ` - ${formatDate(day.date)}` : ""}
               </Text>
               {/* Per-day Crew Assignment before expenses */}
               {Array.isArray(day.crew) && day.crew.length > 0 && (() => {
@@ -649,34 +687,59 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
               )}
 
               {/* Images Documentation - Per Day */}
-              {Array.isArray(day?.images) && day.images.length > 0 && (
-                <View style={styles.expenseSection}>
-                  <Text style={styles.expenseTitle}>Documentation Images</Text>
-                  <View style={styles.imagesGrid}>
-                    {day.images.map((imageSrc, imgIndex) => (
-                      <View key={imgIndex} style={styles.imageContainer}>
-                        <Image
-                          src={imageSrc}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                          cache={false}
-                        />
-                      </View>
-                    ))}
+              {Array.isArray(day?.images) && day.images.length > 0 && (() => {
+                // Filter and validate images - limit to prevent memory issues
+                const validImages = day.images
+                  .filter((img, idx) => {
+                    if (!img) return false;
+                    const imgStr = String(img);
+                    // Only include valid image sources
+                    return imgStr.trim().length > 0 &&
+                      (imgStr.startsWith('http') ||
+                        imgStr.startsWith('data:image') ||
+                        imgStr.startsWith('/'));
+                  })
+                  .slice(0, 20); // Limit to 20 images per day to prevent memory issues
+
+                if (validImages.length === 0) return null;
+
+                return (
+                  <View style={styles.expenseSection}>
+                    <Text style={styles.expenseTitle}>Documentation Images</Text>
+                    <View style={styles.imagesGrid}>
+                      {validImages.map((imageSrc, imgIndex) => {
+                        try {
+                          return (
+                            <View key={imgIndex} style={styles.imageContainer}>
+                              <Image
+                                src={String(imageSrc)}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                                cache={false}
+                              />
+                            </View>
+                          );
+                        } catch (error) {
+                          // Skip invalid images silently
+                          return null;
+                        }
+                      })}
+                    </View>
+                    <Text style={styles.imageCaption}>
+                      {validImages.length} image{validImages.length !== 1 ? 's' : ''} from {getDayLabel(day, dayIndex, safeDays.length)}
+                      {day.images.length > validImages.length && ` (${day.images.length - validImages.length} invalid images skipped)`}
+                    </Text>
                   </View>
-                  <Text style={styles.imageCaption}>
-                    {day.images.length} image{day.images.length !== 1 ? 's' : ''} from {getDayLabel(day, dayIndex, days.length)}
-                  </Text>
-                </View>
-              )}
+                );
+              })()}
 
               {/* Day Total */}
               {calculateDayTotal(day) > 0 && (
                 <Text style={styles.dayTotal}>
-                  {getDayLabel(day, dayIndex, days.length)} Total: {formatCurrency(calculateDayTotal(day))}
+                  {getDayLabel(day, dayIndex, safeDays.length)} Total: {formatCurrency(calculateDayTotal(day))}
                 </Text>
               )}
             </View>
