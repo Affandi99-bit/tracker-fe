@@ -1,7 +1,8 @@
 // hooks/useSheetData.js
 import { useState, useEffect } from "react";
+import { fetchPricelistData } from "../../constant/importdata";
 
-const useSheetData = (url) => {
+const useSheetData = (sheetName) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -10,18 +11,9 @@ const useSheetData = (url) => {
         async function fetchData() {
             try {
                 setLoading(true);
+                setError(null);
 
-                const res = await fetch(url);
-                if (!res.ok) throw new Error("Network error");
-
-                const json = await res.json();
-
-                const formatted = json.map((item, index) => ({
-                    id: index + 1,
-                    service: item.Nama || "",
-                    price: Number(item.Harga) || 0
-                }));
-
+                const formatted = await fetchPricelistData(sheetName);
                 setData(formatted);
             } catch (err) {
                 console.error("Failed to fetch:", err);
@@ -32,7 +24,7 @@ const useSheetData = (url) => {
         }
 
         fetchData();
-    }, [url]);
+    }, [sheetName]);
 
     return { data, loading, error };
 };

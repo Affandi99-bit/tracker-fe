@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
 import { Loader, Navbar, CreateModal, Toast, FullscreenButton, Maintenance } from "./components";
-import { MainTable, Readonly, Login, SOP, Bonus, Invoice, Quotation, Kanban, Report, Equipment } from "./pages";
+import { MainTable, Readonly, Login, SOP, Bonus, Invoice, Quotation, Kanban, Report, Equipment, Overtime } from "./pages";
 import axios from "axios";
 import { usePrivilege } from "./hook";
 import { ToastProvider } from './components/micro-components/ToastContext';
 
-const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
-// const apiUrl = "http://localhost:5000/api/report"
+// const apiUrl = "https://tracker-be-omega.vercel.app/api/report";
+const apiUrl = "http://localhost:5000/api/report"
 
 const ReadonlyWrapper = ({ data }) => {
   const { id } = useParams();
@@ -425,6 +425,75 @@ const EquipmentWrapper = ({ data, updateData }) => {
   return <Equipment pro={project} updateData={updateData} />;
 };
 
+const OvertimeWrapper = ({ data, updateData }) => {
+  const { id } = useParams();
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // First try to find in local data (for faster initial load)
+        const found = data.find(d => d._id === id);
+        if (found && found.day) {
+          // If we have full data locally, use it
+          setProject(found);
+          setLoading(false);
+          return;
+        }
+        // Otherwise fetch full project data from API
+        const response = await axios.get(`${apiUrl}/getproject/${id}`);
+        setProject(response.data);
+      } catch (err) {
+        console.error("Error fetching project:", err);
+        setError(err.message || "Failed to load project");
+        // Fallback to local data if available
+        const found = data.find(d => d._id === id);
+        if (found) {
+          setProject(found);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProject();
+    }
+  }, [id, data]);
+
+  if (loading) return <Loader />;
+  if (error && !project) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-dark text-light">
+        <div className="text-center">
+          <p className="text-xl mb-4">Error loading project</p>
+          <p className="text-sm text-light/60">{error}</p>
+        </div>
+      </div>
+    );
+  }
+  if (!project) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-dark text-light">
+        <div className="text-center">
+          <p className="text-xl">Project not found</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Overtime
+      pro={project}
+      updateData={updateData}
+    />
+  );
+};
+
 const MainApp = () => {
   const [tableData, setTableData] = useState([]);
   const [archivedData, setArchivedData] = useState([]);
@@ -629,6 +698,7 @@ const MainApp = () => {
           <Route path="/equipment/:id" element={<EquipmentWrapper data={tableData} updateData={updateData} />} />
           <Route path="/kanban/:id" element={<KanbanWrapper data={tableData} updateData={updateData} />} />
           <Route path="/report/:id" element={<ReportWrapper data={tableData} updateData={updateData} />} />
+          <Route path="/overtime/:id" element={<OvertimeWrapper data={tableData} updateData={updateData} />} />
           <Route path="/sop" element={<SOP />} />
           <Route path="/tv" element={
             <main className="bg-dark h-screen overflow-hidden">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-const GOOGLE_API_KEY = "AIzaSyDc6sqyAKybW9hTzMylP3QHtSc78xUbRXI";
+const GOOGLE_API_KEY = import.meta.env.VITE_DRIVE_API;
 
 const DriveFolderPreview = ({ folderId, list, search, files, setFiles, loading, setLoading }) => {
     const fetchFilesRecursive = async (id) => {

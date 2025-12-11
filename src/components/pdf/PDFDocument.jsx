@@ -15,9 +15,9 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
-    padding: 10,
+    padding: 8,
     color: '#222',
-    fontSize: 8,
+    fontSize: 7,
     fontFamily: 'Helvetica',
   },
   headerwrap: {
@@ -25,11 +25,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
-    gap: 15,
+    gap: 10,
     width: '100%',
     borderBottom: '1px solid #222',
-    marginBottom: 25,
-    paddingBottom: 12,
+    marginBottom: 12,
+    paddingBottom: 8,
   },
   header: {
     display: "flex",
@@ -39,19 +39,19 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#222',
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 3,
     textAlign: 'left',
   },
   subtitle: {
     color: '#222',
-    fontSize: 10,
-    marginBottom: 3,
+    fontSize: 8,
+    marginBottom: 2,
     textAlign: 'left',
   },
   companyInfo: {
-    fontSize: 7,
+    fontSize: 6,
     textAlign: 'left',
     color: '#666',
   },
@@ -61,30 +61,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   infotitle: {
     width: '40%',
-    fontSize: 8,
+    fontSize: 7,
     textAlign: 'left',
     color: '#000',
     fontWeight: 'bold',
   },
   infodata: {
     width: '60%',
-    fontSize: 7,
+    fontSize: 6,
     textAlign: 'left',
     color: '#666',
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 12,
+    pageBreakInside: 'avoid',
   },
   sectionTitle: {
     color: '#222',
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 'bold',
-    marginBottom: 10,
-    paddingBottom: 4,
+    marginBottom: 6,
+    paddingBottom: 2,
+    pageBreakAfter: 'avoid',
   },
   table: {
     display: 'table',
@@ -92,121 +94,134 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderWidth: 1,
     borderColor: '#222',
-    marginBottom: 12,
+    marginBottom: 8,
+    pageBreakInside: 'avoid',
   },
   tableRow: {
     flexDirection: 'row',
     borderBottomWidth: .3,
     borderBottomColor: '#222',
-    minHeight: 28,
+    minHeight: 20,
     alignItems: 'center',
+    pageBreakInside: 'avoid',
   },
   tableHeader: {
     backgroundColor: '#222',
     color: '#fff',
     fontWeight: 'bold',
+    pageBreakAfter: 'avoid',
+    pageBreakInside: 'avoid',
   },
   tableCell: {
-    padding: 4,
+    padding: 3,
     flex: 1,
+    fontSize: 6,
   },
   tableCellHeader: {
-    padding: 4,
+    padding: 3,
     flex: 1,
     color: '#fff',
+    fontSize: 6,
   },
   dayHeader: {
-    padding: 8,
-    marginBottom: 15,
+    padding: 6,
+    marginBottom: 10,
     border: '1px solid #222',
     pageBreakInside: 'avoid',
   },
   dayTitle: {
     color: '#222',
-    fontSize: 9,
+    fontSize: 7,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 3,
+    pageBreakAfter: 'avoid',
   },
   dayDate: {
-    fontSize: 7,
+    fontSize: 6,
     color: '#666',
   },
   expenseSection: {
-    marginBottom: 12,
+    marginBottom: 8,
+    pageBreakInside: 'avoid',
   },
   expenseTitle: {
     color: '#222',
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: 'bold',
-    marginBottom: 6,
+    marginBottom: 4,
+    pageBreakAfter: 'avoid',
   },
   noteBox: {
-    padding: 8,
+    padding: 5,
     border: '1px solid #ddd',
-    marginBottom: 8,
+    marginBottom: 6,
+    pageBreakInside: 'avoid',
+    fontSize: 6,
   },
   dayTotal: {
     textAlign: 'right',
     fontWeight: 'bold',
-    marginTop: 8,
-    paddingTop: 6,
-    fontSize: 9,
+    marginTop: 5,
+    paddingTop: 4,
+    fontSize: 7,
   },
   projectSummary: {
     border: '1px solid #222',
-    padding: 12,
-    marginTop: 15,
-    marginBottom: 20,
+    padding: 8,
+    marginTop: 10,
+    marginBottom: 12,
+    pageBreakInside: 'avoid',
   },
   summaryTitle: {
     color: '#222',
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 5,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 3,
+    marginBottom: 2,
+    fontSize: 6,
   },
   footer: {
-    marginTop: 25,
-    paddingTop: 12,
+    marginTop: 15,
+    paddingTop: 8,
     borderTop: '1px solid #222',
     textAlign: 'center',
     color: '#222',
-    fontSize: 7,
+    fontSize: 6,
   },
   backupItem: {
-    marginBottom: 5,
+    marginBottom: 3,
     color: '#222',
-    fontSize: 7,
+    fontSize: 6,
   },
   imagesSection: {
-    marginTop: 13,
+    marginTop: 10,
     pageBreakBefore: 'always',
   },
   imagesSectionTitle: {
     color: '#222',
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
     borderBottom: '1px solid #222',
-    paddingBottom: 3,
+    paddingBottom: 2,
   },
   dayImagesContainer: {
-    marginBottom: 20,
+    marginBottom: 12,
     pageBreakInside: 'avoid',
   },
   dayImagesTitle: {
     color: '#222',
     fontSize: 5,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 5,
     borderBottom: '1px solid #222',
-    paddingBottom: 3,
+    paddingBottom: 2,
   },
   imagesGrid: {
     flexDirection: 'row',
@@ -217,23 +232,23 @@ const styles = StyleSheet.create({
   },
 
   imageContainer: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     border: '1px solid #ccc',
-    borderRadius: 3,
+    borderRadius: 2,
     overflow: 'hidden',
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
-    marginRight: 10,
+    marginBottom: 6,
+    marginRight: 6,
   },
 
   imageCaption: {
-    fontSize: 6, // Slightly increased from 5
+    fontSize: 5,
     color: '#666',
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 2,
     fontStyle: 'italic',
   },
 });
@@ -331,8 +346,8 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
         {/* Header */}
         <View style={styles.headerwrap}>
           <View style={{
-            width: 40,
-            height: 40,
+            width: 32,
+            height: 32,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
@@ -360,7 +375,7 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
           <View style={{
             display: 'flex',
             flexDirection: 'row',
-            gap: 20,
+            gap: 12,
             width: '100%'
           }}>
             <View style={{ flex: 1 }}>
@@ -409,15 +424,15 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
 
         {/* Crew Information (grouped by name with comma-separated roles) */}
         {mergedCrew.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Overall Crew Assignment</Text>
-            <View style={styles.table}>
-              <View style={[styles.tableRow, styles.tableHeader]}>
+          <View style={[styles.section, { pageBreakInside: 'avoid' }]}>
+            <Text style={[styles.sectionTitle, { pageBreakAfter: 'avoid' }]}>Overall Crew Assignment</Text>
+            <View style={[styles.table, { pageBreakInside: 'avoid' }]}>
+              <View style={[styles.tableRow, styles.tableHeader, { pageBreakAfter: 'avoid' }]}>
                 <Text style={styles.tableCellHeader}>Name</Text>
                 <Text style={styles.tableCellHeader}>Roles</Text>
               </View>
               {mergedCrew.map((member, index) => (
-                <View key={index} style={styles.tableRow}>
+                <View key={index} style={[styles.tableRow, { pageBreakInside: 'avoid' }]}>
                   <Text style={styles.tableCell}>{member.name || "-"}</Text>
                   <Text style={styles.tableCell}>{member.roles?.join(", ") || "-"}</Text>
                 </View>
@@ -433,22 +448,22 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
             return sum + (isNaN(price) || !isFinite(price) ? 0 : price);
           }, 0);
           return (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Freelancers</Text>
-              <View style={styles.table}>
-                <View style={[styles.tableRow, styles.tableHeader]}>
+            <View style={[styles.section, { pageBreakInside: 'avoid' }]}>
+              <Text style={[styles.sectionTitle, { pageBreakAfter: 'avoid' }]}>Freelancers</Text>
+              <View style={[styles.table, { pageBreakInside: 'avoid' }]}>
+                <View style={[styles.tableRow, styles.tableHeader, { pageBreakAfter: 'avoid' }]}>
                   <Text style={styles.tableCellHeader}>Name</Text>
                   <Text style={styles.tableCellHeader}>Type</Text>
                   <Text style={styles.tableCellHeader}>Price</Text>
                 </View>
                 {safeFreelancers.map((freelancer, index) => (
-                  <View key={index} style={styles.tableRow}>
+                  <View key={index} style={[styles.tableRow, { pageBreakInside: 'avoid' }]}>
                     <Text style={styles.tableCell}>{freelancer.name || "-"}</Text>
                     <Text style={styles.tableCell}>{freelancer.type || "-"}</Text>
                     <Text style={styles.tableCell}>{formatCurrency(freelancer.price || 0)}</Text>
                   </View>
                 ))}
-                <View style={[styles.tableRow, { backgroundColor: '#f0f0f0' }]}>
+                <View style={[styles.tableRow, { backgroundColor: '#f0f0f0', pageBreakInside: 'avoid' }]}>
                   <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>Total</Text>
                   <Text style={styles.tableCell}></Text>
                   <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>{formatCurrency(totalFreelancerPrice)}</Text>
@@ -467,13 +482,17 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
             day.crew.forEach((crewMember, crewIdx) => {
               if (!crewMember || !crewMember.name) return;
               if (Array.isArray(crewMember.overtime) && crewMember.overtime.length > 0) {
+                // Get first role for auto-populating job if not set
+                const firstRole = Array.isArray(crewMember.roles) && crewMember.roles.length > 0
+                  ? crewMember.roles[0]
+                  : '';
                 crewMember.overtime.slice(0, 50).forEach((ot, otIdx) => { // Limit overtime entries per crew member
                   if (!ot) return;
                   // Only include entries that have at least one field filled
                   if (ot.job || ot.date || ot.hour || ot.note) {
                     overtimeEntries.push({
                       name: String(crewMember.name || ''),
-                      job: String(ot.job || ''),
+                      job: String(ot.job || firstRole || ''), // Auto-populate with first role if not set
                       date: ot.date || '',
                       hour: ot.hour || '',
                       note: String(ot.note || ''),
@@ -491,20 +510,20 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
           if (limitedEntries.length === 0) return null;
 
           return (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Overtime Hours</Text>
-              <View style={styles.table}>
-                <View style={[styles.tableRow, styles.tableHeader]}>
+            <View style={[styles.section, { pageBreakInside: 'avoid' }]}>
+              <Text style={[styles.sectionTitle, { pageBreakAfter: 'avoid' }]}>Overtime Hours</Text>
+              <View style={[styles.table, { pageBreakInside: 'avoid' }]}>
+                <View style={[styles.tableRow, styles.tableHeader, { pageBreakAfter: 'avoid' }]}>
                   <Text style={styles.tableCellHeader}>Name</Text>
-                  <Text style={styles.tableCellHeader}>Jobdesk</Text>
+                  {/* <Text style={styles.tableCellHeader}>Jobdesk</Text> */}
                   <Text style={styles.tableCellHeader}>Date</Text>
                   <Text style={styles.tableCellHeader}>Overtime (Hours)</Text>
                   <Text style={styles.tableCellHeader}>Note</Text>
                 </View>
                 {limitedEntries.map((entry) => (
-                  <View key={entry.key} style={styles.tableRow}>
+                  <View key={entry.key} style={[styles.tableRow, { pageBreakInside: 'avoid' }]}>
                     <Text style={styles.tableCell}>{entry.name || '-'}</Text>
-                    <Text style={styles.tableCell}>{entry.job || '-'}</Text>
+                    {/* <Text style={styles.tableCell}>{entry.job || '-'}</Text> */}
                     <Text style={styles.tableCell}>{entry.date ? formatDate(entry.date) : '-'}</Text>
                     <Text style={styles.tableCell}>{(entry.hour === undefined || entry.hour === null || entry.hour === '') ? '-' : String(entry.hour)}</Text>
                     <Text style={styles.tableCell}>{entry.note || '-'}</Text>
@@ -517,12 +536,12 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
 
         {/* Project Summary */}
         {(projectTotal > 0) && (
-          <View style={styles.section}>
+          <View style={[styles.section, styles.projectSummary]}>
             <Text style={styles.sectionTitle}>Project Summary</Text>
 
             {/* Daily Expenses Summary */}
             {safeDays.some(day => calculateDayTotal(day) > 0) && (
-              <View style={{ marginBottom: 15 }}>
+              <View style={{ marginBottom: 15, pageBreakInside: 'avoid' }}>
                 {safeDays.map((day, dayIndex) => {
                   const dayTotal = calculateDayTotal(day);
                   if (dayTotal <= 0) return null;
@@ -566,15 +585,15 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
                 }, {});
                 const mergedCrew = Object.entries(grouped).map(([name, roles]) => ({ name, roles: Array.from(roles) }));
                 return (
-                  <View style={styles.expenseSection}>
-                    <Text style={styles.expenseTitle}>Overall Crew Assignment</Text>
-                    <View style={styles.table}>
-                      <View style={[styles.tableRow, styles.tableHeader]}>
+                  <View style={[styles.expenseSection, { pageBreakInside: 'avoid' }]}>
+                    <Text style={[styles.expenseTitle, { pageBreakAfter: 'avoid' }]}>Overall Crew Assignment</Text>
+                    <View style={[styles.table, { pageBreakInside: 'avoid' }]}>
+                      <View style={[styles.tableRow, styles.tableHeader, { pageBreakAfter: 'avoid' }]}>
                         <Text style={styles.tableCellHeader}>Name</Text>
                         <Text style={styles.tableCellHeader}>Roles</Text>
                       </View>
                       {mergedCrew.map((member, index) => (
-                        <View key={index} style={styles.tableRow}>
+                        <View key={index} style={[styles.tableRow, { pageBreakInside: 'avoid' }]}>
                           <Text style={styles.tableCell}>{member.name || '-'}</Text>
                           <Text style={styles.tableCell}>{member.roles?.join(', ') || '-'}</Text>
                         </View>
@@ -585,10 +604,10 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
               })()}
               {/* Rent Expenses */}
               {day?.expense?.rent && Array.isArray(day.expense.rent) && day.expense.rent.length > 0 && (
-                <View style={styles.expenseSection}>
-                  <Text style={styles.expenseTitle}>Rent Expenses</Text>
-                  <View style={styles.table}>
-                    <View style={[styles.tableRow, styles.tableHeader]}>
+                <View style={[styles.expenseSection, { pageBreakInside: 'avoid' }]}>
+                  <Text style={[styles.expenseTitle, { pageBreakAfter: 'avoid' }]}>Rent Expenses</Text>
+                  <View style={[styles.table, { pageBreakInside: 'avoid' }]}>
+                    <View style={[styles.tableRow, styles.tableHeader, { pageBreakAfter: 'avoid' }]}>
                       <Text style={styles.tableCellHeader}>Item</Text>
                       <Text style={styles.tableCellHeader}>Qty</Text>
                       <Text style={styles.tableCellHeader}>Price</Text>
@@ -596,7 +615,7 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
                       <Text style={styles.tableCellHeader}>Note</Text>
                     </View>
                     {day.expense.rent.map((item, idx) => (
-                      <View key={idx} style={styles.tableRow}>
+                      <View key={idx} style={[styles.tableRow, { pageBreakInside: 'avoid' }]}>
                         <Text style={styles.tableCell}>{item.name || "-"}</Text>
                         <Text style={styles.tableCell}>{item.qty || "0"}</Text>
                         <Text style={styles.tableCell}>{formatCurrency(item.price)}</Text>
@@ -610,10 +629,10 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
 
               {/* Operational Expenses */}
               {day?.expense?.operational && Array.isArray(day.expense.operational) && day.expense.operational.length > 0 && (
-                <View style={styles.expenseSection}>
-                  <Text style={styles.expenseTitle}>Operational Expenses</Text>
-                  <View style={styles.table}>
-                    <View style={[styles.tableRow, styles.tableHeader]}>
+                <View style={[styles.expenseSection, { pageBreakInside: 'avoid' }]}>
+                  <Text style={[styles.expenseTitle, { pageBreakAfter: 'avoid' }]}>Operational Expenses</Text>
+                  <View style={[styles.table, { pageBreakInside: 'avoid' }]}>
+                    <View style={[styles.tableRow, styles.tableHeader, { pageBreakAfter: 'avoid' }]}>
                       <Text style={styles.tableCellHeader}>Item</Text>
                       <Text style={styles.tableCellHeader}>Qty</Text>
                       <Text style={styles.tableCellHeader}>Price</Text>
@@ -622,7 +641,7 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
                       <Text style={styles.tableCellHeader}>Note</Text>
                     </View>
                     {day.expense.operational.map((item, idx) => (
-                      <View key={idx} style={styles.tableRow}>
+                      <View key={idx} style={[styles.tableRow, { pageBreakInside: 'avoid' }]}>
                         <Text style={styles.tableCell}>{item.name || "-"}</Text>
                         <Text style={styles.tableCell}>{item.qty || "0"}</Text>
                         <Text style={styles.tableCell}>{formatCurrency(item.price)}</Text>
@@ -637,10 +656,10 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
 
               {/* Shoplist */}
               {day?.expense?.orderlist && Array.isArray(day.expense.orderlist) && day.expense.orderlist.length > 0 && (
-                <View style={styles.expenseSection}>
-                  <Text style={styles.expenseTitle}>Shoplist</Text>
-                  <View style={styles.table}>
-                    <View style={[styles.tableRow, styles.tableHeader]}>
+                <View style={[styles.expenseSection, { pageBreakInside: 'avoid' }]}>
+                  <Text style={[styles.expenseTitle, { pageBreakAfter: 'avoid' }]}>Shoplist</Text>
+                  <View style={[styles.table, { pageBreakInside: 'avoid' }]}>
+                    <View style={[styles.tableRow, styles.tableHeader, { pageBreakAfter: 'avoid' }]}>
                       <Text style={styles.tableCellHeader}>Item</Text>
                       <Text style={styles.tableCellHeader}>Qty</Text>
                       <Text style={styles.tableCellHeader}>Crew</Text>
@@ -648,7 +667,7 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
                       <Text style={styles.tableCellHeader}>Note</Text>
                     </View>
                     {day.expense.orderlist.map((item, idx) => (
-                      <View key={idx} style={styles.tableRow}>
+                      <View key={idx} style={[styles.tableRow, { pageBreakInside: 'avoid' }]}>
                         <Text style={styles.tableCell}>{item.name || "-"}</Text>
                         <Text style={styles.tableCell}>{item.qty || "0"}</Text>
                         <Text style={styles.tableCell}>{
@@ -745,8 +764,6 @@ const PDFDocument = ({ pro, days, freelancers = [] }) => {
             </View>
           ))}
         </View>
-
-
 
         {/* Footer */}
         <View style={styles.footer}>

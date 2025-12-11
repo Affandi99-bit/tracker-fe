@@ -8,6 +8,7 @@ import Bonus from "./Bonus.jsx";
 import Invoice from "./Invoice.jsx";
 import Quotation from "./Quotation.jsx";
 import Equipment from "./Equipment.jsx";
+import Overtime from "./Overtime.jsx";
 
 export {
   MainTable,
@@ -20,4 +21,5 @@ export {
   Invoice,
   Quotation,
   Equipment,
+  Overtime,
 };

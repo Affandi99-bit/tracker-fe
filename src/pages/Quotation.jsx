@@ -5,6 +5,11 @@ import { useToast } from '../components/micro-components/ToastContext';
 import { ErrorBoundary, PDFQuotation } from "../components";
 import { pdf } from '@react-pdf/renderer';
 import { useHasPermission, useProductionPrice, useDesignPrice, useMotionPrice, useDocumentationPrice, use3DPrice } from '../hook';
+import axios from "axios";
+
+// API URL - should match App.jsx
+// TODO: Consider moving this to a shared constant file
+const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api/report";
 
 const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const navigate = useNavigate();
@@ -26,6 +31,8 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     const [notes, setNotes] = useState(initialPro?.quotation?.notes || "");
     const [items, setItems] = useState(initialPro?.quotation?.items || []);
     const [serviceSearchQuery, setServiceSearchQuery] = useState("");
+    const [projectCount, setProjectCount] = useState(null);
+    const [isLoadingQuotationNumber, setIsLoadingQuotationNumber] = useState(false);
 
     // Check privilege - if user doesn't have access, show message and close
     useEffect(() => {
@@ -38,6 +45,60 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
     if (!canAccessFinance) {
         return null;
     }
+
+    // Fetch total project count for quotation number generation
+    // Count includes both ongoing and archived projects
+    useEffect(() => {
+        const fetchProjectCount = async () => {
+            // Only show loading if there's no existing quotation number
+            if (!initialPro?.quotation?.quotationNumber) {
+                setIsLoadingQuotationNumber(true);
+            }
+
+            try {
+                // Fetch ongoing projects
+                const ongoingResponse = await axios.get(`${apiUrl}/getallprojects`);
+                const ongoingCount = Array.isArray(ongoingResponse.data) ? ongoingResponse.data.length : 0;
+
+                // Fetch archived projects (first page to get total count)
+                let archivedCount = 0;
+                try {
+                    const archivedResponse = await axios.get(`${apiUrl}/getarchivedprojects?page=1`);
+                    if (archivedResponse.data?.pagination?.totalItems) {
+                        archivedCount = archivedResponse.data.pagination.totalItems;
+                    } else if (Array.isArray(archivedResponse.data?.projects)) {
+                        // Fallback: if pagination info not available, count what we get
+                        archivedCount = archivedResponse.data.projects.length;
+                    }
+                } catch (archivedError) {
+                    console.warn("Could not fetch archived projects count:", archivedError);
+                    // Continue with ongoing count only
+                }
+
+                const totalCount = ongoingCount + archivedCount;
+                setProjectCount(totalCount);
+            } catch (error) {
+                console.error("Error fetching project count:", error);
+                // Fallback to 0 if fetch fails
+                setProjectCount(0);
+            } finally {
+                setIsLoadingQuotationNumber(false);
+            }
+        };
+        fetchProjectCount();
+    }, [initialPro?.quotation?.quotationNumber]);
+
+    // Generate quotation number when project count is available and quotation number is empty
+    // Only generate if there's no existing quotation number from initialPro
+    useEffect(() => {
+        // Only generate if we have project count and no existing quotation number
+        if (projectCount !== null && !initialPro?.quotation?.quotationNumber) {
+            // Format as 3-digit number with leading zeros (e.g., 001, 099, 123)
+            // Use projectCount + 1 because this will be the next project's quotation
+            const formattedCount = String(projectCount + 1).padStart(3, '0');
+            setQuotationNumber(`QUO-${formattedCount}`);
+        }
+    }, [projectCount, initialPro?.quotation?.quotationNumber]);
 
     // Initialize days and quotation data from project
     useEffect(() => {
@@ -421,13 +482,24 @@ const QuotationComponent = ({ pro: initialPro, updateData }) => {
                                 <div className="space-y-2">
                                     <div className="flex justify-between">
                                         <span className="text-light/80">Quotation Number:</span>
-                                        <input
-                                            type="text"
-                                            value={quotationNumber}
-                                            onChange={(e) => setQuotationNumber(e.target.value)}
-                                            placeholder="QUO-XXXX"
-                                            className="bg-transparent border border-light/30 rounded px-2 py-1 text-light text-sm w-40 text-right"
-                                        />
+                                        <div className="relative w-40">
+                                            <input
+                                                type="text"
+                                                value={quotationNumber}
+                                                onChange={(e) => setQuotationNumber(e.target.value)}
+                                                placeholder={isLoadingQuotationNumber ? "Loading..." : "QUO-XXXX"}
+                                                disabled={isLoadingQuotationNumber}
+                                                className="bg-transparent border border-light/30 rounded px-2 py-1 text-light text-sm w-full text-right disabled:opacity-50 disabled:cursor-not-allowed"
+                                            />
+                                            {isLoadingQuotationNumber && (
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                                    <svg className="animate-spin h-4 w-4 text-light/60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-light/80">Quotation Date:</span>
